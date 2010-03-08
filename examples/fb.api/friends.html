@@ -1,0 +1,29 @@
+<div id="profile_pics"></div>
+
+<script>
+var profilePicsDiv = document.getElementById('profile_pics');
+FB.getLoginStatus(function(response) {
+  if (!response.session) {
+    profilePicsDiv.innerHTML = '<em>You are not connected</em>';
+    return;
+  }
+
+  FB.api({ method: 'friends.get' }, function(result) {
+    Log.info('friends.get response', result);
+    var markup = '';
+    var numFriends = result ? Math.min(5, result.length) : 0;
+    if (numFriends > 0) {
+      for (var i=0; i<numFriends; i++) {
+        markup += (
+          '<fb:profile-pic size="square" ' +
+                          'uid="' + result[i] + '" ' +
+                          'facebook-logo="true"' +
+          '></fb:profile-pic>'
+        );
+      }
+    }
+    profilePicsDiv.innerHTML = markup;
+    FB.XFBML.parse(profilePicsDiv);
+  });
+});
+</script>
