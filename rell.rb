@@ -113,7 +113,6 @@ class Rell < Sinatra::Base
 
       [
         'http://origin.daaku.org/js-delegator/delegator.js',
-        '/json2.js',
         '/jsDump-1.0.0.js',
         '/log.js',
         '/tracer.js',
