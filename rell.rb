@@ -60,7 +60,7 @@ end
 
 
 class Rell < Sinatra::Base
-  set :haml, {format: :html5}
+  set :haml, {:format => :html5}
   configure :development do
     set :static, true
     set :public, File.dirname(__FILE__) + '/public'

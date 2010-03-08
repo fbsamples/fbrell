@@ -18,7 +18,7 @@
       %textarea#jscode= @example_code
 
       .controls
-        %a#examples-button{href: url("/examples")} Examples
+        %a#examples-button{:href => url("/examples")} Examples
         %button(onclick="Rell.runCode()") Run
 
       #jsroot
