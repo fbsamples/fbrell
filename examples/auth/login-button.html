@@ -1,0 +1,14 @@
+<button id="fb-login">Login</button>
+
+<script>
+document.getElementById('fb-login').onclick = function() {
+  FB.login(function(response) {
+    Log.info('FB.login callback', response);
+    if (response.session) {
+      Log.info('User is logged in');
+    } else {
+      Log.info('User is logged out');
+    }
+  });
+};
+</script>

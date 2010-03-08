@@ -1,0 +1,10 @@
+!!!
+%html
+  %head
+    %title FB Read Eval Log Loop &mdash; Examples
+    %link(type="text/css" rel="stylesheet" href="/rell.css")
+  %body.examples
+    %ul
+      - examples.each do |path, example|
+        %li
+          %a{href: url(path)} #{example[:category]} &mdash; #{example[:name]}

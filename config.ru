@@ -1,0 +1,2 @@
+require "rell"
+run Rell

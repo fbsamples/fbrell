@@ -1,0 +1,25 @@
+<script>
+var permissions = [
+  'read_stream',
+  'publish_location',
+  'status_update',
+  'photo_upload',
+  'video_upload',
+  'sms',
+  'create_event',
+  'rsvp_event',
+  'offline_access',
+  'email',
+  'xmpp_login',
+  'create_note',
+  'share_item',
+  'export_stream',
+  'auto_publish_short_feed',
+  'publish_stream',
+  'auto_publish_recent_activity'
+];
+FB.Connect.showPermissionDialog(
+  permissions.join(','),
+  Log.info.bind('Permissions Callback')
+);
+</script>

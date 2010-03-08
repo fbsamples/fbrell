@@ -1,0 +1,10 @@
+<script>
+// triggering requireSession in a timeout will result in the login popup being
+// blocked for most browsers.
+window.setTimeout(function() {
+  FB.Connect.requireSession(
+    Log.info.bind('successfully connected'),
+    Log.error.bind('user cancelled connect')
+  );
+}, 500);
+</script>

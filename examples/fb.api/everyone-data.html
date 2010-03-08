@@ -1,0 +1,14 @@
+User ID 4 is <strong id="name">?</strong>.
+
+<script>
+FB.api(
+  {
+    method: 'fql.query',
+    query: 'SELECT name FROM user WHERE uid=4'
+  },
+  function(response) {
+    Log.info('API Callback', response);
+    document.getElementById('name').innerHTML = response[0].name;
+  }
+);
+</script>

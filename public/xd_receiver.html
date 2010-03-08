@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <script>
+      try {
+        parent.Log.info('xd_receiver', window.location.toString());
+      } catch(e) {}
+
+      try {
+        opener.Log.info('xd_receiver', window.location.toString());
+      } catch(e) {}
+    </script>
+
+
+    <script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/XdCommReceiver.js" type="text/javascript"></script>
+    <!--
+    -->
+
+    <!--
+    <script type="text/javascript" src="http://www.naitik.dev250.snc1.facebook.com/js/api_lib/v0.4/XdCommReceiver.js"></script>
+    -->
+  </body>
+</html>

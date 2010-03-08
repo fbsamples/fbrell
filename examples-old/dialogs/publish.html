@@ -1,0 +1,17 @@
+<script>
+FB.Connect.streamPublish(
+  'pre popuplated user message',
+  {
+    media: [{
+      type: 'image',
+      src: 'https://friendfeed.com/static/images/nano-logo.png',
+      href: 'http://friendfeed.com'
+    }]
+  },
+  {},
+  null,
+  'are you TESTING?',
+  Log.info.bind('streamPublish callback'),
+  false
+);
+</script>

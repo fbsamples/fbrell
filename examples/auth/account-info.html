@@ -1,0 +1,58 @@
+<div id="account-info"></div>
+
+<script>
+/**
+ * Login & Logout buttons, along with name and profile picture.
+ */
+
+
+/**
+ * This will be called when we have a status response.
+ */
+function onStatus(response) {
+  Log.info('onStatus', response);
+  if (response.session) {
+    showAccountInfo();
+  } else {
+    showLoginButton();
+  }
+}
+
+/**
+ * This assumes the user is logged in and renders their profile picture,
+ * name and a logout link.
+ */
+function showAccountInfo() {
+  FB.api(
+    {
+      method: 'fql.query',
+      query: 'SELECT name, pic_square FROM user WHERE uid='+FB.getSession().uid
+    },
+    function(response) {
+      Log.info('API Callback', response);
+      document.getElementById('account-info').innerHTML = (
+        '<img src="' + response[0].pic_square + '"> ' +
+        response[0].name +
+        ' <img onclick="FB.logout()" style="cursor: pointer;"' +
+            'src="http://static.ak.fbcdn.net/rsrc.php/z2Y31/hash/cxrz4k7j.gif">'
+      );
+    }
+  );
+}
+
+/**
+ * This assumes the user is logged out, and renders a login button.
+ */
+function showLoginButton() {
+  document.getElementById('account-info').innerHTML = (
+    '<img onclick="FB.login()" style="cursor: pointer;"' +
+         'src="http://static.ak.fbcdn.net/rsrc.php/zB6N8/hash/4li2k73z.gif">'
+  );
+}
+
+// invoke it every time the status changes
+FB.Event.subscribe('auth.statusChange', onStatus);
+
+// we also want it to happen on load
+FB.getLoginStatus(onStatus);
+</script>
