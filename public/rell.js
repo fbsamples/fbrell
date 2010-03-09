@@ -74,18 +74,21 @@ Rell = {
       FB.FBDebug.logLevel = Rell.config.old_debug;
 
       FB.Facebook.init(Rell.config.apikey, '/xd_receiver.html');
-
-      FB.Connect.get_status().add_changed(function(response) {
-        var status = 'unknown';
-        if (response == 1) {
+      // sigh
+      window.setInterval(function() {
+        var
+          result = FB.Connect._singleton._status.result,
+          status = 'unknown';
+        if (result == 1) {
           status = 'connected';
-        } else if (response == 3) {
+        } else if (result == 3) {
           status = 'notConnected';
         }
         var el = document.getElementById('auth-status');
         el.className = status;
         el.innerHTML = status;
-      });
+      }, 500);
+
       Rell.runCode();
     });
   },
