@@ -1,0 +1,22 @@
+<script>
+  window.handleResponse = function(response) {
+    if (response.session) {
+      var session_key = response.session.session_key;
+      if (document.cookie.indexOf(session_key)) {
+        Log.info('session_key found in cookie: ' + session_key);
+      } else {
+        Log.error('session_key not found in cookie: ' + session_key);
+      }
+    } else {
+      Log.error('no session');
+    }
+  };
+  window.bareLogin = function() {
+    FB.login(handleResponse);
+  };
+  window.getOfflineAccess = function() {
+    FB.login(handleResponse, { perms: 'offline_access' });
+  };
+</script>
+<button onclick="bareLogin()">Step 1: Login</button>
+<button onclick="getOfflineAccess()">Step 2: Grant Permission</button>

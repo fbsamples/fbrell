@@ -1,0 +1,10 @@
+<button onclick="showDialog('one')">One</button>
+<button onclick="showDialog('two')">Two</button>
+
+<script>
+  window.showDialog = function(title) {
+    var content = document.createTextNode('my content');
+    var popup = new FB.UI.PopupDialog(title, content);
+    popup.show();
+  };
+</script>

@@ -1,0 +1,58 @@
+<h1 style="color: red">
+  Never embed your API Secret in HTML or JavaScript
+</h1>
+<p>
+  This is for demonstration purposes only. You should be doing this on your
+  <strong>server</strong>.
+</p>
+
+<script>
+// load with apikey=82ef81026b3d9dc19c405373618e5a30
+var API_SECRET = '0a05742d82769cca8dd3378a937e1035';
+
+// Step 1. read out the cookie value, including prefix/suffix double quote (")
+var cookie = document.cookie.match('\\bfbs_' + FB._apiKey + '=("[^;]*")');
+if (cookie) {
+  cookie = cookie[1];
+}
+Log.info('Raw Cookie Value', cookie);
+
+if (!cookie) {
+  Log.error('You must connect before you can see this example.');
+} else {
+  // Step 2. Parse out the cookie into an object. This is:
+  // 1. Strip leading/trailing double quote (").
+  // 2. Decode the rest of the string as a URL Query String.
+  var session;
+  if (cookie) {
+    session = FB.QS.decode(cookie.substr(1, cookie.length-2));
+  }
+  Log.info('Decoded Cookie Session Object', session);
+
+  // Step 3. Extract the signature out. Make sure to remove it from the object.
+  var givenSignature = session.sig;
+  delete session.sig;
+  Log.info('Given Signature', givenSignature);
+
+  // Step 4. Generate the base string with the session info
+  // 1. Alpha sort by key
+  // 2. Join as "key=valuekey=valuekey=value" (no separator, no encoding)
+  var baseString = FB.QS.encode(session, '', false);
+  Log.info('Base String', baseString);
+
+  // Step 5. Append the API_SECRET to get the final string
+  var finalString = baseString + API_SECRET;
+  Log.info('Final String', baseString);
+
+  // Step 6. Generate the signature we expect to have
+  var generatedSignature = FB.md5sum(finalString);
+  Log.info('Generated Signature', generatedSignature);
+
+  // Step 7. Check if the generatedSignature is the same as the givenSignature
+  if (givenSignature == generatedSignature) {
+    Log.info('Found expected signature');
+  } else {
+    Log.error('Found unexpected signature');
+  }
+}
+</script>

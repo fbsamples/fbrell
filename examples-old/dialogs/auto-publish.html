@@ -1,0 +1,25 @@
+<button onclick="doIt()">Do It</button>
+
+<script>
+window.doIt = function() {
+  FB.Connect.showPermissionDialog("publish_stream", function(perms) {
+    if (perms) {
+      FB.Connect.streamPublish(
+        'pre popuplated user message',
+        {
+          media: [{
+            type: 'image',
+            src: 'https://friendfeed.com/static/images/nano-logo.png',
+            href: 'http://friendfeed.com'
+          }]
+        },
+        {},
+        null,
+        'are you TESTING?',
+        Log.info.bind('streamPublish callback'),
+        true // auto publish
+      );
+    }
+  });
+};
+</script>

@@ -1,0 +1,15 @@
+<button onclick="doPublish()">Do Publish</button>
+
+<script>
+window.doPublish = function() {
+  var message = "message";
+  var attachment = {
+    name: 'Name',
+    href: 'http://example.com/',
+    description: 'Lorem Ipsum'
+  };
+  FB.ensureInit(function() {
+    FB.Connect.streamPublish(message, attachment, null, null, 'foo');
+  });
+};
+</script>
