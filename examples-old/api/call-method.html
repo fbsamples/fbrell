@@ -1,0 +1,16 @@
+<script>
+var call = {
+  method: 'fql.query',
+  params: {
+    query: 'SELECT name FROM user WHERE uid=5526183'
+  },
+  cb: function(response, error) {
+    if (error) {
+      Log.error('callMethod error', error);
+    } else {
+      Log.info('callMethod response', response);
+    }
+  }
+};
+FB.Facebook.apiClient.callMethod(call.method, call.params, call.cb);
+</script>
