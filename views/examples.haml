@@ -6,6 +6,6 @@
   %body.examples
     %ul
       - examples.each do |path, example|
-        - if example[:category] != 'bugs'
+        - if example[:category] != 'bugs' and example[:category] != 'secret'
           %li
             %a{:href => url(path)} #{example[:category]} &mdash; #{example[:name]}
