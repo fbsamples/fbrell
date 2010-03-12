@@ -139,25 +139,25 @@ Rell = {
 
   login: function() {
     if (Rell.config.version == 'mu') {
-      FB.login(Log.info.bind('FB.login callback'));
+      FB.login(Log.debug.bind('FB.login callback'));
     } else {
-      FB.Connect.requireSession(Log.info.bind('requireSession callback'));
+      FB.Connect.requireSession(Log.debug.bind('requireSession callback'));
     }
   },
 
   logout: function() {
     if (Rell.config.version == 'mu') {
-      FB.logout(Log.info.bind('FB.logout callback'));
+      FB.logout(Log.debug.bind('FB.logout callback'));
     } else {
-      FB.Connect.logout(Log.info.bind('FB.Connect.logout callback'));
+      FB.Connect.logout(Log.debug.bind('FB.Connect.logout callback'));
     }
   },
 
   disconnect: function() {
     if (Rell.config.version == 'mu') {
-      FB.api({ method: 'Auth.revokeAuthorization' }, Log.info.bind('revokeAuthorization callback'));
+      FB.api({ method: 'Auth.revokeAuthorization' }, Log.debug.bind('revokeAuthorization callback'));
     } else {
-      FB.Facebook.apiClient.revokeAuthorization(null, Log.info.bind('revokeAuthorization callback'));
+      FB.Facebook.apiClient.revokeAuthorization(null, Log.debug.bind('revokeAuthorization callback'));
     }
   },
 
