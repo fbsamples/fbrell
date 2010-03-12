@@ -1,0 +1,58 @@
+<p>
+It might be best to load <a href="/auth/all-in-one?trace=0&level=info">this
+page with tracing and debug logging turned off</a>.<br>
+As you use the buttons below, <strong>notice the log messages on the
+right</strong>.
+</p>
+
+<button id="fb-login-status">FB.getLoginStatus()</button>
+<button id="fb-get-session">FB.getSession()</button>
+<button id="fb-login">FB.login()</button>
+<button id="fb-permissions">FB.login() with Permissions</button>
+<button id="fb-logout">FB.logout()</button>
+
+<script>
+FB.Event.subscribe('auth.login', function(response) {
+  Log.info('auth.login event handler', response);
+});
+FB.Event.subscribe('auth.logout', function(response) {
+  Log.info('auth.logout event handler', response);
+});
+FB.Event.subscribe('auth.statusChange', function(response) {
+  Log.info('auth.statusChange event handler', response);
+});
+FB.Event.subscribe('auth.sessionChange', function(response) {
+  Log.info('auth.sessionChange event handler', response);
+});
+
+document.getElementById('fb-login-status').onclick = function() {
+  FB.getLoginStatus(function(response) {
+    Log.info('FB.getLoginStatus callback', response);
+  });
+};
+
+document.getElementById('fb-get-session').onclick = function() {
+  Log.info('FB.getSession', FB.getSession());
+};
+
+document.getElementById('fb-login').onclick = function() {
+  FB.login(function(response) {
+    Log.info('FB.login callback', response);
+  });
+};
+
+document.getElementById('fb-permissions').onclick = function() {
+  FB.login(
+    function(response) {
+      Log.info('FB.login with permissions callback', response);
+    },
+    { perms: 'offline_access' }
+  );
+};
+
+document.getElementById('fb-logout').onclick = function() {
+  FB.logout(function(response) {
+    Log.info('FB.logout callback', response);
+  });
+};
+</script>

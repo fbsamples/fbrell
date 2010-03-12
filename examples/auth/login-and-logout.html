@@ -1,0 +1,33 @@
+<button id="fb-auth">Login</button>
+
+<script>
+function updateButton(response) {
+  Log.info('Updating Button', response);
+  var button = document.getElementById('fb-auth');
+
+  if (response.session) {
+    button.innerHTML = 'Logout';
+    button.onclick = function() {
+      FB.logout(function(response) {
+        Log.info('FB.logout callback', response);
+      });
+    };
+  } else {
+    button.innerHTML = 'Login';
+    button.onclick = function() {
+      FB.login(function(response) {
+        Log.info('FB.login callback', response);
+        if (response.session) {
+          Log.info('User is logged in');
+        } else {
+          Log.info('User is logged out');
+        }
+      });
+    };
+  }
+}
+
+// run it once with the current status and also whenever the status changes
+FB.getLoginStatus(updateButton);
+FB.Event.subscribe('auth.statusChange', updateButton);
+</script>
