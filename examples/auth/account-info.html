@@ -1,23 +1,7 @@
+<h1>Login, Logout, Name and Profile Picture</h1>
 <div id="account-info"></div>
 
 <script>
-/**
- * Login & Logout buttons, along with name and profile picture.
- */
-
-
-/**
- * This will be called when we have a status response.
- */
-function onStatus(response) {
-  Log.info('onStatus', response);
-  if (response.session) {
-    showAccountInfo();
-  } else {
-    showLoginButton();
-  }
-}
-
 /**
  * This assumes the user is logged in and renders their profile picture,
  * name and a logout link.
@@ -50,9 +34,19 @@ function showLoginButton() {
   );
 }
 
-// invoke it every time the status changes
-FB.Event.subscribe('auth.statusChange', onStatus);
-
-// we also want it to happen on load
-FB.getLoginStatus(onStatus);
+/**
+ * This will be called once on page load, and every time the status changes.
+ */
+function onStatus(response) {
+  Log.info('onStatus', response);
+  if (response.session) {
+    showAccountInfo();
+  } else {
+    showLoginButton();
+  }
+}
+FB.getLoginStatus(function(response) {
+  onStatus(response); // once on page load
+  FB.Event.subscribe('auth.statusChange', onStatus); // every status change
+});
 </script>
