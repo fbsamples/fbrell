@@ -33,6 +33,18 @@ sin()
 .configure('development', function() {
   this.plug(sinReloader(), sinStatic(), sinLogger());
 })
+.configure('production', function() {
+  this.error(function(err) {
+    sys.puts(
+      'Error Report: ' +
+      new Date() + "\n" +
+      sys.inspect(this.request) + "\n" +
+      (err.stack || err) + "\n" +
+      '-------------------------------------------------------------'
+    );
+    this.haml('error');
+  });
+})
 .configure(function() {
   //TODO use cb and make this a propert async configure
   this.examples = {};
