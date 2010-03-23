@@ -1,2 +1,0 @@
-require "rell"
-run Rell

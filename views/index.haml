@@ -1,7 +1,7 @@
-!!!
+!!!5
 %html
   %head
-    %title= @title
+    %title= this.title
     %link(type="text/css" rel="stylesheet" href="/rell.css")
     %meta(name="name" content="FB RELL")
     %meta(name="fb_category" content="local business")
@@ -22,34 +22,15 @@
           status:
           %span#auth-status unknown
         %a(style="float: right" href="/help") help
-
-      %textarea#jscode= @example_code
-
+      %textarea#jscode= this.example_code
       .controls
-        %a#examples-button{:href => url("/examples")} Examples
+        %a#examples-button{href: this.url("/examples")} Examples
         %button(onclick="Rell.runCode()") Run
-
       #jsroot
-
-    -# used by the logging framework
     #log-container
       .controls
         %button(onclick="Log.clear()") Clear
       #log
-
-    -# used by the new connect
     #fb-root
-
-    -# used by the old connect
     #FB_HiddenContainer
-
-    -# one script to rule them all. bootloader for para||el loading goodness.
-    :javascript
-      $L=function(c,d){for(var b=c.length,e=b,f=function(){if(!(this.readyState
-      &&this.readyState!=="complete"&&this.readyState!=="loaded")){this.onload=
-      this.onreadystatechange=null;--e||d()}},g=document.getElementsByTagName(
-      "head")[0],i=function(h){var a=document.createElement("script");a.async=
-      true;a.src=h;a.onload=a.onreadystatechange=f;g.appendChild(a)};b;)i(c[--b]
-      )};
-
-      $L(#{scripts.to_json}, function() { Rell.init(#{@config.to_json}); });
+    %script= this.script()
