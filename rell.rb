@@ -92,6 +92,7 @@ class Rell < Sinatra::Base
       server = @config['server']
       server = 'www.naitik.dev575.snc1' if server == 'sb'
       url = 'http://' + server + '.facebook.com/'
+      url = 'http://static.ak.fbcdn.net/' if url == 'http://static.ak.connect.facebook.com/' and @config['version'] == 'mu'
 
       if @config['version'] == 'mu'
         if %w{snc intern beta sandcastle latest dev}.any? {|a| server.include?(a) }

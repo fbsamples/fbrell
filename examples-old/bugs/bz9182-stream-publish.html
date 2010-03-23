@@ -1,3 +1,6 @@
+<button onclick="FB.Connect.showPermissionDialog('publish_stream');">
+  Grant publish_stream
+</button>
 <button onclick="doPublish()">Do Publish</button>
 
 <script>
@@ -9,7 +12,16 @@ window.doPublish = function() {
     description: 'Lorem Ipsum'
   };
   FB.ensureInit(function() {
-    FB.Connect.streamPublish(message, attachment, null, null, 'foo');
+    FB.Connect.streamPublish(
+      message,
+      attachment,
+      null, // action_links
+      null, // target_id
+      'foo', // user_message_prompt
+      Log.info.bind('streamPublish callback'),
+      true, // auto_publish
+      null // actor_id
+    );
   });
 };
 </script>

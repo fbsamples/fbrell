@@ -16,7 +16,11 @@ var ScriptSoup ={
       parts = html.match(new RegExp(ScriptSoup._scriptFragment, 'img')) || [],
       matchOne = new RegExp(ScriptSoup._scriptFragment, 'im');
     for (var i=0, l=parts.length; i<l; i++) {
-      eval((parts[i].match(matchOne) || ['', ''])[1]);
+      try {
+        eval((parts[i].match(matchOne) || ['', ''])[1]);
+      } catch(e) {
+        Log.error('Error running example: ' + e, e);
+      }
     }
   }
 };
