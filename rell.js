@@ -87,13 +87,23 @@ sin()
     server = 'www.naitik.dev575.snc1';
   }
 
-  var url = 'http://' + server + '.facebook.com/';
+  var
+    ssl = this.request.headers['x-forwarded-proto'] === 'https',
+    url = 'http://' + server + '.facebook.com/';
+
+  if (url === 'http://static.ak.connect.facebook.com/') {
+    if (this.config.version === 'mu') {
+      if (ssl) {
+        url = 'https://s-static.ak.fbcdn.net/';
+      } else {
+        url = 'http://static.ak.fbcdn.net/';
+      }
+    } else if (ssl) {
+      url = 'https://ssl.connect.facebook.com/';
+    }
+  }
 
   if (this.config.version === 'mu') {
-    if (url === 'http://static.ak.connect.facebook.com/') {
-      url = 'http://static.ak.fbcdn.net/';
-    }
-
     var special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev'];
     if (_.any(special, _.bind(server, 'indexOf'))) {
       if (this.config.build_dev) {
@@ -116,7 +126,7 @@ sin()
 
   return this.jsloader(
     [
-      'http://origin.daaku.org/js-delegator/delegator.js',
+      '/delegator.js',
       '/jsDump-1.0.0.js',
       '/log.js',
       '/tracer.js',
