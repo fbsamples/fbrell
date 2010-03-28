@@ -55,6 +55,11 @@ Rell = {
       autoMatchParens: true,
       lineNumbers: true
     });
+
+    try {
+      var pageTracker = _gat._getTracker('UA-15507059-1');
+      pageTracker._trackPageview();
+    } catch(e) {}
   },
 
   /**

@@ -10,3 +10,6 @@
 [submodule "sub/underscore"]
 	path = sub/underscore
 	url = git://github.com/nshah/underscore.git
+[submodule "sub/haml.js"]
+	path = sub/haml.js
+	url = git://github.com/visionmedia/haml.js.git

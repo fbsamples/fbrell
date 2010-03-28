@@ -1,24 +1,17 @@
-require.paths.unshift('./sub/haml-js/lib');
+require.paths.unshift('./sub/haml.js/lib');
 require.paths.unshift('./sub/sin');
 require.paths.unshift('./sub/underscore');
 
 var
-  QS          = require('querystring'),
-  _           = require('underscore')._,
-  fs          = require('fs'),
-  path        = require('path'),
-  sin         = require('sin'),
-  sinHaml     = require('sin/haml'),
-  sinJsLoader = require('sin/jsloader'),
-  sinLogger   = require('sin/logger'),
-  sinReloader = require('sin/reloader'),
-  sinStatic   = require('sin/static'),
-  sys         = require('sys');
+  QS   = require('querystring'),
+  _    = require('underscore')._,
+  fs   = require('fs'),
+  path = require('path'),
+  sys  = require('sys');
 
 
 DefaultConfig = {
   'apikey'    : 'ef8f112b63adfc86f5430a1b566f4dc1',
-  'build_dev' : false,
   'comps'     : '',
   'level'     : 'debug',
   'locale'    : 'en_US',
@@ -28,10 +21,24 @@ DefaultConfig = {
   'version'   : 'mu'
 };
 
-sin()
-.plug(sinHaml(), sinJsLoader())
+FbOpts = {
+  apiKey: 'ef8f112b63adfc86f5430a1b566f4dc1',
+  secret: 'fa16a3b5c96463dff7ef78d783b3025a'
+};
+
+require('sin')()
+.plug(
+  require('sin/cookie')(),
+  require('sin/facebook')(FbOpts),
+  require('sin/haml')(),
+  require('sin/jsloader')()
+)
 .configure('development', function() {
-  this.plug(sinReloader(), sinStatic(), sinLogger());
+  this.plug(
+    require('sin/reloader')(),
+    require('sin/logger')(),
+    require('sin/static')()
+  );
 })
 .configure('production', function() {
   this.error(function(err) {
@@ -94,9 +101,9 @@ sin()
   if (url === 'http://static.ak.connect.facebook.com/') {
     if (this.config.version === 'mu') {
       if (ssl) {
-        url = 'https://s-static.ak.fbcdn.net/';
+        url = 'https://connect.facebook.net/';
       } else {
-        url = 'http://static.ak.fbcdn.net/';
+        url = 'http://connect.facebook.net/';
       }
     } else if (ssl) {
       url = 'https://ssl.connect.facebook.com/';
@@ -105,18 +112,10 @@ sin()
 
   if (this.config.version === 'mu') {
     var special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev'];
-    if (_.any(special, _.bind(server, 'indexOf'))) {
-      if (this.config.build_dev) {
-        url += 'connect/en_US/core.js';
-      } else {
-        url += 'assets.php/' + this.config.locale + '/all.js';
-      }
+    if (_.any(special, _.bind(function(s) { return server.indexOf(s) > -1;}))) {
+      url += 'assets.php/' + this.config.locale + '/all.js';
     } else {
-      if (this.config.build_dev) {
-        url += 'connect/' + this.config.locale + '/core.debug.js';
-      } else {
-        url += 'connect/' + this.config.locale + '/core.js';
-      }
+      url += this.config.locale + '/all.js';
     }
   } else if (this.config.version === 'mid') {
     url += 'connect.php/' + this.config.locale + '/js/' + this.config.comps;
@@ -126,6 +125,7 @@ sin()
 
   return this.jsloader(
     [
+      (ssl ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js',
       '/delegator.js',
       '/jsDump-1.0.0.js',
       '/log.js',
@@ -160,6 +160,7 @@ sin()
   }));
 })
 .get('^/$', function() {
+  sys.puts(sys.inspect(this.fb().user()));
   this.haml('index')
 })
 .get('^/help$', function() {
@@ -167,5 +168,8 @@ sin()
 })
 .get('^/examples$', function() {
   this.haml('examples')
+})
+.get('^/test$', function() {
+  this.haml('test')
 })
 .run();

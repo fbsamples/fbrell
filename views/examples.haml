@@ -2,10 +2,10 @@
 %html
   %head
     %title FB Read Eval Log Loop &mdash; Examples
-    %link(type="text/css" rel="stylesheet" href="/rell.css")
+    %link{type:"text/css", rel:"stylesheet", href:"/rell.css"}
   %body.examples
     %ul
-      :each path, example in this.examples
-        :if example.category != 'bugs' && example.category != 'secret'
+      - each example, path in this.examples
+        - if (example.category != 'bugs' && example.category != 'secret')
           %li
-            %a{href: this.url(path)}= example.category + " &mdash; " + example.name
+            %a{href: this.url(path)}!= example.category + " &mdash; " + example.name
