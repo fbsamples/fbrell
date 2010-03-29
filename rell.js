@@ -76,7 +76,7 @@ require('sin')()
   populate('examples');
   populate('examples-old');
 })
-.helper('url', function(path) {
+.helper('makeUrl', function(path) {
   var qs = {};
   _.each(this.config, function(val, key) {
     if (DefaultConfig[key] != val) {
@@ -95,7 +95,7 @@ require('sin')()
   }
 
   var
-    ssl = this.request.headers['x-forwarded-proto'] === 'https',
+    ssl = this.secure,
     url = 'http://' + server + '.facebook.com/';
 
   if (url === 'http://static.ak.connect.facebook.com/') {
@@ -139,7 +139,7 @@ require('sin')()
 })
 .before(function() {
   this.title = 'FB Read Eval Log Loop'
-  this.config = _.extend({}, DefaultConfig, this.uri.query);
+  this.config = _.extend({}, DefaultConfig, this.url.query);
   this.example_code = ''
   this.examples = this.config.version == 'mu'
     ? this.app.examples['examples']
@@ -160,7 +160,6 @@ require('sin')()
   }));
 })
 .get('^/$', function() {
-  sys.puts(sys.inspect(this.fb().user()));
   this.haml('index')
 })
 .get('^/help$', function() {
@@ -170,6 +169,8 @@ require('sin')()
   this.haml('examples')
 })
 .get('^/test$', function() {
+  sys.puts(sys.inspect(this.headers));
+  sys.puts(sys.inspect(this.url));
   this.haml('test')
 })
 .run();

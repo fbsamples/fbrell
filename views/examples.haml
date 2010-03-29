@@ -8,4 +8,4 @@
       - each example, path in this.examples
         - if (example.category != 'bugs' && example.category != 'secret')
           %li
-            %a{href: this.url(path)}!= example.category + " &mdash; " + example.name
+            %a{href: this.makeUrl(path)}!= example.category + " &mdash; " + example.name

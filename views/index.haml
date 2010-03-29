@@ -24,7 +24,7 @@
         %a{style:"float: right", href:"/help"} help
       %textarea#jscode= this.example_code
       .controls
-        %a#examples-button{href: this.url("/examples")} Examples
+        %a#examples-button{href: this.makeUrl("/examples")} Examples
         %button{onclick:"Rell.runCode()"} Run
       #jsroot
     #log-container

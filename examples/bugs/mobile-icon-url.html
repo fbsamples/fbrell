@@ -1,0 +1,16 @@
+<fb:login-button perms="read_stream">Grant read_stream first</fb:login-button>
+<div id="result"></div>
+<script>
+FB.api(
+  {
+    method: 'fql.query',
+    query: 'SELECT attachment FROM stream WHERE post_id="679930430_10150146246605431"'
+  },
+  function(response) {
+    Log.info('API Callback', response);
+    document.getElementById('result').innerHTML = (
+      '<img style="border: 1px" src="' + response[0].attachment.icon + '">'
+    );
+  }
+);
+</script>
