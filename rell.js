@@ -108,11 +108,13 @@ require('sin/application')(__dirname)
   }
 
   if (this.config.version === 'mu') {
-    var special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev'];
+    var
+      special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev'],
+      comps = this.config.comps || 'all';
     if (_.any(special, _.bind(function(s) { return server.indexOf(s) > -1;}))) {
-      url += 'assets.php/' + this.config.locale + '/all.js';
+      url += 'assets.php/' + this.config.locale + '/' + comps + '.js';
     } else {
-      url += this.config.locale + '/all.js';
+      url += this.config.locale + '/' + comps + '.js';
     }
   } else if (this.config.version === 'mid') {
     url += 'connect.php/' + this.config.locale + '/js/' + this.config.comps;
