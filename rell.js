@@ -26,19 +26,16 @@ FbOpts = {
   secret: 'fa16a3b5c96463dff7ef78d783b3025a'
 };
 
-require('sin')()
-.plug(
-  require('sin/cookie')(),
-  require('sin/facebook')(FbOpts),
-  require('sin/haml')(),
-  require('sin/jsloader')()
-)
+require('sin/application')(__dirname)
+.plug('sin/cookie')
+.plug('sin/facebook', FbOpts)
+.plug('sin/haml')
+.plug('sin/jsloader')
 .configure('development', function() {
-  this.plug(
-    require('sin/reloader')(),
-    require('sin/logger')(),
-    require('sin/static')()
-  );
+  this
+  .plug('sin/reloader')
+  .plug('sin/logger')
+  .plug('sin/static');
 })
 .configure('production', function() {
   this.error(function(err) {
