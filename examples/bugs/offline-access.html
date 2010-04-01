@@ -1,0 +1,27 @@
+<fb:login-button perms="offline_access"></fb:login-button>
+<div id="session"></div>
+
+<script>
+var
+  div         = document.getElementById('session'),
+  showSession = function(response) {
+    if (!response.session) {
+      div.innerHTML = '<em>Not Connected</em>';
+    } else {
+      var html = '<table>';
+      for (var key in response.session) {
+        html += (
+          '<tr>' +
+            '<th>' + key + '</th>' +
+            '<td>' + response.session[key] + '</td>' +
+          '</tr>'
+        );
+      }
+      div.innerHTML = html;
+    }
+  };
+FB.getLoginStatus(function(response) {
+  showSession(response);
+  FB.Event.subscribe('auth.sessionChange', showSession);
+});
+</script>
