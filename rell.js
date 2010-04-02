@@ -153,10 +153,15 @@ require('sin/application')(__dirname)
     this.pass();
     return;
   }
-  fs.readFile(example.filename, this.errproof(function(data) {
-    this.example_code = data;
+  if (example.code) {
+    this.example_code = example.code;
     this.haml('index');
-  }));
+  } else {
+    fs.readFile(example.filename, this.errproof(function(data) {
+      this.example_code = example.code = data;
+      this.haml('index');
+    }));
+  }
 })
 .get('^/$', function() {
   this.haml('index')
