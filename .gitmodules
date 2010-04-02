@@ -1,9 +1,6 @@
 [submodule "public/codemirror"]
 	path = public/codemirror
 	url = git://github.com/marijnh/CodeMirror.git
-[submodule "sub/haml-js"]
-	path = sub/haml-js
-	url = git://github.com/creationix/haml-js.git
 [submodule "sub/sin"]
 	path = sub/sin
 	url = git://github.com/nshah/sin.git
