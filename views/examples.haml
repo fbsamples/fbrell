@@ -1,11 +1,7 @@
-!!!5
-%html
-  %head
-    %title FB Read Eval Log Loop &mdash; Examples
-    %link{type:"text/css", rel:"stylesheet", href:"/rell.css"}
-  %body.examples
-    %ul
-      - each example, path in this.examples
-        - if (example.category != 'bugs' && example.category != 'secret')
-          %li
-            %a{href: this.makeUrl(path)}!= example.category + " &mdash; " + example.name
+- title = 'Examples'
+- bodyClass = 'examples'
+%ul
+  - each example, path in this.examples
+    - if (example.category != 'bugs' && example.category != 'secret')
+      %li
+        %a{href: this.makeUrl(path)}!= example.category + " &mdash; " + example.name

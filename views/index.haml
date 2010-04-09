@@ -1,36 +1,24 @@
-!!!5
-%html{xmlns:"http://www.w3.org/1999/xhtml", "xmlns:fb":"http://www.facebook.com/2008/fbml"}
-  %head
-    %title= this.title
-    %link{type:"text/css", rel:"stylesheet", href:"/rell.css"}
-    %meta{name:"name", content:"FB RELL"}
-    %meta{name:"fb_category", content:"local business"}
-    %meta{name:"website", content:"http://fbrell.com/"}
-    %meta{name:"fb_admins", content:"1677846385,5526183"}
-    %meta{name:"blurb", content:"Facebook Read Eval Log Loop."}
-    %meta{name:"description", content:"Do some Facebook Connect debugging please."}
-    %meta{name:"phone", content:"42"}
-    %meta{name:"logo_url", content:"http://www.bin-co.com/blog/wp-content/uploads/2008/05/javascript_logo.jpg"}
-  %body
-    #interactive
-      .controls
-        %a.login-button{onclick:"Rell.login()"}
-          %span Login
-        %button{onclick:"Rell.disconnect()"} Disconnect
-        %button{onclick:"Rell.logout()"} Logout
-        %span#auth-status-container
-          status:
-          %span#auth-status unknown
-        %a{style:"float: right", href:"/help"} help
-      %textarea#jscode= this.example_code
-      .controls
-        %a#examples-button{href: this.makeUrl("/examples")} Examples
-        %button{onclick:"Rell.runCode()"} Run
-      #jsroot
-    #log-container
-      .controls
-        %button{onclick:"Log.clear()"} Clear
-      #log
-    #fb-root
-    %script!= this.script()
-    #FB_HiddenContainer
+- title = this.title
+- bodyClass = 'main'
+#interactive
+  .controls
+    %a.login-button{onclick:"Rell.login()"}
+      %span Login
+    %button{onclick:"Rell.disconnect()"} Disconnect
+    %button{onclick:"Rell.logout()"} Logout
+    %span#auth-status-container
+      status:
+      %span#auth-status unknown
+    %a{style:"float: right", href:"/help"} help
+  %textarea#jscode= this.example_code
+  .controls
+    %a#examples-button{href: this.makeUrl("/examples")} Examples
+    %button{onclick:"Rell.runCode()"} Run
+  #jsroot
+#log-container
+  .controls
+    %button{onclick:"Log.clear()"} Clear
+  #log
+#fb-root
+%script!= this.script()
+#FB_HiddenContainer
