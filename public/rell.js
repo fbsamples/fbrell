@@ -82,7 +82,7 @@ Rell = {
       FB.FBDebug.isEnabled = true;
       FB.FBDebug.logLevel = Rell.config.old_debug;
 
-      FB.Facebook.init(Rell.config.apikey, '/xd_receiver.html');
+      FB.Facebook.init(Rell.config.appid, '/xd_receiver.html');
       // sigh
       window.setInterval(function() {
         var
@@ -118,7 +118,7 @@ Rell = {
     }
 
     FB.init({
-      apiKey: Rell.config.apikey,
+      appId : Rell.config.appid,
       cookie: true,
       status: true
     });

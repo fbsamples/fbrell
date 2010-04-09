@@ -11,7 +11,7 @@ var
 
 
 DefaultConfig = {
-  'apikey'    : 'ef8f112b63adfc86f5430a1b566f4dc1',
+  'appid'     : '184484190795',
   'comps'     : '',
   'level'     : 'debug',
   'locale'    : 'en_US',
@@ -147,7 +147,7 @@ require('sin/application')(__dirname)
 .notFound(function() {
   this.haml('not_found');
 })
-.get('^/([^\/]+)/([^\/]+)$', function(category, name) {
+.get('/:category/:name', function(category, name) {
   var example = this.examples['/' + category + '/' + name];
   if (!example) {
     this.pass();
@@ -163,16 +163,16 @@ require('sin/application')(__dirname)
     }));
   }
 })
-.get('^/$', function() {
+.get('/', function() {
   this.haml('index')
 })
-.get('^/help$', function() {
+.get('/help', function() {
   this.haml('help')
 })
-.get('^/examples$', function() {
+.get('/examples', function() {
   this.haml('examples')
 })
-.get('^/test$', function() {
+.get('/test', function() {
   sys.puts(sys.inspect(this.headers));
   sys.puts(sys.inspect(this.url));
   this.haml('test')
