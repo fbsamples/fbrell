@@ -137,7 +137,6 @@ require('sin/application')(__dirname)
   );
 })
 .before(function() {
-  this.title = 'FB Read Eval Log Loop'
   this.config = _.extend({}, DefaultConfig, this.url.query);
   this.example_code = ''
   this.examples = this.config.version == 'mu'
@@ -148,23 +147,25 @@ require('sin/application')(__dirname)
   this.haml('not_found');
 })
 .get('/:category/:name', function(category, name) {
-  var example = this.examples['/' + category + '/' + name];
+  var
+    title   = category + ' &middot; ' + name,
+    example = this.examples['/' + category + '/' + name];
   if (!example) {
     this.pass();
     return;
   }
   if (example.code) {
     this.example_code = example.code;
-    this.haml('index');
+    this.haml('index', { title: title });
   } else {
     fs.readFile(example.filename, this.errproof(function(data) {
       this.example_code = example.code = data;
-      this.haml('index');
+      this.haml('index', { title: title });
     }));
   }
 })
 .get('/', function() {
-  this.haml('index')
+  this.haml('index', { title: 'Welcome' })
 })
 .get('/help', function() {
   this.haml('help')
