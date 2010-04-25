@@ -9,9 +9,13 @@ var
   path = require('path'),
   sys  = require('sys');
 
+FbOpts = {
+  appId: '184484190795', // fbrell
+  secret: 'fa16a3b5c96463dff7ef78d783b3025a'
+};
 
 DefaultConfig = {
-  'appid'     : '184484190795',
+  'appid'     : FbOpts.appId,
   'comps'     : '',
   'level'     : 'debug',
   'locale'    : 'en_US',
@@ -19,11 +23,6 @@ DefaultConfig = {
   'server'    : 'static.ak.connect',
   'trace'     : 1,
   'version'   : 'mu'
-};
-
-FbOpts = {
-  apiKey: 'ef8f112b63adfc86f5430a1b566f4dc1',
-  secret: 'fa16a3b5c96463dff7ef78d783b3025a'
 };
 
 require('sin/application')(__dirname)
@@ -109,7 +108,7 @@ require('sin/application')(__dirname)
 
   if (this.config.version === 'mu') {
     var
-      special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev'],
+      special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev', 'inyour'],
       comps = this.config.comps || 'all';
     if (_.any(special, _.bind(function(s) { return server.indexOf(s) > -1;}))) {
       url += 'assets.php/' + this.config.locale + '/' + comps + '.js';
@@ -146,9 +145,23 @@ require('sin/application')(__dirname)
 .notFound(function() {
   this.haml('not_found');
 })
+.get('/', function() {
+  this.haml('index', { title: 'Welcome' })
+})
+.get('/help', function() {
+  this.haml('help')
+})
+.get('/examples', function() {
+  this.haml('examples')
+})
+.get('/test', function() {
+  sys.puts(sys.inspect(this.headers));
+  sys.puts(sys.inspect(this.url));
+  this.haml('test')
+})
 .get('/:category/:name', function(category, name) {
   var
-    title   = category + ' &middot; ' + name,
+    title   = name + ' &middot; ' + category,
     example = this.examples['/' + category + '/' + name];
   if (!example) {
     this.pass();
@@ -163,19 +176,5 @@ require('sin/application')(__dirname)
       this.haml('index', { title: title });
     }));
   }
-})
-.get('/', function() {
-  this.haml('index', { title: 'Welcome' })
-})
-.get('/help', function() {
-  this.haml('help')
-})
-.get('/examples', function() {
-  this.haml('examples')
-})
-.get('/test', function() {
-  sys.puts(sys.inspect(this.headers));
-  sys.puts(sys.inspect(this.url));
-  this.haml('test')
 })
 .run();
