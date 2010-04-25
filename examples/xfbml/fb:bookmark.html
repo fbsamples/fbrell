@@ -1,0 +1,12 @@
+<h1>Defaults</h1>
+<fb:bookmark></fb:bookmark>
+
+<h1>Inline event handler</h1>
+<fb:bookmark onadd="inlineHandler()"></fb:bookmark>
+
+<script>
+  // this will fire when a bookmark is added from the second tag
+  window.inlineHandler = function() {
+    Log.info('User added bookmark (inline handler)');
+  };
+</script>

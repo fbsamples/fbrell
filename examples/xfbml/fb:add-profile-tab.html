@@ -1,0 +1,12 @@
+<h1>Defaults</h1>
+<fb:add-profile-tab></fb:add-profile-tab>
+
+<h1>Inline event handler</h1>
+<fb:add-profile-tab onadd="inlineHandler()"></fb:add-profile-tab>
+
+<script>
+  // this will fire when the profile tab is added from the second tag
+  window.inlineHandler = function() {
+    Log.info('User added profile tab (inline handler)');
+  };
+</script>

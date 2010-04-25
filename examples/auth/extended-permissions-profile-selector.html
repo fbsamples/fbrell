@@ -1,0 +1,21 @@
+<button id="fb-login">Login &amp; Permissions</button>
+
+<script>
+document.getElementById('fb-login').onclick = function() {
+  var cb = function(response) {
+    Log.info('FB.login callback', response);
+    if (response.session) {
+      Log.info('User logged in');
+      if (response.perms) {
+        Log.info('User granted permissions');
+      }
+    } else {
+      Log.info('User is logged out');
+    }
+  };
+  FB.login(cb, {
+    perms: 'read_stream',
+    enable_profile_selector: 1
+  });
+};
+</script>
