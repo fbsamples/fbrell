@@ -1,13 +1,10 @@
-require.paths.unshift('./sub/haml.js/lib');
-require.paths.unshift('./sub/sin');
-require.paths.unshift('./sub/underscore');
-
 var
   QS   = require('querystring'),
   _    = require('underscore')._,
   fs   = require('fs'),
   path = require('path'),
-  sys  = require('sys');
+  sys  = require('sys'),
+  url  = require('url');
 
 FbOpts = {
   appId: '184484190795', // fbrell
@@ -22,20 +19,16 @@ DefaultConfig = {
   'old_debug' : 6,
   'server'    : 'static.ak.connect',
   'trace'     : 1,
-  'version'   : 'mu'
+  'version'   : 'mu',
+  'opengraph' : 'page',
+  'og_url'    : 'http://fbrell.com/'
 };
 
-require('sin/application')(__dirname)
+module.exports = require('sin/application')(__dirname)
 .plug('sin/cookie')
 .plug('sin/facebook', FbOpts)
 .plug('sin/haml')
 .plug('sin/jsloader')
-.configure('development', function() {
-  this
-  .plug('sin/reloader')
-  .plug('sin/logger')
-  .plug('sin/static');
-})
 .configure('production', function() {
   this.error(function(err) {
     sys.puts(
@@ -51,8 +44,8 @@ require('sin/application')(__dirname)
 .configure(function() {
   //TODO use cb and make this a propert async configure
   this.examples = {};
-  var populate = _.bind(function(dir) {
-    var E = this.examples[dir] = {};
+  var populate = _.bind(function(name, dir) {
+    var E = this.examples[name] = {};
     fs.readdir(dir, function(err, categories) {
       _.each(categories, function(category) {
         fs.readdir(path.join(dir, category), function(err, examples) {
@@ -69,8 +62,8 @@ require('sin/application')(__dirname)
     });
   }, this);
 
-  populate('examples');
-  populate('examples-old');
+  populate('examples', path.join(this.root, 'examples'));
+  populate('examples-old', path.join(this.root, 'examples-old'));
 })
 .helper('makeUrl', function(path) {
   var qs = {};
@@ -154,10 +147,56 @@ require('sin/application')(__dirname)
 .get('/examples', function() {
   this.haml('examples')
 })
+.get('/echo', function() {
+  this.halt(
+    JSON.stringify({
+      post: this.post,
+      url: this.url
+    }),
+    { 'content-type': 'text/plain' }
+  );
+})
+.get('/channel', function() {
+  this.halt('<script src="http://connect.facebook.net/en_US/all.js"></script>\n');
+})
 .get('/test', function() {
   sys.puts(sys.inspect(this.headers));
   sys.puts(sys.inspect(this.url));
   this.haml('test')
+})
+.post('/', function() {
+  sys.puts(sys.inspect(this.post));
+  this.halt(this.render('fbml', { params: this.post }));
+})
+.post('/:category/:name', function(category, name) {
+  this.halt(
+    this.render('fbml', { params: this.post }) +
+    '<h1>' +
+    '<fb:prompt-permission perms="email">' +
+    'TOS + Email</fb:prompt-permission>' +
+    '</h1>' +
+
+    '<h1>fb:iframe</h1>' +
+
+    '<fb:iframe' +
+    ' src="' + url.format(this.url) + '"' +
+    ' frameborder=0' +
+    ' scrolling=no' +
+    ' style="width: 100%; height: 1000px"/>'
+  );
+})
+.get('/user/:username', function() {
+  if (this.fb.user) {
+    this.fb.api(
+      {
+        method: 'fql.query',
+        query: 'select id, text from comment where xid="naitik"'
+      },
+      this.errproof(function(response) {
+        this.halt(sys.inspect(response));
+      })
+    );
+  }
 })
 .get('/:category/:name', function(category, name) {
   var
@@ -176,5 +215,4 @@ require('sin/application')(__dirname)
       this.haml('index', { title: title });
     }));
   }
-})
-.run();
+});
