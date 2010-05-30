@@ -1,0 +1,6 @@
+<script>
+  window.getBirthday = function() {
+    FB.api('/me', Log.info.bind('/me callback'));
+  };
+</script>
+<fb:login-button perms="user_birthday" onlogin="getBirthday()"></fb:login-button>

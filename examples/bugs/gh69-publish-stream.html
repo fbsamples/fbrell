@@ -13,9 +13,6 @@ document.getElementById('fb-login').onclick = function() {
       Log.info('User is logged out');
     }
   };
-  FB.login(cb, {
-    perms: 'publish_stream',
-    enable_profile_selector: 1
-  });
+  FB.login(cb, { perms: 'publish_stream' });
 };
 </script>

@@ -1,0 +1,14 @@
+<fb:login-button perms="user_photos">
+  Grant Permissions
+</fb:login-button>
+
+<script>
+function getPhotos(response) {
+  if (response.session) {
+    FB.api('/me/photos', Log.info.bind('/me/photos callback'));
+  }
+}
+
+FB.getLoginStatus(getPhotos);
+FB.Event.subscribe('auth.login', getPhotos);
+</script>
