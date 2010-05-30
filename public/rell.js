@@ -120,8 +120,13 @@ Rell = {
     FB.init({
       appId : Rell.config.appid,
       cookie: true,
-      status: true
+      status: true,
+      channelUrl: window.location.protocol + '//fbrell.com/channel'
     });
+
+    if (window !== top) {
+      FB.Canvas.setAutoResize(true);
+    }
     Rell.runCode();
   },
 
