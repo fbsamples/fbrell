@@ -11,6 +11,9 @@ var Tracer = {
     'FB.QS.encode': 1,
     'FB.copy': 1,
     'FB.guid': 1,
+    'FB.Canvas.setSize': 1,
+    'FB.Canvas._computeContentSize': 1,
+    'FB.Array.forEach': 1,
     'FB.log': 1
   },
 
