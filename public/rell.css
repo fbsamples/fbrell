@@ -129,8 +129,8 @@ h2 {
  * auth status
  */
 #auth-status-container {
-  font-size: 120%;
-  margin-left: 2em;
+  font-size: 110%;
+  margin-left: 1em;
 }
 #auth-status {
   font-weight: bold;
