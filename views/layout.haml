@@ -2,12 +2,13 @@
 %html{"xmlns:fb":"http://www.facebook.com/2008/fbml"}
   %head
     %title!= title + ' &mdash; FB Read Eval Log Loop'
-    %meta{property:"fb:admins", content:"5526183"}
-    %meta{property:"og:description", content:"Do some Facebook Connect debugging please."}
-    %meta{property:"og:image", content:"http://www.bin-co.com/blog/wp-content/uploads/2008/05/javascript_logo.jpg"}
-    %meta{property:"og:title", content:"FbRell"}
-    %meta{property:"og:type", content:"website"}
-    %meta{property:"og:url", content:"http://fbrell.com/"}
+    - if (this.config.opengraph == 'page')
+      %meta{property:"fb:admins", content:"5526183"}
+      %meta{property:"og:description", content:"Do some Facebook Connect debugging please."}
+      %meta{property:"og:image", content:"https://fbrell.com/logo.jpg"}
+      %meta{property:"og:title", content:"FbRell"}
+      %meta{property:"og:type", content:"website"}
+    %meta{property:"og:url", content: this.config.og_url}
     %link{type:"text/css", rel:"stylesheet", href:"/rell.css"}
   %body{class:bodyClass}
     != content
