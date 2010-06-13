@@ -35,26 +35,28 @@ Rell = {
     Log.debug('Configuration', Rell.config);
     (Rell['init_' + Rell.config.version] || Rell.init_old)();
 
-    Rell._editor = CodeMirror.fromTextArea('jscode', {
-      height: '390px',
-      content: Rell.getCode(),
-      parserfile: [
-        'parsexml.js',
-        'parsecss.js',
-        'tokenizejavascript.js',
-        'parsejavascript.js',
-        'parsehtmlmixed.js'
-      ],
-      stylesheet: [
-        '/codemirror/css/xmlcolors.css',
-        '/codemirror/css/jscolors.css',
-        '/codemirror/css/csscolors.css',
-        '/custom-codemirror.css'
-      ],
-      path: '/codemirror/js/',
-      autoMatchParens: true,
-      lineNumbers: true
-    });
+    if (Rell.config.rte) {
+      Rell._editor = CodeMirror.fromTextArea('jscode', {
+        height: '390px',
+        content: Rell.getCode(),
+        parserfile: [
+          'parsexml.js',
+          'parsecss.js',
+          'tokenizejavascript.js',
+          'parsejavascript.js',
+          'parsehtmlmixed.js'
+        ],
+        stylesheet: [
+          '/codemirror/css/xmlcolors.css',
+          '/codemirror/css/jscolors.css',
+          '/codemirror/css/csscolors.css',
+          '/custom-codemirror.css'
+        ],
+        path: '/codemirror/js/',
+        autoMatchParens: true,
+        lineNumbers: true
+      });
+    }
 
     try {
       var pageTracker = _gat._getTracker('UA-15507059-1');
@@ -82,7 +84,11 @@ Rell = {
       FB.FBDebug.isEnabled = true;
       FB.FBDebug.logLevel = Rell.config.old_debug;
 
-      FB.Facebook.init(Rell.config.appid, '/xd_receiver.html');
+      var xd_receiver = '/xd_receiver.html';
+      if (document.location.protocol == 'https:') {
+        xd_receiver = '/xd_receiver_ssl.html';
+      }
+      FB.Facebook.init(Rell.config.appid, xd_receiver);
       // sigh
       window.setInterval(function() {
         var

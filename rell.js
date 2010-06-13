@@ -21,7 +21,8 @@ DefaultConfig = {
   'trace'     : 1,
   'version'   : 'mu',
   'opengraph' : 'page',
-  'og_url'    : 'http://fbrell.com/'
+  'og_url'    : 'http://fbrell.com/',
+  'rte'       : 1,
 };
 
 module.exports = require('sin/application')(__dirname)
@@ -157,7 +158,10 @@ module.exports = require('sin/application')(__dirname)
   );
 })
 .get('/channel', function() {
-  this.halt('<script src="http://connect.facebook.net/en_US/all.js"></script>\n');
+  this.halt(
+    '<script src="http' + (this.secure ? 's' : '') +
+    '://connect.facebook.net/en_US/all.js"></script>\n'
+  );
 })
 .get('/test', function() {
   sys.puts(sys.inspect(this.headers));

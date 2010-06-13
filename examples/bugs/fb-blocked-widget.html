@@ -1,0 +1,7 @@
+<div id="widgets"></div>
+
+<script>
+  var widgets = document.getElementById('widgets')
+  widgets.innerHTML = '<fb:like href="http://fbrell.com"></fb:like>';
+  FB.XFBML.parse(widgets, Log.info.bind('XFBML.parse callback'));
+</script>
