@@ -1,0 +1,9 @@
+<script>
+  var dialog = {
+    method: 'fbml.dialog',
+    fbml: '<fb:header icon="false" decoration="add_border">Hello World!</fb:header><fb:profile-pic uid="5526183"></fb:profile-pic>',
+    width: 800,
+    height: 100
+  };
+  FB.ui(dialog, Log.info.bind('fbml.dialog callback'));
+</script>
