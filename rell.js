@@ -81,7 +81,7 @@ module.exports = require('sin/application')(__dirname)
 
   // alias sb to my sandbox
   if (server === 'sb') {
-    server = 'www.naitik.dev575.snc1';
+    server = 'www.naitik.dev719';
   }
 
   var
