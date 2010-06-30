@@ -35,7 +35,7 @@ Rell = {
     Log.debug('Configuration', Rell.config);
     (Rell['init_' + Rell.config.version] || Rell.init_old)();
 
-    if (Rell.config.rte) {
+    if (Rell.config.rte && Rell.config.rte != '0') {
       Rell._editor = CodeMirror.fromTextArea('jscode', {
         height: '390px',
         content: Rell.getCode(),
