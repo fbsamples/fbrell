@@ -25,6 +25,16 @@ DefaultConfig = {
   'rte'       : 1,
 };
 
+echo = function() {
+  this.halt(
+    JSON.stringify({
+      post: this.post,
+      url: this.url
+    }),
+    { 'content-type': 'text/plain' }
+  );
+};
+
 module.exports = require('sin/application')(__dirname)
 .plug('sin/cookie')
 .plug('sin/facebook', FbOpts)
@@ -79,9 +89,13 @@ module.exports = require('sin/application')(__dirname)
 .helper('script', function() {
   var server = this.config.server;
 
+  var aliases = {
+    sb: 'www.naitik.dev719',
+    bg: 'www.brent.devrs109'
+  };
   // alias sb to my sandbox
-  if (server === 'sb') {
-    server = 'www.naitik.dev719';
+  if (server in aliases) {
+    server = aliases[server];
   }
 
   var
@@ -148,15 +162,8 @@ module.exports = require('sin/application')(__dirname)
 .get('/examples', function() {
   this.haml('examples')
 })
-.get('/echo', function() {
-  this.halt(
-    JSON.stringify({
-      post: this.post,
-      url: this.url
-    }),
-    { 'content-type': 'text/plain' }
-  );
-})
+.get('/echo', echo)
+.post('/echo', echo)
 .get('/channel', function() {
   this.halt(
     '<script src="http' + (this.secure ? 's' : '') +
@@ -188,6 +195,9 @@ module.exports = require('sin/application')(__dirname)
     ' scrolling=no' +
     ' style="width: 100%; height: 1000px"/>'
   );
+})
+.post('/tab', function() {
+  this.halt('Placeholder Tab for <a href="http://fbrell.com/">fbrell.com</a>.');
 })
 .get('/user/:username', function() {
   if (this.fb.user) {
