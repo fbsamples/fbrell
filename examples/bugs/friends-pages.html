@@ -1,0 +1,16 @@
+<fb:login-button perms="user_likes,friends_likes">
+  Grant Permissions
+</fb:login-button>
+<button onclick="runPageFan()">Run Page Fan Query</button>
+
+<script>
+window.runPageFan = function() {
+  FB.api(
+    {
+      method: 'fql.query',
+      query: 'SELECT page_id FROM page_fan WHERE uid IN (SELECT target_id FROM connection WHERE source_id=' + FB.getSession().uid + ' AND target_type="user" LIMIT 1)'
+    },
+    Log.info.bind("Pages of your friend with lowest uid")
+  );
+};
+</script>

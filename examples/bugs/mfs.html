@@ -1,0 +1,24 @@
+<div id="mfs"></div>
+
+<script>
+  var
+    mfs = document.getElementById('mfs'),
+    serverfbml = document.createElement('span');
+  serverfbml.setAttribute('width', '615');
+  serverfbml.setAttribute('fbml',
+    '<fb:request-form action="' + FB.XD.handler(Log.info.bind('custom!'), 'parent') + '" ' +
+                     'method="post" ' +
+                     'target="_sef" ' +
+                     'invite="true" ' +
+                     'type="Echo Type" ' +
+                     'content="Echo Content. <fb:req-choice url=\'http://fbrell.com/echo?choice=echo\' label=\'Echo Label\' />">' +
+      '<fb:multi-friend-selector showborder="false" ' +
+                                'bypass="cancel" ' +
+                                'cols=4 ' +
+                                'actiontext="Echo Action Text"/> ' +
+    '</fb:request-form>'
+  );
+  mfs.appendChild(serverfbml);
+
+  new FB.XFBML.ServerFbml(serverfbml).process();
+</script>

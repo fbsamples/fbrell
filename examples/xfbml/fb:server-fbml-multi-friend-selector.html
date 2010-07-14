@@ -1,0 +1,14 @@
+<fb:serverfbml width="615">
+  <script type="text/fbml">
+    <fb:request-form action="http://fbrell.com/echo"
+                     method="POST"
+                     invite="true"
+                     type="Echo Type"
+                     content="Echo Content. <fb:req-choice url='http://fbrell.com/echo?choice=echo' label='Echo Label' />">
+      <fb:multi-friend-selector showborder="false"
+                                bypass="cancel"
+                                cols=4
+                                actiontext="Echo Action Text"/>
+    </fb:request-form>
+  </script>
+</fb:serverfbml>
