@@ -189,28 +189,14 @@ h2 {
  */
 #jscode {
   width: 99%;
-  height: 300px;
+  height: 390px;
   margin: 0.25em;
   font-family: "Menlo Regular", Monaco, Consolas, monospace;
   font-size: 12px;
 }
 .CodeMirror-wrapping {
   border: 1px solid #000;
-}
-.CodeMirror-wrapping div {
-  background-color: #eee;
-  left: -27px !important;
-}
-.CodeMirror-line-numbers {
-  margin-top: 0.3em;
-}
-.CodeMirror-line-numbers div {
-  padding: 0 5px;
-  margin-right: 2px;
-  font-family: menlo, monaco, consolas, monospace;
-  font-size: 9pt;
-  color: #aaa;
-  text-align: right;
+  margin: 6px 0 0 3px;
 }
 #jsurl {
   width: 80%;

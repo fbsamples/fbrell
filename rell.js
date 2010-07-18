@@ -1,10 +1,11 @@
 var
-  QS   = require('querystring'),
-  _    = require('underscore')._,
-  fs   = require('fs'),
-  path = require('path'),
-  sys  = require('sys'),
-  url  = require('url');
+  QS     = require('querystring'),
+  _      = require('underscore')._,
+  fs     = require('fs'),
+  path   = require('path'),
+  sys    = require('sys'),
+  url    = require('url'),
+  pretty = require('./pretty-obj');
 
 FbOpts = {
   appId: '184484190795', // fbrell
@@ -26,13 +27,7 @@ DefaultConfig = {
 };
 
 echo = function() {
-  this.halt(
-    JSON.stringify({
-      post: this.post,
-      url: this.url
-    }),
-    { 'content-type': 'text/plain' }
-  );
+  this.halt('<pre style="font-size: 15px">' + this.prettyDump() + '</pre>');
 };
 
 module.exports = require('sin/application')(__dirname)
@@ -143,6 +138,13 @@ module.exports = require('sin/application')(__dirname)
     'Rell.init(' + JSON.stringify(this.config) + ');'
   );
 })
+.helper('prettyDump', function() {
+  return pretty({
+    post: this.post,
+    url: this.url,
+    headers: this.headers
+  });
+})
 .before(function() {
   this.config = _.extend({}, DefaultConfig, this.url.query);
   this.example_code = ''
@@ -162,8 +164,8 @@ module.exports = require('sin/application')(__dirname)
 .get('/examples', function() {
   this.haml('examples')
 })
-.get('/echo', echo)
-.post('/echo', echo)
+.get(/^\/echo.*/, echo)
+.post(/^\/echo.*/, echo)
 .get('/channel', function() {
   this.halt(
     '<script src="http' + (this.secure ? 's' : '') +
@@ -196,8 +198,26 @@ module.exports = require('sin/application')(__dirname)
     ' style="width: 100%; height: 1000px"/>'
   );
 })
-.post('/tab', function() {
-  this.halt('Placeholder Tab for <a href="http://fbrell.com/">fbrell.com</a>.');
+.post(/^\/tab.*/, function() {
+  var fbml = (
+    '<fb:js-string var="myFrame">\n' +
+    '  <fb:iframe width="100%" height="600" frameborder="0" src="http://fbrell.com/" />\n' +
+    '</fb:js-string>\n' +
+    '<div id="app-container"\n' +
+    '     style="cursor: pointer;"\n' +
+    '     onclick="document.getElementById(\'app-container\').setInnerFBML(myFrame)">\n' +
+    '  <img height="600" width="760" src="http://fbrell.com/bliss.jpg?v=2">\n' +
+    '</div>'
+  );
+  this.halt(
+    '<div style="font-size: 15px">' +
+    fbml +
+    '<br>Placeholder Tab for <a href="http://fbrell.com/">fbrell.com</a>. ' +
+    'Source code:' +
+    '<textarea style="width: 100%; height: 150px">' + fbml + '</textarea>' +
+    '<pre>' + this.prettyDump() + '</pre>' +
+    '</div>'
+  );
 })
 .get('/user/:username', function() {
   if (this.fb.user) {

@@ -53,8 +53,7 @@ Rell = {
           '/custom-codemirror.css'
         ],
         path: '/codemirror/js/',
-        autoMatchParens: true,
-        lineNumbers: true
+        autoMatchParens: true
       });
     }
 
