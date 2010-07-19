@@ -1,0 +1,20 @@
+<fb:login-button perms="user_likes">
+  Grant Permissions to Allow access to Likes
+</fb:login-button>
+
+<button onclick="checkDoesLike()">Check if user Likes the Page</button>
+
+<h1>Like this Application's Page</h1>
+<fb:like-box profile-id="184484190795"></fb:like-box>
+
+<script>
+window.checkDoesLike = function() {
+  FB.api({ method: 'pages.isFan', page_id: '184484190795' }, function(resp) {
+    if (resp) {
+      Log.info('You like the Application.');
+    } else {
+      Log.error("You don't like the Application.");
+    }
+  });
+};
+</script>

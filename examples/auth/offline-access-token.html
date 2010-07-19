@@ -1,0 +1,19 @@
+<fb:login-button perms="offline_access">Grant offline_access</fb:login-button>
+<h1>Access Token:</h1>
+<pre id="access-token"></pre>
+
+<script>
+var
+  pre         = document.getElementById('access-token'),
+  showSession = function(response) {
+    var html = 'Not Connected';
+    if (response.session) {
+      html = response.session.access_token;
+    }
+    pre.innerHTML = html;
+  };
+FB.getLoginStatus(function(response) {
+  showSession(response);
+  FB.Event.subscribe('auth.sessionChange', showSession);
+});
+</script>
