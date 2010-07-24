@@ -1,0 +1,8 @@
+<script>
+FB.api(
+  '/this-will-error',
+  Log.error.bind('/this-will-error callback'));
+FB.api(
+  '/this-will-error?access_token=123',
+  Log.error.bind('/this-will-error with access token callback'));
+</script>

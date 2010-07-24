@@ -1,0 +1,18 @@
+<script>
+var padding = '';
+for (var i=0, l=2500; i<l; i++) {
+  padding += ' ';
+}
+
+FB.api(
+  {
+    method: 'fql.query',
+    query: padding + 'SELECT name FROM user WHERE uid=4'
+  },
+  Log.info.bind('fql.query public data using flash')
+);
+
+FB.api({method:'friends.get'}, Log.info.bind('friends.get'));
+FB.api({method:'pages.isFan', page_id: '185550966885'}, Log.info.bind('isFan'));
+FB.api('/me', Log.info.bind('/me'));
+</script>
