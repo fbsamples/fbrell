@@ -8,8 +8,7 @@ var
   pretty = require('./pretty-obj');
 
 FbOpts = {
-  appId: '184484190795', // fbrell
-  secret: 'fa16a3b5c96463dff7ef78d783b3025a'
+  appId: '184484190795' // fbrell
 };
 
 DefaultConfig = {
@@ -32,7 +31,6 @@ echo = function() {
 
 module.exports = require('sin/application')(__dirname)
 .plug('sin/cookie')
-.plug('sin/facebook', FbOpts)
 .plug('sin/haml')
 .plug('sin/jsloader')
 .configure('production', function() {
