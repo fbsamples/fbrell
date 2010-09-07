@@ -194,8 +194,31 @@ module.exports = require('sin/application')(__dirname)
 .notFound(function() {
   this.haml('not_found');
 })
+.helper('renderExample', function(category, name) {
+  var
+    title   = name + ' &middot; ' + category,
+    example = this.examples['/' + category + '/' + name];
+  if (!example) {
+    this.pass();
+    return;
+  }
+  if (example.code) {
+    this.example_code = example.code;
+    this.haml('index', { title: title });
+  } else {
+    fs.readFile(example.filename, this.errproof(function(data) {
+      this.example_code = example.code = data;
+      this.haml('index', { title: title });
+    }));
+  }
+})
 .get('/', function() {
-  this.haml('index', { title: 'Welcome' })
+  if (this.url.query.app_data) {
+    var split = this.url.query.app_data.split('/');
+    this.renderExample(split[0], split[1]);
+  } else {
+    this.haml('index', { title: 'Welcome' })
+  }
 })
 .get('/help', function() {
   this.haml('help')
@@ -272,20 +295,5 @@ module.exports = require('sin/application')(__dirname)
   }
 })
 .get('/:category/:name', function(category, name) {
-  var
-    title   = name + ' &middot; ' + category,
-    example = this.examples['/' + category + '/' + name];
-  if (!example) {
-    this.pass();
-    return;
-  }
-  if (example.code) {
-    this.example_code = example.code;
-    this.haml('index', { title: title });
-  } else {
-    fs.readFile(example.filename, this.errproof(function(data) {
-      this.example_code = example.code = data;
-      this.haml('index', { title: title });
-    }));
-  }
+  this.renderExample(category, name);
 });
