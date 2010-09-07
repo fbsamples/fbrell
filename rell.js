@@ -3,8 +3,10 @@ var
   _      = require('underscore')._,
   fs     = require('fs'),
   path   = require('path'),
+  http   = require('http'),
   sys    = require('sys'),
   url    = require('url'),
+  Buffer = require('buffer').Buffer,
   pretty = require('./pretty-obj');
 
 FbOpts = {
@@ -23,6 +25,7 @@ DefaultConfig = {
   'opengraph' : 'page',
   'og_url'    : 'http://fbrell.com/',
   'rte'       : 1,
+  'url'       : '',
 };
 
 echo = function() {
@@ -140,7 +143,8 @@ module.exports = require('sin/application')(__dirname)
   return pretty({
     post: this.post,
     url: this.url,
-    headers: this.headers
+    headers: this.headers,
+    signedRequest: this.signedRequest
   });
 })
 .before(function() {
@@ -149,6 +153,43 @@ module.exports = require('sin/application')(__dirname)
   this.examples = this.config.version == 'mu'
     ? this.app.examples['examples']
     : this.app.examples['examples-old'];
+})
+.before(function() {
+  var signedRequest = this.param('signed_request');
+  if (signedRequest) {
+    var json = signedRequest.split('.')[1].replace('-', '+').replace('_', '/');
+    _(4 - (json.length % 4)).times(function() { json += '=' });
+    this.signedRequest = JSON.parse(new Buffer(json, 'base64').toString('utf8').replace(/"}.*/, '"}'));
+  }
+})
+.before(function(cb) {
+  var urlParam = this.param('url');
+  if (urlParam) {
+    var
+      context = this,
+      urlParsed = url.parse(urlParam),
+      client = http.createClient(parseInt(urlParsed.port || 80, 10), urlParsed.hostname),
+      request = client.request(
+        'GET',
+        urlParsed.pathname + (urlParsed.search || ''),
+        { host: urlParsed.hostname }
+      );
+
+    request.end();
+    request.on('response', function(response) {
+      var data = [];
+      response.setEncoding('utf8');
+      response.on('data', function(chunk) {
+        data.push(chunk);
+      });
+      response.on('end', function() {
+        context.example_code = data.join('');
+        cb();
+      });
+    });
+
+    return true;
+  }
 })
 .notFound(function() {
   this.haml('not_found');
