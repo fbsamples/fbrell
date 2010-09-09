@@ -157,9 +157,10 @@ module.exports = require('sin/application')(__dirname)
 .before(function() {
   var signedRequest = this.param('signed_request');
   if (signedRequest) {
-    var json = signedRequest.split('.')[1].replace('-', '+').replace('_', '/');
-    _(4 - (json.length % 4)).times(function() { json += '=' });
-    this.signedRequest = JSON.parse(new Buffer(json, 'base64').toString('utf8').replace(/"}.*/, '"}'));
+    this.signedRequest = JSON.parse(
+      new Buffer(
+        signedRequest.split('.')[1].replace('-', '+').replace('_', '/'),
+        'base64').toString('utf8'));
   }
 })
 .before(function(cb) {
@@ -214,7 +215,10 @@ module.exports = require('sin/application')(__dirname)
 })
 .get('/', function() {
   if (this.url.query.app_data) {
-    var split = this.url.query.app_data.split('/');
+    var split = this.url.query.app_data.split('_');
+    if (split.length == 3) {
+      this.config.server = split.shift();
+    }
     this.renderExample(split[0], split[1]);
   } else {
     this.haml('index', { title: 'Welcome' })
