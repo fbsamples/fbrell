@@ -26,6 +26,7 @@ DefaultConfig = {
   'og_url'    : 'http://fbrell.com/',
   'rte'       : 1,
   'url'       : '',
+  'status'    : 1,
 };
 
 echo = function() {
@@ -87,7 +88,8 @@ module.exports = require('sin/application')(__dirname)
 
   var aliases = {
     sb: 'www.naitik.dev719',
-    bg: 'www.brent.devrs109'
+    bg: 'www.brent.devrs109',
+    rh: 'www.rhe.devrs106'
   };
   // alias sb to my sandbox
   if (server in aliases) {

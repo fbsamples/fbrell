@@ -125,7 +125,7 @@ Rell = {
     FB.init({
       appId : Rell.config.appid,
       cookie: true,
-      status: true,
+      status: Rell.config.status != '0',
       channelUrl: window.location.protocol + '//fbrell.com/channel'
     });
 
