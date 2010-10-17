@@ -1,6 +1,5 @@
 var
   QS     = require('querystring'),
-  _      = require('underscore')._,
   fs     = require('fs'),
   path   = require('path'),
   http   = require('http'),
@@ -52,12 +51,12 @@ module.exports = require('sin/application')(__dirname)
 .configure(function() {
   //TODO use cb and make this a propert async configure
   this.examples = {};
-  var populate = _.bind(function(name, dir) {
+  var populate = function(name, dir) {
     var E = this.examples[name] = {};
     fs.readdir(dir, function(err, categories) {
-      _.each(categories, function(category) {
+      categories.forEach(function(category) {
         fs.readdir(path.join(dir, category), function(err, examples) {
-          _.each(examples, function(example) {
+          examples.forEach(function(example) {
             var name = example.substr(0, example.length-5);
             E['/' + category + '/' + name] = {
               category : category,
@@ -68,18 +67,19 @@ module.exports = require('sin/application')(__dirname)
         });
       });
     });
-  }, this);
+  }.bind(this);
 
   populate('examples', path.join(this.root, 'examples'));
   populate('examples-old', path.join(this.root, 'examples-old'));
 })
 .helper('makeUrl', function(path) {
   var qs = {};
-  _.each(this.config, function(val, key) {
+  for (var key in this.config) {
+    var val = this.config[key];
     if (DefaultConfig[key] != val) {
       qs[key] = val;
     }
-  });
+  }
   qs = QS.stringify(qs);
   return path + (qs == '' ? '' : ('?' + qs));
 })
@@ -116,7 +116,7 @@ module.exports = require('sin/application')(__dirname)
     var
       special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev', 'inyour'],
       comps = this.config.comps || 'all';
-    if (_.any(special, _.bind(function(s) { return server.indexOf(s) > -1;}))) {
+    if (special.some(function(s) { return server.indexOf(s) > -1;})) {
       url += 'assets.php/' + this.config.locale + '/' + comps + '.js';
     } else {
       url += this.config.locale + '/' + comps + '.js';
@@ -150,7 +150,13 @@ module.exports = require('sin/application')(__dirname)
   });
 })
 .before(function() {
-  this.config = _.extend({}, DefaultConfig, this.url.query);
+  this.config = {};
+  [DefaultConfig, this.url.query].forEach(function(src) {
+    for (var key in src) {
+      this.config[key] = src[key];
+    }
+  }.bind(this));
+
   this.example_code = ''
   this.examples = this.config.version == 'mu'
     ? this.app.examples['examples']
