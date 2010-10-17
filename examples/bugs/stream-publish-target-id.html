@@ -1,0 +1,12 @@
+<script>
+var publish = {
+  method: 'stream.publish',
+  attachment: {
+    name: 'Connect',
+    href: 'http://fbrell.com/'
+  },
+  target_id: '5526183'
+};
+
+FB.ui(publish, Log.info.bind('stream.publish callback'));
+</script>

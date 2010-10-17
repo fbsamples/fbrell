@@ -1,0 +1,42 @@
+<button id="fb-login-self">Login &amp; Permissions Self</button>
+
+<script>
+document.getElementById('fb-login-self').onclick = function() {
+  var cb = function(response) {
+    Log.info('FB.login callback for self', response);
+    if (response.session) {
+      Log.info('User logged in');
+      if (response.perms) {
+        Log.info('User granted permissions');
+      }
+    } else {
+      Log.info('User is logged out');
+    }
+  };
+  FB.login(cb, { display: 'popup', perms: 'read_stream' });
+};
+</script>
+
+
+<button id="fb-login-page">Login &amp; Permissions Page</button>
+
+<script>
+document.getElementById('fb-login-page').onclick = function() {
+  var cb = function(response) {
+    Log.info('FB.login callback', response);
+    if (response.session) {
+      Log.info('User logged in');
+      if (response.perms) {
+        Log.info('User granted permissions');
+      }
+    } else {
+      Log.info('User is logged out');
+    }
+  };
+  FB.login(cb, {
+    display: 'popup', 
+    perms: 'publish_stream',
+    enable_profile_selector: 1
+  });
+};
+</script>
