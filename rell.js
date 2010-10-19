@@ -5,8 +5,7 @@ var
   http   = require('http'),
   sys    = require('sys'),
   url    = require('url'),
-  Buffer = require('buffer').Buffer,
-  pretty = require('./pretty-obj');
+  Buffer = require('buffer').Buffer;
 
 FbOpts = {
   appId: '184484190795' // fbrell
@@ -142,7 +141,7 @@ module.exports = require('sin/application')(__dirname)
   );
 })
 .helper('prettyDump', function() {
-  return pretty({
+  return sys.inspect({
     post: this.post,
     url: this.url,
     headers: this.headers,
