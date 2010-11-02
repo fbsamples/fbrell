@@ -132,7 +132,12 @@ Rell = {
     if (window !== top) {
       FB.Canvas.setAutoResize(true);
     }
-    Rell.runCode();
+
+    if (Rell.config.status == '0') {
+      Rell.runCode();
+    } else {
+      FB.getLoginStatus(function() { Rell.runCode(); });
+    }
   },
 
   /**
