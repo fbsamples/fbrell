@@ -3,8 +3,13 @@
  */
 body {
   font-family: "Lucida Grande", Verdana, Arial, sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   margin: 0;
+}
+a,
+a:visited {
+  color: #3B5998;
+  text-decoration: none;
 }
 h2 {
   margin: 0 0 0 0.25em;
@@ -39,7 +44,6 @@ h2 {
   color: #FFFFFF;
   cursor: pointer;
   display: block;
-  font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
   font-size: 11px;
   font-weight: bold;
   margin: 1px 1px 0 21px;
@@ -47,26 +51,7 @@ h2 {
 }
 #examples-button {
   float: right;
-  color: #000;
-  text-decoration: none;
-  padding: 5px 9px;
-  border: #e85ae8 1px solid;
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  background: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.44, rgb(202,171,234)),
-    color-stop(0.72, rgb(243,206,255)),
-    color-stop(0.86, rgb(255,248,255))
-  );
-  background: -moz-linear-gradient(
-    center bottom,
-    rgb(202,171,234) 44%,
-    rgb(243,206,255) 72%,
-    rgb(255,248,255) 86%
-  );
+  font-weight: bold;
 }
 
 .not-found {
@@ -240,7 +225,6 @@ h2 {
 #log .hd {
   padding: 0.5em;
   font-weight: bold;
-  font-size: 12px;
 }
 #log .hd .toggle {
   cursor: pointer;
@@ -265,7 +249,6 @@ h2 {
   padding: 0.5em 1em;
   background-color: #E6EDFA;
   font-family: "Menlo Regular", Monaco, Consolas, monospace;
-  font-size: 11px;
   border-top: 1px solid green;
 }
 
