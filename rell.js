@@ -97,9 +97,9 @@ module.exports = require('sin/application')(__dirname)
 
   var
     ssl = this.secure,
-    url = 'http://' + server + '.facebook.com/';
+    url = 'http' + (ssl ? 's' : '') + '://' + server + '.facebook.com/';
 
-  if (url === 'http://static.ak.connect.facebook.com/') {
+  if (url === 'http://static.ak.connect.facebook.com/' || url === 'https://static.ak.connect.facebook.com/') {
     if (this.config.version === 'mu') {
       if (ssl) {
         url = 'https://connect.facebook.net/';
@@ -113,7 +113,7 @@ module.exports = require('sin/application')(__dirname)
 
   if (this.config.version === 'mu') {
     var
-      special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev', 'inyour'],
+      special = ['snc', 'intern', 'beta', 'sandcastle', 'latest', 'dev', 'inyour', 'playpen'],
       comps = this.config.comps || 'all';
     if (special.some(function(s) { return server.indexOf(s) > -1;})) {
       url += 'assets.php/' + this.config.locale + '/' + comps + '.js';
