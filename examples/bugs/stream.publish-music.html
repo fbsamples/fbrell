@@ -1,0 +1,22 @@
+<script>
+var publish = {
+  method: 'stream.publish',
+  attachment: {
+    name: 'Alarm',
+    href: 'http://fbrell.com/',
+    media: [
+      {
+        type: 'music',
+        src: 'http://fbrell.com/alarm.mp3',
+        title: 'The Alarm',
+        artist: 'fbrell'
+      }
+    ]
+  },
+  action_links: [
+    { text: 'fbrell', href: 'http://fbrell.com/' }
+  ]
+};
+
+FB.ui(publish, Log.info.bind('stream.publish callback'));
+</script>

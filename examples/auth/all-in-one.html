@@ -6,6 +6,7 @@ right</strong>.
 </p>
 
 <button id="fb-login-status">FB.getLoginStatus()</button>
+<button id="fb-login-status-force">FB.getLoginStatus() force=true</button>
 <button id="fb-get-session">FB.getSession()</button>
 <button id="fb-login">FB.login()</button>
 <button id="fb-permissions">FB.login() with Permissions</button>
@@ -29,6 +30,12 @@ document.getElementById('fb-login-status').onclick = function() {
   FB.getLoginStatus(function(response) {
     Log.info('FB.getLoginStatus callback', response);
   });
+};
+
+document.getElementById('fb-login-status-force').onclick = function() {
+  FB.getLoginStatus(function(response) {
+    Log.info('FB.getLoginStatus force=true callback', response);
+  }, true);
 };
 
 document.getElementById('fb-get-session').onclick = function() {
