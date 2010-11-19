@@ -9,6 +9,8 @@ The SDK is also available on [GitHub](http://github.com/facebook/connect-js).
 Getting Started
 ---------------
 
+**This is broken. In the process of moving to npm to handle dependencies.**
+
 Make sure you have [nodejs][nodejs] installed, and then:
 
     git clone git://github.com/nshah/rell.git
