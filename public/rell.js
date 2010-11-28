@@ -81,7 +81,7 @@ Rell = {
       };
 
       FB.FBDebug.isEnabled = true;
-      FB.FBDebug.logLevel = Rell.config.old_debug;
+      FB.FBDebug.logLevel = 6;
 
       var xd_receiver = '/xd_receiver.html';
       if (document.location.protocol == 'https:') {
@@ -126,7 +126,7 @@ Rell = {
       appId : Rell.config.appid,
       cookie: true,
       status: Rell.config.status != '0',
-      channelUrl: window.location.protocol + '//fbrell.com/channel'
+      channelUrl: window.location.protocol + '//fbrell.com/channel.html'
     });
 
     if (window !== top) {

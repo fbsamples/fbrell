@@ -1,0 +1,39 @@
+- bodyClass = 'main'
+#interactive
+  .controls
+    a.login-button(onclick='Rell.login()')
+      span Login
+    button(onclick='Rell.disconnect()') Disconnect
+    button(onclick='Rell.logout()') Logout
+    span#auth-status-container
+      status:
+      span#auth-status unknown
+  textarea#jscode #{code}
+  .controls
+    a#examples-button(href=makeUrl('/examples')) Examples
+    button(onclick='Rell.runCode()') Run
+  #jsroot
+#log-container
+  .controls
+    button(onclick='Log.clear()') Clear
+  #log
+#fb-root
+#FB_HiddenContainer
+:javascript
+  | $L=function(c,d){for(var b=c.length,e=b,f=function(){if(!(this.readyState
+  | &&this.readyState!=="complete"&&this.readyState!=="loaded")){this.onload=
+  | this.onreadystatechange=null;--e||d()}},g=document.getElementsByTagName(
+  | "head")[0],i=function(h){var a=document.createElement("script");a.async=
+  | true;a.src=h;a.onload=a.onreadystatechange=f;g.appendChild(a)};b;)i(c[--b]
+  | )};
+  | $L([
+  |   (document.location.protocol == 'https:' ? 'https://ssl' : 'http://www')
+  |     + '.google-analytics.com/ga.js',
+  |   '/delegator.js',
+  |   '/jsDump-1.0.0.js',
+  |   '/log.js',
+  |   '/tracer.js',
+  |   '/rell.js',
+  |   '/codemirror/js/codemirror.js',
+  |   #{JSON.stringify(rellConfig.sdkUrl)}
+  | ], function() { Rell.init(#{JSON.stringify(rellConfig)}) });

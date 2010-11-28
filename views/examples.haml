@@ -1,7 +1,0 @@
-- title = 'Examples'
-- bodyClass = 'examples'
-%ul
-  - each example, path in this.examples
-    - if (example.category != 'bugs' && example.category != 'secret' && example.category != 'tests')
-      %li
-        %a{href: this.makeUrl(path)}!= example.category + " &mdash; " + example.name

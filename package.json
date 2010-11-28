@@ -1,0 +1,17 @@
+{
+  "name": "fbrell",
+  "description": "The source code for the http://fbrell.com/ website.",
+  "version": "1.9.0",
+  "author": "Naitik Shah <n@daaku.org>",
+  "dependencies": {
+    "express": ">= 1.0.0",
+    "dotaccess": ">= 0.0.1",
+    "jade": ">= 0.5.6",
+    "nurl": ">= 0.1.1",
+    "walker": ">= 0.0.1"
+  },
+  "keywords": ["website"],
+  "directories": { "lib": "./lib" },
+  "scripts": { "test": "expresso -I lib" },
+  "engines": { "node": ">= 0.3.1" }
+}
