@@ -1,6 +1,8 @@
 {
   "name": "fbrell",
   "description": "The source code for the http://fbrell.com/ website.",
+  "homepage": "http://fbrell.com/",
+  "keywords": ["website"],
   "version": "1.9.0",
   "author": "Naitik Shah <n@daaku.org>",
   "dependencies": {
@@ -8,8 +10,13 @@
     "dotaccess": ">= 0.0.1",
     "jade": ">= 0.5.6",
     "nurl": ">= 0.1.1",
-    "walker": ">= 0.0.1"
+    "walker": ">= 0.0.1",
+    "spark2": ">= 2.0.6"
   },
-  "keywords": ["website"],
-  "engines": { "node": ">= 0.3.1" }
+  "engines": { "node": ">= 0.3.1" },
+  "scripts": {
+    "start": "spark2",
+    "restart": "spark2 --respawn",
+    "stop": "spark2 --kill"
+  }
 }
