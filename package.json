@@ -11,7 +11,5 @@
     "walker": ">= 0.0.1"
   },
   "keywords": ["website"],
-  "directories": { "lib": "./lib" },
-  "scripts": { "test": "expresso -I lib" },
   "engines": { "node": ">= 0.3.1" }
 }
