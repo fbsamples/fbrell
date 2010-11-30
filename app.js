@@ -58,6 +58,7 @@ var examples = function() {
 function makeUrl(config, path) {
   var url = nurl.parse(path)
   for (var key in config) {
+    if (key == 'sdkUrl') continue // TODO fixme
     var val = config[key]
     if (DefaultConfig[key] != val) url = url.setQueryParam(key, val)
   }
