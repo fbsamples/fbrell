@@ -16,7 +16,7 @@ Make sure you have [Node](http://nodejs.org/) and
     git clone git://github.com/nshah/rell.git
     cd rell
     npm link
-    npm start fbrell
+    spark2 --watch
 
 Then go to:
 
