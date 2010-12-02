@@ -168,7 +168,7 @@ app.get('/examples', function(req, res, next) {
     }})
   })
 })
-app.all('/echo', function(req, res, next) {
+app.all('/echo*', function(req, res, next) {
   res.writeHead(200, {'Content-Type': 'text/plain'})
   res.end(util.inspect({
     method: req.method,
