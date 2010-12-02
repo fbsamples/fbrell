@@ -1,0 +1,19 @@
+<button id="publish">Publish</button>
+
+<script>
+document.getElementById('publish').onclick = function() {
+  FB.ui({
+    method: 'stream.publish',
+    attachment: {
+      properties: {
+        One: 'a',
+        Two: 'b',
+        Three: 'c',
+        Four: 'd',
+        Five: 'e',
+        Six: 'f'
+      }
+    }
+  }, Log.info.bind('stream.publish callback'));
+};
+</script>
