@@ -58,7 +58,7 @@ var examples = function() {
 function makeUrl(config, path) {
   var url = nurl.parse(path)
   for (var key in config) {
-    if (key == 'sdkUrl') continue // TODO fixme
+    if (key in { sdkUrl: 1, examplesRoot: 1 }) continue // TODO fixme
     var val = config[key]
     if (DefaultConfig[key] != val) url = url.setQueryParam(key, val)
   }
@@ -119,6 +119,7 @@ app.all('*', function(req, res, next) {
   config.sdkUrl = getConnectScriptUrl(
     config.version, config.locale, config.server,
     req.headers['x-forwarded-proto'] === 'https')
+  config.examplesRoot = config.version == 'mu' ? 'examples' : 'examples-old'
   req.rellConfig = config
 
   var signedRequest = req.body && req.body.signed_request
@@ -141,7 +142,7 @@ app.get('/', function(req, res, next) {
 app.all('/*', function(req, res, next) {
   var pathname = req.params[0]
     , filename = pathname + '.html'
-  examples.get('examples', filename, function(er, code) {
+  examples.get(req.rellConfig.examplesRoot, filename, function(er, code) {
     if (er) return next() // ignore the error, just pass control
     res.render('index', { locals: {
       title: pathname.replace('/', ' &middot; '),
@@ -153,13 +154,13 @@ app.all('/*', function(req, res, next) {
 })
 app.all('/raw/*', function(req, res, next) {
   var filename = req.params[0] + '.html'
-  examples.get('examples', filename, function(er, code) {
+  examples.get(req.rellConfig.examplesRoot, filename, function(er, code) {
     if (er) return next(er)
     res.send(code)
   })
 })
 app.get('/examples', function(req, res, next) {
-  examples.list('examples', function(er, data) {
+  examples.list(req.rellConfig.examplesRoot, function(er, data) {
     if (er) return next(er)
     res.render('examples', { locals: {
       examples: data,
