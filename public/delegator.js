@@ -32,36 +32,81 @@ var Delegator = {
    *
    *   #id1 div.classOne, div.classTwo .classThree
    *
-   * This should work with click, mousedown, mouseup, mousemove,
-   * mouseover, mouseout, keydown, keypress, keyup, blur, focus.
+   * This works with click, mousedown, mouseup, mousemove, mouseover, mouseout,
+   * keydown, keypress, keyup, blur, focus, submit.
+   *
+   * Handlers are always bound on the document. If a root element is given,
+   * it's id will be included in the selector (one will be generated if
+   * necessary). If a root element is given, but a selector is not, the event
+   * will be targetted to the element.
+   *
+   *     Delegator.listen('#id .className', 'click', fn);
+   *     Delegator.listen(root, '.className', 'click', fn);
+   *     Delegator.listen(root, 'click', fn);
    *
    * @access public
-   * @param selector  {String}   CSS selector
-   * @param type      {String}   the event type
-   * @param handler   {Function} the event handler
+   * @param root      {DOMElement}  root element
+   * @param selector  {String}      CSS selector
+   * @param type      {String}      the event type
+   * @param handler   {Function}    the event handler
    */
-  listen: function(selector, type, handler) {
+  listen: function(root, selector, type, handler) {
+    if (typeof root === 'string') {
+      handler = type;
+      type = selector;
+      selector = root;
+    } else {
+      if (!root.id) {
+        root.id = 'd-'+ (Math.random() * (1<<30)).toString(16).replace('.', '');
+      }
+      var id = '#' + root.id;
+      if (arguments.length === 4) {
+        selector = id + ' ' + selector;
+      } else {
+        handler = type;
+        type = selector;
+        selector = id;
+      }
+    }
+
     // for IE focus/blur support
     if (document.attachEvent) {
-      if (type == 'focus') {
+      if (type === 'focus') {
         type = 'focusin';
-      } else if (type == 'blur') {
+      } else if (type === 'blur') {
         type = 'focusout';
       }
     }
 
-    // setup the listener if needed
-    if (!(type in Delegator.subscribers)) {
-      document.addEventListener
-        ? document.addEventListener(type, Delegator.handler(type), true)
-        : document.attachEvent('on' + type, Delegator.handler(type));
-      Delegator.subscribers[type] = [];
+    // submit actually needs click and keypress
+    if (type === 'submit') {
+      Delegator.ensure('click');
+      Delegator.ensure('keypress');
+      if (!Delegator.subscribers.submit) {
+        Delegator.subscribers.submit = [];
+      }
+    } else {
+      Delegator.ensure(type);
     }
 
     // flatten potential multiple rules
     var rules = selector.split(/\s*,\s*/);
     for (var i=0, l=rules.length; i<l; i++) {
       Delegator.subscribers[type].push({ rule: rules[i], handler: handler });
+    }
+  },
+
+  /**
+   * Ensure an event handler for the given type is setup on the document.
+   *
+   * @param type {String} the event type
+   */
+  ensure: function(type) {
+    if (!(type in Delegator.subscribers)) {
+      document.addEventListener
+        ? document.addEventListener(type, Delegator.handler(type), true)
+        : document.attachEvent('on' + type, Delegator.handler(type));
+      Delegator.subscribers[type] = [];
     }
   },
 
@@ -86,21 +131,49 @@ var Delegator = {
    * @param event {Event}  the event object
    */
   dispatch: function(type, event) {
+    // "fix" basic event j0nx
+    // does this have memory leak issues?
+    if (!event.preventDefault) {
+      event.preventDefault = function() { event.returnValue = false; };
+      event.stopPropagation = function() { event.cancelBubble = true; };
+      event.target = event.srcElement;
+    }
+
     var
-      node        = event.target || event.srcElement,
+      node        = event.target,
       subscribers = Delegator.subscribers[type],
       num         = subscribers.length,
+      formSubmits = false,
+      formDone    = false,
+      isClick     = type === 'click',
+      formKey     = type === 'keycode' && event.keyCode == 13,
       machine     = [];
 
+    // this logic does parallel matching of multiple rules while going up the
+    // tree from the event target node. it does this in a single dom pass,
+    // reading the id, className and tagName of each parent element once as it
+    // goes along. it's designed to minimize the amount of times it touches the
+    // dom, as well as keep the number of comparisons necessary low.
     while (node) {
       // a permission error can be thrown here. we silently ignore it
+      var domData;
       try {
-        var domData = {
+        domData = {
           id        : node.id,
           className : node.className,
-          tagName   : node.tagName
+          tagName   : node.tagName,
+          type      : node.type
         };
       } catch(e) { return; }
+
+      formSubmits = formSubmits || (
+        (isClick && (domData.type === 'submit' || domData.type === 'image')) ||
+        (formKey && (domData.type === 'text' || domData.type === 'password')));
+
+      if (formSubmits && !formDone && domData.tagName === 'FORM') {
+        Delegator.dispatch('submit', event);
+        formDone = true;
+      }
 
       for (var i=0; i<num; i++) {
         // load and compile the subscriber rule if necessary
@@ -125,11 +198,10 @@ var Delegator = {
         var rule = sub.compiled[state.index];
 
         // check if the expected rule matches the current node
-        if ((!rule.id || rule.id == domData.id) &&
-            (!rule.tagName || rule.tagName == domData.tagName) &&
-            (
-              rule.className.length === 0 ||
-              Delegator.matchClasses(domData.className, rule.className))) {
+        if ((!rule.id || rule.id === domData.id) &&
+            (!rule.tagName || rule.tagName === domData.tagName) &&
+            (rule.className.length === 0 ||
+             Delegator.matchClasses(domData.className, rule.className))) {
 
           // we just consumed a rule entry
           --state.index;
@@ -141,7 +213,7 @@ var Delegator = {
           }
 
           // complete match, this handler is a match and good to go
-          if (state.index == -1) {
+          if (state.index === -1) {
             sub.handler.call(state.node, event);
           }
         }
