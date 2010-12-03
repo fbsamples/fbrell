@@ -1,0 +1,15 @@
+!!! 5
+html
+  head
+    meta(charset='utf-8')
+    title #{title}
+  body
+    #fb-root
+    script(src=rellConfig.sdkUrl)
+    :javascript
+      | FB.init({
+      |   appId: #{JSON.stringify(rellConfig.appid)},
+      |   cookie: true,
+      |   xfbml: true
+      | })
+    #example #{code}

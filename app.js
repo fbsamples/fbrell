@@ -160,6 +160,21 @@ app.all('/raw/*', function(req, res, next) {
     res.send(code)
   })
 })
+app.all('/simple/*', function(req, res, next) {
+  var pathname = req.params[0]
+    , filename = pathname + '.html'
+  examples.get(req.rellConfig.examplesRoot, filename, function(er, code) {
+    if (er) return next(er)
+    res.render('simple', {
+      layout: false,
+      locals: {
+        title: pathname.replace('/', ' &middot; '),
+        code: code,
+        rellConfig: req.rellConfig,
+      },
+    })
+  })
+})
 app.get('/examples', function(req, res, next) {
   examples.list(req.rellConfig.examplesRoot, function(er, data) {
     if (er) return next(er)
