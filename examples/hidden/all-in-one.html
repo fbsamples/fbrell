@@ -1,0 +1,112 @@
+<fb:login-button perms="read_stream,publish_stream">
+  Grant Permissions to make more examples work
+</fb:login-button>
+
+<button onclick="doPostViaGraph()">Post to Stream via Graph API</button>
+<button onclick="doPostViaUI()">Post to Stream via UI</button>
+
+<h1>Session</h1>
+<div id="session"></div>
+
+<h1>Like</h1>
+<fb:like href="http://fbrell.com/"></fb:like>
+
+<h1>Like Box</h1>
+<fb:like-box name="platform"></fb:like-box>
+
+<h1>Activity</h1>
+<fb:activity></fb:activity>
+
+<h1>Recommendations</h1>
+<fb:recommendations></fb:recommendations>
+
+<h1>Login with Faces</h1>
+<fb:login-button show-faces="yes"></fb:login-button>
+
+<h1>Share</h1>
+<fb:share-button href="http://fbrell.com/" type="box_count"></fb:share-button>
+
+<script>
+function userData() {
+  FB.api('/me', Log.info.bind('/me callback'));
+  FB.api('/me/friends', Log.info.bind('/me/friends callback'));
+  FB.api('/me/feed', Log.info.bind('/me/feed callback'));
+  FB.api(
+    '/platform/feed',
+    { limit: 3 },
+    Log.info.bind('/platform/feed limit: 3 callback')
+  );
+}
+
+function publicData() {
+  FB.api('/platform', Log.info.bind('/platform callback'));
+  FB.api('/britneyspears', Log.info.bind('/britneyspears callback'));
+  FB.api('/this-will-error', Log.info.bind('/this-will-error callback'));
+}
+
+window.doPostViaGraph = function() {
+  FB.api(
+    '/me/feed',
+    'post',
+    { body: 'Trying the Graph' },
+    Log.info.bind('/me/feed POST callback')
+  );
+};
+
+window.doPostViaUI = function() {
+  var publish = {
+    method: 'stream.publish',
+    message: 'getting educated about Facebook Connect',
+    attachment: {
+      name: 'Connect',
+      caption: 'The Facebook Connect JavaScript SDK',
+      description: (
+        'A small JavaScript library that allows you to harness ' +
+        'the power of Facebook, bringing the user\'s identity, ' +
+        'social graph and distribution power to your site.'
+      ),
+      href: 'http://fbrell.com/'
+    },
+    action_links: [
+      { text: 'fbrell', href: 'http://fbrell.com/' }
+    ],
+    user_prompt_message: 'Share your thoughts about RELL'
+  };
+
+  FB.ui(publish, Log.info.bind('stream.publish callback'));
+};
+
+function showSession(response) {
+  var div = document.getElementById('session');
+  if (!response.session) {
+    div.innerHTML = '<em>Not Connected</em>';
+  } else {
+    var html = '<table>';
+    for (var key in response.session) {
+      html += (
+        '<tr>' +
+          '<th>' + key + '</th>' +
+          '<td>' + response.session[key] + '</td>' +
+        '</tr>'
+      );
+    }
+    div.innerHTML = html;
+  }
+}
+
+FB.getLoginStatus(function(response) {
+  FB.Event.subscribe('auth.sessionChange', showSession);
+
+  showSession(response);
+  publicData();
+
+  if (response.session) {
+    userData();
+  }
+});
+
+// this will fire when any of the like widgets are "liked" by the user
+FB.Event.subscribe('edge.create', function(href, widget) {
+  Log.info('You liked ' + href, widget);
+});
+</script>

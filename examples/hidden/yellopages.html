@@ -1,0 +1,30 @@
+<input id="query"><input type="button" onclick="doSearch()" value="search">
+<div id="results"></div>
+<script>
+var
+  query   = document.getElementById('query'),
+  results = document.getElementById('results');
+
+window.doSearch = function() {
+  FB.api(
+    {
+      method: 'fql.query',
+      query: 'SELECT name, pic_square, url FROM profile WHERE contains("' + query.value + '")'
+    },
+    function(response) {
+      Log.info('API Callback', response);
+      var html = '';
+      for (var i=0, l=response.length; i<l; i++) {
+        html += (
+          '<br>' +
+          '<a href="' + response[i].url + '">' +
+            '<img src="' + response[i].pic_square + '"> ' +
+            response[i].name +
+          '</a>'
+        );
+      }
+      results.innerHTML = html;
+    }
+  );
+};
+</script>
