@@ -2,7 +2,7 @@
 - bodyClass = 'examples'
 ul
   - each files, category in examples
-    - if ('bugs secret tests fbml'.indexOf(category) == -1)
+    - if ('bugs secret tests fbml hidden'.indexOf(category) == -1)
       - each _, file in files
         - var name = file.substring(0, file.length-5)
         li
