@@ -97,10 +97,13 @@ function getConnectScriptUrl(version, locale, server, ssl) {
 function loadExample(req, res, next) {
   var pathname = req.params[0]
     , filename = pathname + '.html'
-  examples.get(req.rellConfig.examplesRoot, filename, function(er, exampleCode) {
-    req.exampleCode = exampleCode
-    next()
-  })
+  examples.get(
+    req.rellConfig.examplesRoot,
+    filename,
+    function(er, exampleCode) {
+      req.exampleCode = exampleCode
+      next()
+    })
 }
 
 var app = module.exports = express.createServer(
