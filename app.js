@@ -94,6 +94,15 @@ function getConnectScriptUrl(version, locale, server, ssl) {
   return url
 }
 
+function loadExample(req, res, next) {
+  var pathname = req.params[0]
+    , filename = pathname + '.html'
+  examples.get(req.rellConfig.examplesRoot, filename, function(er, exampleCode) {
+    req.exampleCode = exampleCode
+    next()
+  })
+}
+
 var app = module.exports = express.createServer(
   express.bodyDecoder(),
   express.methodOverride(),
@@ -135,44 +144,33 @@ app.all('*', function(req, res, next) {
 app.get('/', function(req, res, next) {
   res.render('index', { locals: {
     title: 'Welcome',
-    code: '',
+    exampleCode: '',
     rellConfig: req.rellConfig,
     makeUrl: makeUrl.bind(null, req.rellConfig),
   }})
 })
-app.all('/*', function(req, res, next) {
-  var pathname = req.params[0]
-    , filename = pathname + '.html'
-  examples.get(req.rellConfig.examplesRoot, filename, function(er, code) {
-    if (er) return next() // ignore the error, just pass control
-    res.render('index', { locals: {
-      title: pathname.replace('/', ' &middot; '),
-      code: code,
+app.all('/*', loadExample, function(req, res, next) {
+  if (!req.exampleCode) return next()
+  res.render('index', { locals: {
+    title: req.params[0].replace('/', ' &middot; '),
+    exampleCode: req.exampleCode,
+    rellConfig: req.rellConfig,
+    makeUrl: makeUrl.bind(null, req.rellConfig),
+  }})
+})
+app.all('/raw/*', loadExample, function(req, res, next) {
+  if (!req.exampleCode) return next()
+  res.send(req.exampleCode)
+})
+app.all('/simple/*', loadExample, function(req, res, next) {
+  if (!req.exampleCode) return next()
+  res.render('simple', {
+    layout: false,
+    locals: {
+      title: req.params[0].replace('/', ' &middot; '),
+      exampleCode: req.exampleCode,
       rellConfig: req.rellConfig,
-      makeUrl: makeUrl.bind(null, req.rellConfig),
-    }})
-  })
-})
-app.all('/raw/*', function(req, res, next) {
-  var filename = req.params[0] + '.html'
-  examples.get(req.rellConfig.examplesRoot, filename, function(er, code) {
-    if (er) return next(er)
-    res.send(code)
-  })
-})
-app.all('/simple/*', function(req, res, next) {
-  var pathname = req.params[0]
-    , filename = pathname + '.html'
-  examples.get(req.rellConfig.examplesRoot, filename, function(er, code) {
-    if (er) return next(er)
-    res.render('simple', {
-      layout: false,
-      locals: {
-        title: pathname.replace('/', ' &middot; '),
-        code: code,
-        rellConfig: req.rellConfig,
-      },
-    })
+    },
   })
 })
 app.get('/examples', function(req, res, next) {
