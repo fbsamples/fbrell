@@ -15,6 +15,7 @@ Make sure you have [Node](http://nodejs.org/) (v0.3.x) and
 
     git clone git://github.com/nshah/rell.git
     cd rell
+    git submodule update --init
     npm link
     spark2 --watch
 
