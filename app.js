@@ -144,7 +144,7 @@ app.all('*', function(req, res, next) {
   }
   next()
 })
-app.get('/', function(req, res, next) {
+app.all('/', function(req, res, next) {
   res.render('index', { locals: {
     title: 'Welcome',
     exampleCode: '',
