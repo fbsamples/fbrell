@@ -29,6 +29,6 @@
   | $L([
   |   (document.location.protocol == 'https:' ? 'https://ssl' : 'http://www')
   |     + '.google-analytics.com/ga.js',
-  |   '/bundle/main.js?_t=#{rellConfig.timestamp}',
+  |   '/bundle/js/main?_t=#{rellConfig.timestamp}',
   |   #{JSON.stringify(rellConfig.sdkUrl)}
   | ], function() { Rell.init(#{JSON.stringify(rellConfig)}) });
