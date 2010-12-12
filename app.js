@@ -17,6 +17,7 @@ DefaultConfig = {
   version: 'mu',
   rte: 1,
   status: 1,
+  timestamp: Date.now(),
 }
 
 var examples = function() {
@@ -111,7 +112,7 @@ function loadExample(req, res, next) {
 function cachedBundleHandler(contentType, files) {
   var cached
   return function(req, res, next) {
-    var ttl = 3600
+    var ttl = 315360000
     res.writeHead(200, {
       'Content-Type': contentType,
       'Cache-Control': 'public, max-age=' + ttl,
@@ -230,7 +231,7 @@ app.all('/echo*', function(req, res, next) {
     rawBody: req.rawBody,
   }))
 })
-app.get('/js', cachedBundleHandler('text/javascript', [
+app.get('/bundle/main.js', cachedBundleHandler('text/javascript', [
   __dirname + '/public/delegator.js',
   __dirname + '/public/jsDump-1.0.0.js',
   __dirname + '/public/log.js',
@@ -238,7 +239,7 @@ app.get('/js', cachedBundleHandler('text/javascript', [
   __dirname + '/public/rell.js',
   __dirname + '/public/codemirror/js/codemirror.js',
 ]))
-app.get('/codemirror/js/bundle', cachedBundleHandler('text/javascript', [
+app.get('/bundle/codemirror.js', cachedBundleHandler('text/javascript', [
   __dirname + '/public/codemirror/js/codemirror.js',
   __dirname + '/public/codemirror/js/stringstream.js',
   __dirname + '/public/codemirror/js/util.js',
@@ -252,7 +253,7 @@ app.get('/codemirror/js/bundle', cachedBundleHandler('text/javascript', [
   __dirname + '/public/codemirror/js/parsehtmlmixed.js',
   __dirname + '/public/codemirror/js/parsejavascript.js',
 ]))
-app.get('/codemirror/css/bundle', cachedBundleHandler('text/css', [
+app.get('/bundle/codemirror.css', cachedBundleHandler('text/css', [
   __dirname + '/public/codemirror/css/xmlcolors.css',
   __dirname + '/public/codemirror/css/jscolors.css',
   __dirname + '/public/codemirror/css/csscolors.css',
