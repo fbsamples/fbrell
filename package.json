@@ -7,6 +7,7 @@
   "author": "Naitik Shah <n@daaku.org>",
   "dependencies": {
     "async": ">= 0.1.6",
+    "uglify-js": ">= 0.0.1",
     "express": ">= 1.0.0",
     "dotaccess": ">= 0.0.1",
     "jade": ">= 0.5.6",

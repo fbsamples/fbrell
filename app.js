@@ -6,6 +6,7 @@ var express = require('express')
   , dotaccess = require('dotaccess')
   , util = require('util')
   , async = require('async')
+  , uglify = require('uglify-js')
 
 DefaultConfig = {
   appid: '184484190795',
@@ -117,6 +118,14 @@ function cachedBundleHandler(contentType, files) {
     }
     async.map(files, fs.readFile, function(er, results) {
       if (er) throw er
+      if (contentType == 'text/javascript') {
+        results = [
+          uglify.uglify.gen_code(
+            uglify.uglify.ast_squeeze(
+              uglify.uglify.ast_mangle(
+                uglify.parser.parse(results.map(
+                  function(d) { return d.toString('utf8') }).join("\n")))))];
+      }
       cached = results
       results.forEach(res.write.bind(res))
       res.end()
