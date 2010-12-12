@@ -111,7 +111,12 @@ function loadExample(req, res, next) {
 function cachedBundleHandler(contentType, files) {
   var cached
   return function(req, res, next) {
-    res.writeHead(200, { 'Content-Type': contentType })
+    var ttl = 3600
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=' + ttl,
+      'Expires': new Date(Date.now() + (ttl * 1000)).toUTCString(),
+    })
     if (cached) {
       cached.forEach(res.write.bind(res))
       return res.end()
