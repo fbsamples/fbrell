@@ -5,6 +5,7 @@ var express = require('express')
   , walker = require('walker')
   , dotaccess = require('dotaccess')
   , util = require('util')
+  , async = require('async')
 
 DefaultConfig = {
   appid: '184484190795',
@@ -106,6 +107,23 @@ function loadExample(req, res, next) {
     })
 }
 
+function cachedBundleHandler(contentType, files) {
+  var cached
+  return function(req, res, next) {
+    res.writeHead(200, { 'Content-Type': contentType })
+    if (cached) {
+      cached.forEach(res.write.bind(res))
+      return res.end()
+    }
+    async.map(files, fs.readFile, function(er, results) {
+      if (er) throw er
+      cached = results
+      results.forEach(res.write.bind(res))
+      res.end()
+    })
+  }
+}
+
 var app = module.exports = express.createServer(
   express.bodyDecoder(),
   express.methodOverride(),
@@ -186,7 +204,7 @@ app.get('/examples', function(req, res, next) {
   })
 })
 app.all('/echo*', function(req, res, next) {
-  res.writeHead(200, {'Content-Type': 'text/plain'})
+  res.writeHead(200, { 'Content-Type': 'text/plain' })
   res.end(util.inspect({
     method: req.method,
     url: req.url,
@@ -198,3 +216,31 @@ app.all('/echo*', function(req, res, next) {
     rawBody: req.rawBody,
   }))
 })
+app.get('/js', cachedBundleHandler('text/javascript', [
+  __dirname + '/public/delegator.js',
+  __dirname + '/public/jsDump-1.0.0.js',
+  __dirname + '/public/log.js',
+  __dirname + '/public/tracer.js',
+  __dirname + '/public/rell.js',
+  __dirname + '/public/codemirror/js/codemirror.js',
+]))
+app.get('/codemirror/js/bundle', cachedBundleHandler('text/javascript', [
+  __dirname + '/public/codemirror/js/codemirror.js',
+  __dirname + '/public/codemirror/js/stringstream.js',
+  __dirname + '/public/codemirror/js/util.js',
+  __dirname + '/public/codemirror/js/editor.js',
+  __dirname + '/public/codemirror/js/select.js',
+  __dirname + '/public/codemirror/js/undo.js',
+  __dirname + '/public/codemirror/js/tokenize.js',
+  __dirname + '/public/codemirror/js/parsecss.js',
+  __dirname + '/public/codemirror/js/parsexml.js',
+  __dirname + '/public/codemirror/js/tokenizejavascript.js',
+  __dirname + '/public/codemirror/js/parsehtmlmixed.js',
+  __dirname + '/public/codemirror/js/parsejavascript.js',
+]))
+app.get('/codemirror/css/bundle', cachedBundleHandler('text/css', [
+  __dirname + '/public/codemirror/css/xmlcolors.css',
+  __dirname + '/public/codemirror/css/jscolors.css',
+  __dirname + '/public/codemirror/css/csscolors.css',
+  __dirname + '/public/custom-codemirror.css',
+]))

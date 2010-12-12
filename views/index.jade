@@ -29,11 +29,6 @@
   | $L([
   |   (document.location.protocol == 'https:' ? 'https://ssl' : 'http://www')
   |     + '.google-analytics.com/ga.js',
-  |   '/delegator.js',
-  |   '/jsDump-1.0.0.js',
-  |   '/log.js',
-  |   '/tracer.js',
-  |   '/rell.js',
-  |   '/codemirror/js/codemirror.js',
+  |   '/js',
   |   #{JSON.stringify(rellConfig.sdkUrl)}
   | ], function() { Rell.init(#{JSON.stringify(rellConfig)}) });

@@ -39,19 +39,8 @@ Rell = {
       Rell._editor = CodeMirror.fromTextArea('jscode', {
         height: '390px',
         content: Rell.getCode(),
-        parserfile: [
-          'parsexml.js',
-          'parsecss.js',
-          'tokenizejavascript.js',
-          'parsejavascript.js',
-          'parsehtmlmixed.js'
-        ],
-        stylesheet: [
-          '/codemirror/css/xmlcolors.css',
-          '/codemirror/css/jscolors.css',
-          '/codemirror/css/csscolors.css',
-          '/custom-codemirror.css'
-        ],
+        basefiles: ['bundle'],
+        stylesheet: ['/codemirror/css/bundle'],
         path: '/codemirror/js/',
         autoMatchParens: true
       });
