@@ -39,8 +39,8 @@ Rell = {
       Rell._editor = CodeMirror.fromTextArea('jscode', {
         height: '390px',
         content: Rell.getCode(),
-        basefiles: ['/bundle/js/codemirror?_t=' + Rell.config.timestamp],
-        stylesheet: ['/bundle/css/codemirror?_t=' + Rell.config.timestamp],
+        basefiles: ['/bundle/js/codemirror/' + Rell.config.timestamp],
+        stylesheet: ['/bundle/css/codemirror/' + Rell.config.timestamp],
         autoMatchParens: true
       });
     }

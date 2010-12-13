@@ -231,7 +231,7 @@ app.all('/echo*', function(req, res, next) {
     rawBody: req.rawBody,
   }))
 })
-app.get('/bundle/js/main', cachedBundleHandler('text/javascript', [
+app.get('/bundle/js/main/:timestamp', cachedBundleHandler('text/javascript', [
   __dirname + '/public/delegator.js',
   __dirname + '/public/jsDump-1.0.0.js',
   __dirname + '/public/log.js',
@@ -239,7 +239,7 @@ app.get('/bundle/js/main', cachedBundleHandler('text/javascript', [
   __dirname + '/public/rell.js',
   __dirname + '/public/codemirror/js/codemirror.js',
 ]))
-app.get('/bundle/js/codemirror', cachedBundleHandler('text/javascript', [
+app.get('/bundle/js/codemirror/:timestamp', cachedBundleHandler('text/javascript', [
   __dirname + '/public/codemirror/js/codemirror.js',
   __dirname + '/public/codemirror/js/stringstream.js',
   __dirname + '/public/codemirror/js/util.js',
@@ -253,7 +253,7 @@ app.get('/bundle/js/codemirror', cachedBundleHandler('text/javascript', [
   __dirname + '/public/codemirror/js/parsehtmlmixed.js',
   __dirname + '/public/codemirror/js/parsejavascript.js',
 ]))
-app.get('/bundle/css/codemirror', cachedBundleHandler('text/css', [
+app.get('/bundle/css/codemirror/:timestamp', cachedBundleHandler('text/css', [
   __dirname + '/public/codemirror/css/xmlcolors.css',
   __dirname + '/public/codemirror/css/jscolors.css',
   __dirname + '/public/codemirror/css/csscolors.css',
