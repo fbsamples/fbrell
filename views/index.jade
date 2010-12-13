@@ -11,8 +11,10 @@
     a(onclick='Rell.logout()') Logout
   textarea#jscode #{exampleCode}
   .controls
-    a#examples-button(href=makeUrl('/examples')) Examples
-    button(onclick='Rell.runCode()') Run
+    strong
+      a(href=makeUrl('/examples')) Examples
+    a(class='fb-blue run-code', onclick='Rell.runCode()')
+      span Run Code
   #jsroot
 #log-container
   .controls

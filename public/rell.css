@@ -50,9 +50,26 @@ h2 {
   margin: 1px 1px 0 21px;
   padding: 2px 6px 3px;
 }
-#examples-button {
-  float: right;
+.fb-blue {
+  display: inline-block;
+  line-height: 14px;
+  outline: medium none;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #29447E #29447E #1A356E;
+}
+.fb-blue span {
+  background: url(https://s-static.ak.fbcdn.net/images/connect_sprite.png) repeat scroll 0 0 #5F78AB;
+  border-top: 1px solid #879AC0;
+  display: block;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-size: 12px;
   font-weight: bold;
+  padding: 4px 10px 5px 10px;
+}
+.run-code {
+  float: right;
 }
 
 .not-found {
@@ -84,7 +101,7 @@ h2 {
   background-color: #fff;
 }
 #log-container {
-  width: 39%;
+  width: 40%;
   float: right;
 }
 #log-container .controls {
@@ -108,7 +125,7 @@ h2 {
  * General
  */
 .controls {
-  margin: 0.5em 0.5em 0.25em 2em;
+  margin: 0.5em 0 0.25em 0.4em;
 }
 
 /**
