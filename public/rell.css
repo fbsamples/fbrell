@@ -163,48 +163,18 @@ span.bar {
 /**
  * Log
  */
-#log .log-error .hd {
-  background-color: #d02e13;
-  background: -webkit-gradient(linear, 0% 0%, 100% 0%, from(#D02E13), to(#D02E13), color-stop(.6,#9C220E));
-  background: -moz-linear-gradient(100% 0% 180deg,#D02E13, #D02E13, #9C220E 100%);
-  color: #eee;
-}
-#log .log-info .hd {
-  background-color: #54be54;
-  background: -webkit-gradient(linear, 0% 0%, 100% 0%, from(#54BE54), to(#54BE54), color-stop(.6,#67E867));
-  background: -moz-linear-gradient(100% 0% 180deg,#54BE54, #54BE54, #67E867 100%);
-}
-#log .log-debug .hd {
-  background-color: #d0b185;
-  background: -webkit-gradient(linear, 0% 0%, 100% 0%, from(#D0B185), to(#D0B185), color-stop(.6,#FCD7A1));
-  background: -moz-linear-gradient(100% 0% 180deg,#D0B185, #D0B185, #FCD7A1 100%);
-}
-#log .log-trace .hd {
-  background: -webkit-gradient(linear, 0% 0%, 100% 0%, from(#EFEFEF), to(#EFEFEF), color-stop(.6,#999999));
-  background: -moz-linear-gradient(100% 0% 180deg,#EFEFEF, #EFEFEF, #999999 100%);
-}
 #log .hd {
-  padding: 0.5em;
+  padding: 0.5em 1.5em;
   font-weight: bold;
+  background: #f2f2f2;
 }
 #log .hd .toggle {
   cursor: pointer;
+  color: #5c5c5c;
 }
 #log .hd .count {
-  background-color: transparent;
   padding-right: 10px;
-}
-#log .log-error .hd .count {
-  color: #aaa;
-}
-#log .log-info .hd .count {
-  color: #666;
-}
-#log .log-debug .hd .count {
-  color: #666;
-}
-#log .log-trace .hd .count {
-  color: #666;
+  color: #5c5c5c;
 }
 #log .bd {
   padding: 0.5em 1em;
