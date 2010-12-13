@@ -3,10 +3,12 @@
   .controls
     a.login-button(onclick='Rell.login()')
       span Login
-    button(onclick='Rell.disconnect()') Disconnect
-    button(onclick='Rell.logout()') Logout
-    span#auth-status-container status:
-      span#auth-status unknown
+    span#auth-status-label Status:
+    span#auth-status unknown
+    span.bar |
+    a(onclick='Rell.disconnect()') Disconnect
+    span.bar |
+    a(onclick='Rell.logout()') Logout
   textarea#jscode #{exampleCode}
   .controls
     a#examples-button(href=makeUrl('/examples')) Examples

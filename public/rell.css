@@ -10,6 +10,7 @@ a,
 a:visited {
   color: #3B5998;
   text-decoration: none;
+  cursor: pointer;
 }
 h2 {
   margin: 0 0 0 0.25em;
@@ -113,60 +114,20 @@ h2 {
 /**
  * auth status
  */
-#auth-status-container {
-  font-size: 110%;
-  margin-left: 1em;
+#auth-status-label {
+  padding-left: 1em;
+}
+#auth-status-label, span.bar {
+  color: #777777;
 }
 #auth-status {
-  font-weight: bold;
-  padding: 3px 6px;
-  color: #ffffff;
-  background: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.36, rgb(31,51,60)),
-    color-stop(0.68, rgb(98,138,166)),
-    color-stop(0.84, rgb(130,154,166))
-  );
-  background: -moz-linear-gradient(
-    center bottom,
-    rgb(31,51,60) 36%,
-    rgb(98,138,166) 68%,
-    rgb(130,154,166) 84%
-  );
+  color: #000000;
+  padding-left: 0.3em;
+  text-transform: capitalize;
 }
-/* IE6, IE7, IE8 */
-#auth-status { color: black\9; }
-#auth-status.notConnected {
-  background: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.33, rgb(178,36,73)),
-    color-stop(0.51, rgb(214,65,103))
-  );
-  background: -moz-linear-gradient(
-    center bottom,
-    rgb(178,36,73) 33%,
-    rgb(214,65,103) 51%
-  );
-}
-#auth-status.connected {
-  background: -webkit-gradient(
-    linear,
-    left bottom,
-    left top,
-    color-stop(0.34, rgb(56,87,34)),
-    color-stop(0.51, rgb(94,120,74)),
-    color-stop(0.83, rgb(154,199,117))
-  );
-  background: -moz-linear-gradient(
-    center bottom,
-    rgb(56,87,34) 34%,
-    rgb(94,120,74) 51%,
-    rgb(154,199,117) 83%
-  );
+span.bar {
+  padding-left: 0.2em;
+  padding-right: 0.2em;
 }
 
 /**
