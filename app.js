@@ -249,7 +249,8 @@ app.post('/saved', function(req, res, next) {
       'x-amz-acl': 'private',
     })
     .on('response', function(sres) {
-      if (200 == sres.statusCode) return res.redirect('/saved/' + id)
+      if (200 == sres.statusCode)
+        return res.redirect(makeUrl(req.rellConfig, '/saved/' + id))
       console.error('s3 put failed: ' + util.inspect(sres))
       res.render('error')
     })

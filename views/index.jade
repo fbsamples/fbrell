@@ -9,7 +9,7 @@
     a(onclick='Rell.disconnect()') Disconnect
     span.bar |
     a(onclick='Rell.logout()') Logout
-  form(action='/saved', method='post', target='_top')
+  form(action=makeUrl('/saved'), method='post', target='_top')
     textarea#jscode(name='code')= exampleCode
     .controls
       strong
