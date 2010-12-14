@@ -10,7 +10,7 @@
     span.bar |
     a(onclick='Rell.logout()') Logout
   form(action='/saved', method='post', target='_top')
-    textarea#jscode(name='code') #{exampleCode}
+    textarea#jscode(name='code')= exampleCode
     .controls
       strong
         a(href=makeUrl('/examples')) Examples
