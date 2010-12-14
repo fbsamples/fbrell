@@ -20,7 +20,7 @@ DefaultConfig = {
   rte: 1,
   status: 1,
   timestamp: Date.now(),
-  autorun: true,
+  autoRun: true,
 }
 
 var examples = function() {
@@ -64,7 +64,7 @@ var examples = function() {
 function makeUrl(config, path) {
   var url = nurl.parse(path)
   for (var key in config) {
-    if (key in { sdkUrl: 1, examplesRoot: 1, autorun: 1 }) continue //FIXME
+    if (key in { sdkUrl: 1, examplesRoot: 1, autoRun: 1 }) continue //FIXME
     var val = config[key]
     if (DefaultConfig[key] != val) url = url.setQueryParam(key, val)
   }
