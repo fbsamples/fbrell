@@ -239,7 +239,10 @@ app.all('/echo*', function(req, res, next) {
 })
 app.post('/saved', function(req, res, next) {
   var exampleCode = req.body.code
-    , id = crypto.createHash('md5').update(exampleCode).digest('hex')
+  if (exampleCode.length > 10240)
+    return res.send('Maximum allowed size is 10 kilybytes.', 413)
+
+  var id = crypto.createHash('md5').update(exampleCode).digest('hex')
   s3
     .put('/' + id, {
       'Content-Length': exampleCode.length,
