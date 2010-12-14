@@ -141,7 +141,7 @@ var Delegator = {
 
     var
       node        = event.target,
-      subscribers = Delegator.subscribers[type],
+      subscribers = Delegator.subscribers[type] || [],
       num         = subscribers.length,
       formSubmits = false,
       formDone    = false,
