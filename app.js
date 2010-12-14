@@ -234,7 +234,7 @@ app.all('/echo*', function(req, res, next) {
     signedRequest: req.signedRequest,
     headers: req.headers,
     rawBody: req.rawBody,
-  }), 200, { 'Content-Type': 'text/plain' })
+  }), { 'Content-Type': 'text/plain' }, 200)
 })
 app.post('/saved', function(req, res, next) {
   var exampleCode = req.body.code
