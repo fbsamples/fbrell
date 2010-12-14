@@ -1,17 +1,20 @@
 var async = require('async')
   , crypto = require('crypto')
-  , db = require('dirty')(__dirname + '/examples.db')
   , dotaccess = require('dotaccess')
   , express = require('express')
   , fs = require('fs')
+  , knox = require('knox')
   , nurl = require('nurl')
   , path = require('path')
+  , settings = require('./settings')
   , uglify = require('uglify-js')
   , util = require('util')
   , walker = require('walker')
 
-DefaultConfig = {
-  appid: '184484190795',
+var s3 = knox.createClient(settings.amazon)
+
+var DefaultConfig = {
+  appid: settings.facebook.id,
   level: 'debug',
   locale: 'en_US',
   server: '',
@@ -237,19 +240,43 @@ app.all('/echo*', function(req, res, next) {
 app.post('/saved', function(req, res, next) {
   var exampleCode = req.body.code
     , id = crypto.createHash('md5').update(exampleCode).digest('hex')
-  db.set(id, exampleCode)
-  res.redirect('/saved/' + id)
+  s3
+    .put('/' + id, {
+      'Content-Length': exampleCode.length,
+      'Content-Type': 'text/plain',
+      'x-amz-acl': 'private',
+    })
+    .on('response', function(sres) {
+      if (200 == sres.statusCode) return res.redirect('/saved/' + id)
+      console.error('s3 put failed: ' + util.inspect(sres))
+      res.render('error')
+    })
+    .end(exampleCode)
 })
 app.all('/saved/:id', function(req, res, next) {
-  var exampleCode = db.get(req.params.id)
-  if (typeof exampleCode == 'undefined') return next()
-  req.rellConfig.autoRun = false
-  res.render('index', { locals: {
-    title: 'Stored Example',
-    exampleCode: exampleCode,
-    rellConfig: req.rellConfig,
-    makeUrl: makeUrl.bind(null, req.rellConfig),
-  }})
+  s3
+    .get('/' + req.params.id)
+    .on('response', function(sres) {
+      if (200 != sres.statusCode) {
+        console.log('s3 get failed: ' + util.inspect(sres))
+        return next()
+      }
+
+      var exampleCode = ''
+      sres
+        .on('data', function(chunk) { exampleCode += chunk })
+        .on('end', function() {
+          req.rellConfig.autoRun = false
+          res.render('index', { locals: {
+            title: 'Stored Example',
+            exampleCode: exampleCode,
+            rellConfig: req.rellConfig,
+            makeUrl: makeUrl.bind(null, req.rellConfig),
+          }})
+        })
+        .setEncoding('utf8')
+    })
+    .end()
 })
 app.get('/bundle/js/main/:timestamp', cachedBundleHandler('text/javascript', [
   __dirname + '/public/delegator.js',

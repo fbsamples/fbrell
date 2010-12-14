@@ -16,9 +16,11 @@ Make sure you have [Node](http://nodejs.org/) (v0.3.x) and
     git clone git://github.com/nshah/rell.git
     cd rell
     git submodule update --init
+    cp settings.js.sample settings.js
+    vim settings.js # put in your settings
     npm link
     spark2 --watch
 
 Then go to:
 
-    http://localhost:3000/xfbml/fb:login-button?appid=172938186058874
+    http://localhost:3000/xfbml/fb:login-button

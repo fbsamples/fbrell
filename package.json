@@ -7,7 +7,7 @@
   "author": "Naitik Shah <n@daaku.org>",
   "dependencies": {
     "async": ">= 0.1.6",
-    "dirty": ">= 0.9.0",
+    "knox": ">= 0.0.1",
     "dotaccess": ">= 0.0.1",
     "express": ">= 1.0.0",
     "jade": ">= 0.5.6",

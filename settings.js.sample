@@ -1,0 +1,12 @@
+// your facebook application configuration
+module.exports.facebook = {
+  id: '...',
+  secret: '...',
+}
+
+// you'll need this if you plan on using the code saving features
+module.exports.amazon = {
+  key: '...',
+  secret: '...',
+  bucket: '...',
+}
