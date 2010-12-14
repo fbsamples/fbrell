@@ -242,7 +242,7 @@ app.post('/saved', function(req, res, next) {
 })
 app.all('/saved/:id', function(req, res, next) {
   var exampleCode = db.get(req.params.id)
-  if (!exampleCode) return next()
+  if (typeof exampleCode == 'undefined') return next()
   req.rellConfig.autoRun = false
   res.render('index', { locals: {
     title: 'Stored Example',
