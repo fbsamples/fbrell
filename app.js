@@ -1,12 +1,14 @@
-var express = require('express')
+var async = require('async')
+  , crypto = require('crypto')
+  , db = require('dirty')(__dirname + '/examples.db')
+  , dotaccess = require('dotaccess')
+  , express = require('express')
+  , fs = require('fs')
   , nurl = require('nurl')
   , path = require('path')
-  , fs = require('fs')
-  , walker = require('walker')
-  , dotaccess = require('dotaccess')
-  , util = require('util')
-  , async = require('async')
   , uglify = require('uglify-js')
+  , util = require('util')
+  , walker = require('walker')
 
 DefaultConfig = {
   appid: '184484190795',
@@ -18,6 +20,7 @@ DefaultConfig = {
   rte: 1,
   status: 1,
   timestamp: Date.now(),
+  autorun: true,
 }
 
 var examples = function() {
@@ -61,7 +64,7 @@ var examples = function() {
 function makeUrl(config, path) {
   var url = nurl.parse(path)
   for (var key in config) {
-    if (key in { sdkUrl: 1, examplesRoot: 1 }) continue // TODO fixme
+    if (key in { sdkUrl: 1, examplesRoot: 1, autorun: 1 }) continue //FIXME
     var val = config[key]
     if (DefaultConfig[key] != val) url = url.setQueryParam(key, val)
   }
@@ -230,6 +233,23 @@ app.all('/echo*', function(req, res, next) {
     headers: req.headers,
     rawBody: req.rawBody,
   }))
+})
+app.post('/saved', function(req, res, next) {
+  var exampleCode = req.body.code
+    , id = crypto.createHash('md5').update(exampleCode).digest('hex')
+  db.set(id, exampleCode)
+  res.redirect('/saved/' + id)
+})
+app.all('/saved/:id', function(req, res, next) {
+  var exampleCode = db.get(req.params.id)
+  if (!exampleCode) return next()
+  req.rellConfig.autoRun = false
+  res.render('index', { locals: {
+    title: 'Stored Example',
+    exampleCode: exampleCode,
+    rellConfig: req.rellConfig,
+    makeUrl: makeUrl.bind(null, req.rellConfig),
+  }})
 })
 app.get('/bundle/js/main/:timestamp', cachedBundleHandler('text/javascript', [
   __dirname + '/public/delegator.js',

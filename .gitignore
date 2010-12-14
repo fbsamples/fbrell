@@ -5,4 +5,5 @@
 /etc/ssl.crt
 /etc/sub.class1.server.ca.pem
 /examples-old/secret/
+/examples.db
 /examples/secret/

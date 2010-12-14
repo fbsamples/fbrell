@@ -91,7 +91,7 @@ Rell = {
         el.innerHTML = status;
       }, 500);
 
-      Rell.runCode();
+      Rell.autoRunCode();
     });
   },
 
@@ -122,10 +122,14 @@ Rell = {
     }
 
     if (Rell.config.status == '0') {
-      Rell.runCode();
+      Rell.autoRunCode();
     } else {
-      FB.getLoginStatus(function() { Rell.runCode(); });
+      FB.getLoginStatus(function() { Rell.autoRunCode(); });
     }
+  },
+
+  autoRunCode: function() {
+    if (Rell.config.autoRun) Rell.runCode()
   },
 
   /**

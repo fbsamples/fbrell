@@ -52,14 +52,16 @@ h2 {
 }
 .fb-blue {
   display: inline-block;
-  line-height: 14px;
   outline: medium none;
   border-width: 1px;
   border-style: solid;
   border-color: #29447E #29447E #1A356E;
+  padding: 0;
 }
-.fb-blue span {
+.fb-blue span, .fb-blue input {
+  line-height: 14px;
   background: url(https://s-static.ak.fbcdn.net/images/connect_sprite.png) repeat scroll 0 0 #5F78AB;
+  border: none;
   border-top: 1px solid #879AC0;
   display: block;
   color: #FFFFFF;
@@ -67,8 +69,13 @@ h2 {
   font-size: 12px;
   font-weight: bold;
   padding: 4px 10px 5px 10px;
+  margin: 0;
 }
 .run-code {
+  float: right;
+  margin-left: 0.5em;
+}
+.save-code {
   float: right;
 }
 
