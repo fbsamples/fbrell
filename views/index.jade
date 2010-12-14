@@ -9,14 +9,14 @@
     a(onclick='Rell.disconnect()') Disconnect
     span.bar |
     a(onclick='Rell.logout()') Logout
-  form(action='/saved', method='post')
+  form(action='/saved', method='post', target='_top')
     textarea#jscode(name='code') #{exampleCode}
     .controls
       strong
         a(href=makeUrl('/examples')) Examples
       a(class='fb-blue run-code', onclick='Rell.runCode()')
         span Run Code
-      label(class='fb-blue save-code')
+      label(class='fb-gray save-code')
         input(type='submit', value='Save Code')
   #jsroot
 #log-container
