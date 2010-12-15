@@ -148,7 +148,6 @@ function cachedBundleHandler(contentType, files) {
 var app = module.exports = express.createServer(
   express.bodyDecoder(),
   express.methodOverride(),
-  express.gzip(),
   express.staticProvider(__dirname + '/public')
 )
 app.configure(function() {
