@@ -12,14 +12,8 @@
     "express": ">= 1.0.0",
     "jade": ">= 0.5.6",
     "nurl": ">= 0.1.2",
-    "spark2": ">= 2.0.7",
     "uglify-js": ">= 0.0.1",
     "walker": ">= 0.0.1"
   },
-  "engines": { "node": ">= 0.3.1" },
-  "scripts": {
-    "start": "spark2",
-    "restart": "spark2 --respawn",
-    "stop": "spark2 --kill"
-  }
+  "engines": { "node": ">= 0.3.1" }
 }

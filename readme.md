@@ -19,6 +19,7 @@ Make sure you have [Node](http://nodejs.org/) (v0.3.x) and
     cp settings.js.sample settings.js
     vim settings.js # put in your settings
     npm link
+    npm install spark2
     spark2 --watch
 
 Then go to:
