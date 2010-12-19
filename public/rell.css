@@ -259,3 +259,12 @@ span.bar {
 #log .indent-8 {
   margin-left: 8em;
 }
+
+
+
+/**
+ * Examples
+ */
+.examples {
+  margin: 0.5em 1em;
+}
