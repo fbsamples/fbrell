@@ -260,7 +260,8 @@ app.all('/saved/:id', function(req, res, next) {
     .get('/' + req.params.id)
     .on('response', function(sres) {
       if (200 != sres.statusCode) {
-        console.log('s3 get failed: ' + util.inspect(sres))
+        if (sres.statusCode != 404)
+          console.error('s3 get failed: ' + util.inspect(sres))
         return next()
       }
 
