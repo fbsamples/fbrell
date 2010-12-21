@@ -117,7 +117,7 @@ Rell = {
       channelUrl: window.location.protocol + '//fbrell.com/channel.html'
     });
 
-    if (window !== top) {
+    if (top != self) {
       FB.Canvas.setAutoResize(true);
     }
 
