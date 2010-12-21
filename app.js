@@ -145,10 +145,23 @@ function cachedBundleHandler(contentType, files) {
   }
 }
 
+function appDataMiddleware(req, res, next) {
+  var url = nurl.parse(req.url)
+  if (url.hasQueryParam('app_data')) {
+    var parts = url.getQueryParam('app_data').split('_')
+    req.url = url
+      .setQueryParam('server', parts.shift())
+      .setPathname(parts.join('/'))
+      .toString()
+  }
+  next()
+}
+
 var app = module.exports = express.createServer(
   express.bodyDecoder(),
   express.methodOverride(),
-  express.staticProvider(__dirname + '/public')
+  express.staticProvider(__dirname + '/public'),
+  appDataMiddleware
 )
 app.configure(function() {
   app.set('view engine', 'jade')
