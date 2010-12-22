@@ -7,9 +7,10 @@ var async = require('async')
   , nurl = require('nurl')
   , path = require('path')
   , settings = require('./settings')
-  , uglify = require('uglify-js')
   , util = require('util')
   , walker = require('walker')
+  , assetManager = require('connect-assetmanager')
+  , assetHandler = require('connect-assetmanager-handlers')
 
 var s3 = knox.createClient(settings.amazon)
 
@@ -22,7 +23,6 @@ var DefaultConfig = {
   version: 'mu',
   rte: 1,
   status: 1,
-  timestamp: Date.now(),
   autoRun: true,
 }
 
@@ -67,7 +67,7 @@ var examples = function() {
 function makeUrl(config, path) {
   var url = nurl.parse(path)
   for (var key in config) {
-    if (key in { sdkUrl: 1, examplesRoot: 1, autoRun: 1 }) continue //FIXME
+    if (key in { urls: 1, examplesRoot: 1, autoRun: 1 }) continue //FIXME
     var val = config[key]
     if (DefaultConfig[key] != val) url = url.setQueryParam(key, val)
   }
@@ -115,36 +115,6 @@ function loadExample(req, res, next) {
     })
 }
 
-function cachedBundleHandler(contentType, files) {
-  var cached
-  return function(req, res, next) {
-    var ttl = 315360000
-    res.writeHead(200, {
-      'Content-Type': contentType,
-      'Cache-Control': 'public, max-age=' + ttl,
-      'Expires': new Date(Date.now() + (ttl * 1000)).toUTCString(),
-    })
-    if (cached) {
-      cached.forEach(res.write.bind(res))
-      return res.end()
-    }
-    async.map(files, fs.readFile, function(er, results) {
-      if (er) throw er
-      if (contentType == 'text/javascript') {
-        results = [
-          uglify.uglify.gen_code(
-            uglify.uglify.ast_squeeze(
-              uglify.uglify.ast_mangle(
-                uglify.parser.parse(results.map(
-                  function(d) { return d.toString('utf8') }).join("\n")))))];
-      }
-      cached = results
-      results.forEach(res.write.bind(res))
-      res.end()
-    })
-  }
-}
-
 function appDataMiddleware(req, res, next) {
   var url = nurl.parse(req.url)
   if (url.hasQueryParam('app_data')) {
@@ -157,6 +127,71 @@ function appDataMiddleware(req, res, next) {
   next()
 }
 
+var assets = function() {
+  var groups = {
+    main: {
+      dataType: 'javascript',
+      files: [
+        'delegator.js',
+        'jsDump-1.0.0.js',
+        'log.js',
+        'tracer.js',
+        'rell.js',
+        'codemirror/js/codemirror.js',
+      ],
+    },
+    'codemirror-js': {
+      dataType: 'javascript',
+      files: [
+        'codemirror/js/codemirror.js',
+        'codemirror/js/stringstream.js',
+        'codemirror/js/util.js',
+        'codemirror/js/editor.js',
+        'codemirror/js/select.js',
+        'codemirror/js/undo.js',
+        'codemirror/js/tokenize.js',
+        'codemirror/js/parsecss.js',
+        'codemirror/js/parsexml.js',
+        'codemirror/js/tokenizejavascript.js',
+        'codemirror/js/parsehtmlmixed.js',
+        'codemirror/js/parsejavascript.js',
+      ],
+    },
+    'codemirror-css': {
+      dataType: 'css',
+      files: [
+        'codemirror/css/xmlcolors.css',
+        'codemirror/css/jscolors.css',
+        'codemirror/css/csscolors.css',
+        'custom-codemirror.css',
+      ]
+    },
+  }
+
+  return {
+    middleware: function(options) {
+      for (var groupName in groups) {
+        var group = groups[groupName]
+        group.route = new RegExp(
+          '\/bundle\/' + group.dataType + '\/' + groupName + '\/[0-9]+$')
+        group.path = __dirname + '/public/'
+        group.debug = options.debug
+        group.stale = !options.debug
+        if (!options.debug && group.dataType == 'javascript')
+          group.postManipulate = {'^': [ assetHandler.uglifyJsOptimize ]}
+      }
+      _manager = assetManager(groups)
+      return _manager
+    },
+    url: function(groupName) {
+      var group = groups[groupName]
+      if (!group) throw new Error('Group "' + groupName + '" not found!')
+      return '/bundle/' + group.dataType + '/' + groupName + '/' +
+        (_manager.cacheTimestamps[groupName] || Date.now());
+    },
+  }
+}()
+
 var app = module.exports = express.createServer(
   express.bodyDecoder(),
   express.methodOverride(),
@@ -168,9 +203,11 @@ app.configure(function() {
   app.set('views', __dirname + '/views')
 })
 app.configure('development', function() {
+  app.use(assets.middleware({ debug: true }))
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }))
 })
 app.configure('production', function() {
+  app.use(assets.middleware({ debug: false }))
   app.use(express.errorHandler())
 })
 app.all('*', function(req, res, next) {
@@ -180,9 +217,14 @@ app.all('*', function(req, res, next) {
       config[key] = src[key]
     }
   })
-  config.sdkUrl = getConnectScriptUrl(
-    config.version, config.locale, config.server,
-    req.headers['x-forwarded-proto'] === 'https')
+  config.urls = {
+    sdk: getConnectScriptUrl(
+      config.version, config.locale, config.server,
+      req.headers['x-forwarded-proto'] === 'https'),
+    main: assets.url('main'),
+    codemirrorJs: assets.url('codemirror-js'),
+    codemirrorCss: assets.url('codemirror-css'),
+  }
   config.examplesRoot = config.version == 'mu' ? 'examples' : 'examples-old'
   req.rellConfig = config
 
@@ -294,31 +336,3 @@ app.all('/saved/:id', function(req, res, next) {
     })
     .end()
 })
-app.get('/bundle/js/main/:timestamp', cachedBundleHandler('text/javascript', [
-  __dirname + '/public/delegator.js',
-  __dirname + '/public/jsDump-1.0.0.js',
-  __dirname + '/public/log.js',
-  __dirname + '/public/tracer.js',
-  __dirname + '/public/rell.js',
-  __dirname + '/public/codemirror/js/codemirror.js',
-]))
-app.get('/bundle/js/codemirror/:timestamp', cachedBundleHandler('text/javascript', [
-  __dirname + '/public/codemirror/js/codemirror.js',
-  __dirname + '/public/codemirror/js/stringstream.js',
-  __dirname + '/public/codemirror/js/util.js',
-  __dirname + '/public/codemirror/js/editor.js',
-  __dirname + '/public/codemirror/js/select.js',
-  __dirname + '/public/codemirror/js/undo.js',
-  __dirname + '/public/codemirror/js/tokenize.js',
-  __dirname + '/public/codemirror/js/parsecss.js',
-  __dirname + '/public/codemirror/js/parsexml.js',
-  __dirname + '/public/codemirror/js/tokenizejavascript.js',
-  __dirname + '/public/codemirror/js/parsehtmlmixed.js',
-  __dirname + '/public/codemirror/js/parsejavascript.js',
-]))
-app.get('/bundle/css/codemirror/:timestamp', cachedBundleHandler('text/css', [
-  __dirname + '/public/codemirror/css/xmlcolors.css',
-  __dirname + '/public/codemirror/css/jscolors.css',
-  __dirname + '/public/codemirror/css/csscolors.css',
-  __dirname + '/public/custom-codemirror.css',
-]))

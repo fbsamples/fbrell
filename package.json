@@ -7,12 +7,13 @@
   "author": "Naitik Shah <n@daaku.org>",
   "dependencies": {
     "async": ">= 0.1.6",
-    "knox": ">= 0.0.1",
+    "connect-assetmanager": ">= 0.0.17",
+    "connect-assetmanager-handlers": ">= 0.0.13",
     "dotaccess": ">= 0.0.1",
     "express": ">= 1.0.0",
     "jade": ">= 0.6.0",
+    "knox": ">= 0.0.1",
     "nurl": ">= 0.1.2",
-    "uglify-js": ">= 0.0.1",
     "walker": ">= 0.0.1"
   },
   "engines": { "node": ">= 0.3.1" }
