@@ -5,7 +5,7 @@ html
     title #{title}
   body
     #fb-root
-    script(src=rellConfig.sdkUrl)
+    script(src=rellConfig.urls.sdk)
     :javascript
       | FB.init({
       |   appId: !{JSON.stringify(rellConfig.appid)},

@@ -140,6 +140,12 @@ var assets = function() {
         'codemirror/js/codemirror.js',
       ],
     },
+    'main-css': {
+      dataType: 'css',
+      files: [
+        'rell.css',
+      ]
+    },
     'codemirror-js': {
       dataType: 'javascript',
       files: [
@@ -210,6 +216,10 @@ app.configure('production', function() {
   app.use(assets.middleware({ debug: false }))
   app.use(express.errorHandler())
 })
+app.dynamicHelpers({
+  rellConfig: function(req, res) { return req.rellConfig },
+  makeUrl: function(req, res) { return req.makeUrl },
+})
 app.all('*', function(req, res, next) {
   var config = {};
   [DefaultConfig, req.query].forEach(function(src) {
@@ -222,11 +232,13 @@ app.all('*', function(req, res, next) {
       config.version, config.locale, config.server,
       req.headers['x-forwarded-proto'] === 'https'),
     main: assets.url('main'),
+    mainCss: assets.url('main-css'),
     codemirrorJs: assets.url('codemirror-js'),
     codemirrorCss: assets.url('codemirror-css'),
   }
   config.examplesRoot = config.version == 'mu' ? 'examples' : 'examples-old'
   req.rellConfig = config
+  req.makeUrl = makeUrl.bind(null, config)
 
   var signedRequest = req.body && req.body.signed_request
   if (signedRequest) {
@@ -241,8 +253,6 @@ app.all('/', function(req, res, next) {
   res.render('index', { locals: {
     title: 'Welcome',
     exampleCode: '',
-    rellConfig: req.rellConfig,
-    makeUrl: makeUrl.bind(null, req.rellConfig),
   }})
 })
 app.all('/*', loadExample, function(req, res, next) {
@@ -250,8 +260,6 @@ app.all('/*', loadExample, function(req, res, next) {
   res.render('index', { locals: {
     title: req.params[0].replace('/', ' &middot; '),
     exampleCode: req.exampleCode,
-    rellConfig: req.rellConfig,
-    makeUrl: makeUrl.bind(null, req.rellConfig),
   }})
 })
 app.all('/raw/*', loadExample, function(req, res, next) {
@@ -265,7 +273,6 @@ app.all('/simple/*', loadExample, function(req, res, next) {
     locals: {
       title: req.params[0].replace('/', ' &middot; '),
       exampleCode: req.exampleCode,
-      rellConfig: req.rellConfig,
     },
   })
 })
@@ -274,7 +281,6 @@ app.get('/examples', function(req, res, next) {
     if (er) return next(er)
     res.render('examples', { locals: {
       examples: data,
-      makeUrl: makeUrl.bind(null, req.rellConfig),
     }})
   })
 })
@@ -304,7 +310,7 @@ app.post('/saved', function(req, res, next) {
     })
     .on('response', function(sres) {
       if (200 == sres.statusCode)
-        return res.redirect(makeUrl(req.rellConfig, '/saved/' + id))
+        return res.redirect(req.makeUrl('/saved/' + id))
       console.error('s3 put failed: ' + util.inspect(sres))
       res.render('error')
     })
@@ -328,8 +334,6 @@ app.all('/saved/:id', function(req, res, next) {
           res.render('index', { locals: {
             title: 'Stored Example',
             exampleCode: exampleCode,
-            rellConfig: req.rellConfig,
-            makeUrl: makeUrl.bind(null, req.rellConfig),
           }})
         })
         .setEncoding('utf8')
