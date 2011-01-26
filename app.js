@@ -341,3 +341,11 @@ app.all('/saved/:id', function(req, res, next) {
     })
     .end()
 })
+app.get('/status', function(req, res) {
+  res.send(
+    JSON.stringify({
+      nodeVersion: process.version,
+    }),
+    { 'content-type': 'text/javascript' }
+  )
+})
