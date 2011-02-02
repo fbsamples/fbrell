@@ -1,0 +1,9 @@
+check host fbrell with address 127.0.0.1
+  start program "/data/www/fbrell/etc/start"
+    with uid naitik and gid naitik
+  stop program "/usr/bin/pkill -f fbrell_server"
+  if failed port 43600 protocol HTTP
+    request /
+    with timeout 5 seconds
+    then restart
+  if 5 restarts within 5 cycles then timeout
