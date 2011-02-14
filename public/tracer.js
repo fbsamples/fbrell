@@ -13,6 +13,7 @@ var Tracer = {
     'FB.guid': 1,
     'FB.Canvas.setSize': 1,
     'FB.Canvas._computeContentSize': 1,
+    'FB.Canvas._getBodyProp': 1,
     'FB.Array.forEach': 1,
     'FB.String.format': 1,
     'FB.log': 1
