@@ -287,8 +287,8 @@ app.get('/examples', function(req, res, next) {
     }})
   })
 })
-app.all('/echo*', function(req, res, next) {
-  res.send(util.inspect({
+app.all('/echo*?', function(req, res, next) {
+  res.send(JSON.stringify({
     method: req.method,
     url: req.url,
     pathname: nurl.parse(req.url).pathname,
@@ -297,7 +297,7 @@ app.all('/echo*', function(req, res, next) {
     signedRequest: req.signedRequest,
     headers: req.headers,
     rawBody: req.rawBody,
-  }), { 'Content-Type': 'text/plain' }, 200)
+  }), { 'Content-Type': 'text/javascript' }, 200)
 })
 app.post('/saved', function(req, res, next) {
   var exampleCode = req.body.code
