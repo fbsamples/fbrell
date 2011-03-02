@@ -21,7 +21,7 @@ var DefaultConfig = {
   server: '',
   trace: 1,
   version: 'mu',
-  rte: 1,
+  rte: 0,
   status: 1,
   autoRun: true,
 }
@@ -46,7 +46,9 @@ var examples = function() {
       if (data) return process.nextTick(cb.bind(null, null, data))
       fs.readFile(fullname, 'utf8', function(er, data) {
         if (er) return cb(er)
-        cb(null, _contentCache[fullname] = data)
+        if (!(/^(bugs|secret|hidden)\//.test(name)))
+          _contentCache[fullname] = data;
+        cb(null, data)
       })
     },
     list: function(root, cb) { // get a listing of directory
