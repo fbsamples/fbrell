@@ -6,10 +6,10 @@ html
   body
     #fb-root
     script(src=rellConfig.urls.sdk)
-    :javascript
-      | FB.init({
-      |   appId: !{JSON.stringify(rellConfig.appid)},
-      |   cookie: true,
-      |   xfbml: true
-      | })
+    script
+      FB.init({
+        appId: !{JSON.stringify(rellConfig.appid)},
+        cookie: true,
+        xfbml: true
+      })
     #example !{exampleCode}

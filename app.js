@@ -201,9 +201,9 @@ var assets = function() {
 }()
 
 var app = module.exports = express.createServer(
-  express.bodyDecoder(),
+  express.bodyParser(),
   express.methodOverride(),
-  express.staticProvider(__dirname + '/public'),
+  express.static(__dirname + '/public'),
   appDataMiddleware
 )
 app.configure(function() {
@@ -253,17 +253,17 @@ app.all('*', function(req, res, next) {
   next()
 })
 app.all('/', function(req, res, next) {
-  res.render('index', { locals: {
+  res.render('index', {
     title: 'Welcome',
     exampleCode: '',
-  }})
+  })
 })
 app.all('/*', loadExample, function(req, res, next) {
   if (!req.exampleCode) return next()
-  res.render('index', { locals: {
+  res.render('index', {
     title: req.params[0].replace('/', ' &middot; '),
     exampleCode: req.exampleCode,
-  }})
+  })
 })
 app.all('/raw/*', loadExample, function(req, res, next) {
   if (!req.exampleCode) return next()
@@ -273,18 +273,16 @@ app.all('/simple/*', loadExample, function(req, res, next) {
   if (!req.exampleCode) return next()
   res.render('simple', {
     layout: false,
-    locals: {
-      title: req.params[0].replace('/', ' &middot; '),
-      exampleCode: req.exampleCode,
-    },
+    title: req.params[0].replace('/', ' &middot; '),
+    exampleCode: req.exampleCode,
   })
 })
 app.get('/examples', function(req, res, next) {
   examples.list(req.rellConfig.examplesRoot, function(er, data) {
     if (er) return next(er)
-    res.render('examples', { locals: {
+    res.render('examples', {
       examples: data,
-    }})
+    })
   })
 })
 app.all('/echo*?', function(req, res, next) {
@@ -334,10 +332,10 @@ app.all('/saved/:id', function(req, res, next) {
         .on('data', function(chunk) { exampleCode += chunk })
         .on('end', function() {
           req.rellConfig.autoRun = false
-          res.render('index', { locals: {
+          res.render('index', {
             title: 'Stored Example',
             exampleCode: exampleCode,
-          }})
+          })
         })
         .setEncoding('utf8')
     })
