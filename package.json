@@ -5,6 +5,10 @@
   "keywords": ["website"],
   "version": "1.9.0",
   "author": "Naitik Shah <n@daaku.org>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nshah/rell.git"
+  },
   "dependencies": {
     "async": ">= 0.1.8",
     "connect-assetmanager": ">= 0.0.18",
