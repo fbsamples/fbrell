@@ -7,3 +7,5 @@
 /examples-old/secret/
 /examples/secret/
 /settings.js
+/var/logs
+/var/pids
