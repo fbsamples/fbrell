@@ -239,7 +239,8 @@ app.all('*', function(req, res, next) {
     codemirrorJs: assets.url('codemirror-js'),
     codemirrorCss: assets.url('codemirror-css'),
   }
-  config.examplesRoot = config.version == 'mu' ? 'examples' : 'examples-old'
+  config.examplesRoot = path.join(__dirname,
+    config.version == 'mu' ? 'examples' : 'examples-old')
   req.rellConfig = config
   req.makeUrl = makeUrl.bind(null, config)
 
