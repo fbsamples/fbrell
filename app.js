@@ -117,10 +117,23 @@ function loadExample(req, res, next) {
     })
 }
 
+function signedRequestMiddleware(req, res, next) {
+  var signedRequest = req.body && req.body.signed_request
+  if (signedRequest) {
+    req.signedRequest = JSON.parse(
+      new Buffer(
+        signedRequest.split('.')[1].replace('-', '+').replace('_', '/'),
+        'base64').toString('utf8'))
+  }
+  next()
+}
+
 function appDataMiddleware(req, res, next) {
   var url = nurl.parse(req.url)
-  if (url.hasQueryParam('app_data')) {
-    var parts = url.getQueryParam('app_data').split('_')
+    , appData = url.getQueryParam('app_data') || (
+        req.signedRequest && req.signedRequest.app_data)
+  if (appData) {
+    var parts = appData.split('_')
     req.url = url
       .setQueryParam('server', parts.shift())
       .setPathname(parts.join('/'))
@@ -204,6 +217,7 @@ var app = module.exports = express.createServer(
   express.bodyParser(),
   express.methodOverride(),
   express.static(__dirname + '/public'),
+  signedRequestMiddleware,
   appDataMiddleware
 )
 app.configure(function() {
@@ -222,6 +236,7 @@ app.configure('production', function() {
 app.dynamicHelpers({
   rellConfig: function(req, res) { return req.rellConfig },
   makeUrl: function(req, res) { return req.makeUrl },
+  signedRequest: function(req, res) { return req.signedRequest },
 })
 app.all('*', function(req, res, next) {
   var config = {};
@@ -244,13 +259,6 @@ app.all('*', function(req, res, next) {
   req.rellConfig = config
   req.makeUrl = makeUrl.bind(null, config)
 
-  var signedRequest = req.body && req.body.signed_request
-  if (signedRequest) {
-    req.signedRequest = JSON.parse(
-      new Buffer(
-        signedRequest.split('.')[1].replace('-', '+').replace('_', '/'),
-        'base64').toString('utf8'))
-  }
   next()
 })
 app.all('/', function(req, res, next) {

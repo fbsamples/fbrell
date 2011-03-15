@@ -37,4 +37,8 @@ script
       + '.google-analytics.com/ga.js',
     !{JSON.stringify(rellConfig.urls.main)},
     !{JSON.stringify(rellConfig.urls.sdk)}
-  ], function() { Rell.init(!{JSON.stringify(rellConfig)}) });
+  ], function() {
+    Rell.init(!{JSON.stringify(rellConfig)})
+    var signedRequest = !{JSON.stringify(signedRequest) || 'null'}
+    if (signedRequest) Log.info('signed_request', signedRequest)
+  });
