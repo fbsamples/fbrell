@@ -11,14 +11,16 @@
   },
   "dependencies": {
     "async": ">= 0.1.8",
+    "cluster": ">= 0.5.5",
     "connect-assetmanager": ">= 0.0.18",
     "connect-assetmanager-handlers": ">= 0.0.17",
     "dotaccess": ">= 0.0.2",
-    "express": ">= 2.0.0beta",
-    "jade": ">= 0.8.1",
+    "express": ">= 2.2.1",
+    "jade": ">= 0.10.4",
     "knox": ">= 0.0.2",
     "nurl": ">= 0.1.2",
     "walker": ">= 0.0.3"
   },
-  "engines": { "node": ">= 0.4.2" }
+  "bin": { "fbrell": "./server.js" },
+  "engines": { "node": ">= 0.4.5" }
 }

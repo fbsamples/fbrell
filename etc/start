@@ -1,12 +1,11 @@
 #!/bin/sh
 
-/usr/sbin/daemonize \
-  -a \
-  -e /data/log/fbrell.node.err \
-  -o /data/log/fbrell.node.out \
-  /home/naitik/.nave/installed/latest/bin/node \
-  /home/naitik/.nave/installed/latest/bin/spark \
-  --env production \
-  --chdir /data/www/fbrell \
-  --comment fbrell_server \
-  --port 43600
+BASE=$(cd `dirname $0`/.. && pwd)
+
+DAEMONIZE=/usr/sbin/daemonize
+test ! -f $DAEMONIZE && DAEMONIZE=/usr/local/sbin/daemonize
+
+NODEJS=`which node`
+test ! -f $NODEJS && NODEJS=~naitik/.nave/installed/latest/bin/node
+
+$DAEMONIZE $NODEJS $BASE/server.js
