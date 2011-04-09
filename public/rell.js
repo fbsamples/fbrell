@@ -35,16 +35,6 @@ Rell = {
     Log.debug('Configuration', Rell.config);
     (Rell['init_' + Rell.config.version] || Rell.init_old)();
 
-    if (Rell.config.rte && Rell.config.rte != '0') {
-      Rell._editor = CodeMirror.fromTextArea('jscode', {
-        height: '390px',
-        content: Rell.getCode(),
-        basefiles: [Rell.config.urls.codemirrorJs],
-        stylesheet: [Rell.config.urls.codemirrorCss],
-        autoMatchParens: true
-      });
-    }
-
     try {
       var pageTracker = _gat._getTracker('UA-15507059-1');
       pageTracker._trackPageview();
@@ -146,11 +136,7 @@ Rell = {
   },
 
   getCode: function() {
-    if (Rell._editor && Rell._editor.editor) {
-      return Rell._editor.getCode();
-    } else {
-      return document.getElementById('jscode').value;
-    }
+    return document.getElementById('jscode').value;
   },
 
   login: function() {

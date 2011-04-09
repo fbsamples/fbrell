@@ -21,7 +21,6 @@ var DefaultConfig = {
   server: '',
   trace: 1,
   version: 'mu',
-  rte: 0,
   status: 1,
   autoRun: true,
 }
@@ -152,39 +151,12 @@ var assets = function() {
         'log.js',
         'tracer.js',
         'rell.js',
-        'codemirror/js/codemirror.js',
       ],
     },
     'main-css': {
       dataType: 'css',
       files: [
         'rell.css',
-      ]
-    },
-    'codemirror-js': {
-      dataType: 'javascript',
-      files: [
-        'codemirror/js/codemirror.js',
-        'codemirror/js/stringstream.js',
-        'codemirror/js/util.js',
-        'codemirror/js/editor.js',
-        'codemirror/js/select.js',
-        'codemirror/js/undo.js',
-        'codemirror/js/tokenize.js',
-        'codemirror/js/parsecss.js',
-        'codemirror/js/parsexml.js',
-        'codemirror/js/tokenizejavascript.js',
-        'codemirror/js/parsehtmlmixed.js',
-        'codemirror/js/parsejavascript.js',
-      ],
-    },
-    'codemirror-css': {
-      dataType: 'css',
-      files: [
-        'codemirror/css/xmlcolors.css',
-        'codemirror/css/jscolors.css',
-        'codemirror/css/csscolors.css',
-        'custom-codemirror.css',
       ]
     },
   }
@@ -251,8 +223,6 @@ app.all('*', function(req, res, next) {
       req.headers['x-forwarded-proto'] === 'https'),
     main: assets.url('main'),
     mainCss: assets.url('main-css'),
-    codemirrorJs: assets.url('codemirror-js'),
-    codemirrorCss: assets.url('codemirror-css'),
   }
   config.examplesRoot = path.join(__dirname,
     config.version == 'mu' ? 'examples' : 'examples-old')
