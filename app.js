@@ -1,4 +1,6 @@
 var async = require('async')
+  , assetHandler = require('connect-assetmanager-handlers')
+  , assetManager = require('connect-assetmanager')
   , crypto = require('crypto')
   , dotaccess = require('dotaccess')
   , express = require('express')
@@ -6,11 +8,11 @@ var async = require('async')
   , knox = require('knox')
   , nurl = require('nurl')
   , path = require('path')
-  , settings = require('./settings')
+  , qs = require('querystring')
   , util = require('util')
   , walker = require('walker')
-  , assetManager = require('connect-assetmanager')
-  , assetHandler = require('connect-assetmanager-handlers')
+
+  , settings = require('./settings')
   , package = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8'))
 
 var s3 = knox.createClient(settings.amazon)
@@ -74,6 +76,14 @@ function makeUrl(config, path) {
     if (DefaultConfig[key] != val) url = url.setQueryParam(key, val)
   }
   return url.href
+}
+
+function makeOgUrl(data) {
+  var url = 'http://fbrell.com/og?'
+  return url + Object.keys(data).sort().reduce(function(parts, key) {
+    parts.push(qs.escape(key) + '=' + qs.escape(data[key]))
+    return parts
+  }, []).join('&')
 }
 
 // generate the connect js sdk script url
@@ -333,5 +343,6 @@ app.get('/status', function(req, res) {
 })
 app.get('/og', function(req, res) {
   var data = nurl.parse(req.url).getQueryParams()
+  if (!data['og:url']) data['og:url'] = makeOgUrl(data)
   res.render('og', { layout: false, data: data })
 })
