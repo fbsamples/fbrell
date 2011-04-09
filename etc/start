@@ -8,6 +8,4 @@ test ! -f $DAEMONIZE && DAEMONIZE=/usr/local/sbin/daemonize
 NODE=`which node`
 test ! -f $NODE && NODE=~naitik/.nave/installed/latest/bin/node
 
-export NODE_ENV=production
-
 $DAEMONIZE $NODE $BASE/server.js
