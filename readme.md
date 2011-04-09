@@ -11,7 +11,7 @@ Getting Started
 ---------------
 
 Make sure you have [Node](http://nodejs.org/) (v0.4.x) and
-[npm](https://github.com/isaacs/npm) installed, and then:
+[npm](https://github.com/isaacs/npm) (v1.x) installed, and then:
 
     git clone git://github.com/nshah/rell.git
     cd rell
@@ -22,4 +22,4 @@ Make sure you have [Node](http://nodejs.org/) (v0.4.x) and
 
 Then go to:
 
-    http://localhost:3000/xfbml/fb:login-button
+    http://localhost:43600/xfbml/fb:login-button

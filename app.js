@@ -324,6 +324,7 @@ app.get('/status', function(req, res) {
   res.send(
     JSON.stringify({
       nodeVersion: process.version,
+      dummy: 42,
     }),
     { 'content-type': 'text/javascript' }
   )
