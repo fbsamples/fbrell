@@ -5,7 +5,9 @@ BASE=$(cd `dirname $0`/.. && pwd)
 DAEMONIZE=/usr/sbin/daemonize
 test ! -f $DAEMONIZE && DAEMONIZE=/usr/local/sbin/daemonize
 
-NODEJS=`which node`
-test ! -f $NODEJS && NODEJS=~naitik/.nave/installed/latest/bin/node
+NODE=`which node`
+test ! -f $NODE && NODE=~naitik/.nave/installed/latest/bin/node
 
-$DAEMONIZE $NODEJS $BASE/server.js
+export NODE_ENV=production
+
+$DAEMONIZE $NODE $BASE/server.js

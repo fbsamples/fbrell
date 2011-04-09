@@ -11,6 +11,7 @@ var async = require('async')
   , walker = require('walker')
   , assetManager = require('connect-assetmanager')
   , assetHandler = require('connect-assetmanager-handlers')
+  , package = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8'))
 
 var s3 = knox.createClient(settings.amazon)
 
@@ -323,8 +324,8 @@ app.all('/saved/:id', function(req, res, next) {
 app.get('/status', function(req, res) {
   res.send(
     JSON.stringify({
+      version: package.version,
       nodeVersion: process.version,
-      dummy: 42,
     }),
     { 'content-type': 'text/javascript' }
   )
