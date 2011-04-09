@@ -329,3 +329,7 @@ app.get('/status', function(req, res) {
     { 'content-type': 'text/javascript' }
   )
 })
+app.get('/og', function(req, res) {
+  var data = nurl.parse(req.url).getQueryParams()
+  res.render('og', { layout: false, data: data })
+})

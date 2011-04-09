@@ -1,0 +1,23 @@
+!!! 5
+html
+  head
+    meta(charset='utf-8')
+    - if (data.title)
+      title= data.title
+    - if (data.description)
+      meta(name='description', content=data.description)
+    - if (data.keywords)
+      meta(name='keywords', content=data.keywords)
+    - each val, key in data
+      - if (/^og:/.test(key))
+        meta(property=key, content=val)
+    meta(property='fb:app_id', content='184484190795')
+  body
+    - if (data.title)
+      h1= data.title
+    - if (data.description)
+      p= data.description
+    - each val, key in data
+      - if (/^og:/.test(key))
+        p
+          strong #{key} &mdash; #{val}
