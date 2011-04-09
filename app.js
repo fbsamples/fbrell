@@ -326,6 +326,7 @@ app.get('/status', function(req, res) {
     JSON.stringify({
       version: package.version,
       nodeVersion: process.version,
+      environment: process.env.NODE_ENV || 'development',
     }),
     { 'content-type': 'text/javascript' }
   )
