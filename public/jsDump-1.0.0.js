@@ -57,6 +57,7 @@ var jsDump;
                                   return found;
                                 };
 
+                      try {
 			return type != 'object' && type != f ? type :
 				!obj ? 'null' :
 				get('exec') ? 'regexp' :// some browsers (FF) consider regexps functions
@@ -70,6 +71,7 @@ var jsDump;
 					(obj+'').indexOf(f) != -1 ? f : //IE reports functions like alert, as objects
 				'length' in obj ? 'array' :
 				type;
+                      } catch(e) { return 'null' }
 		},
 		separator:function(){
 			return this.multiline ?	this.HTML ? '<br />' : '\n' : this.HTML ? '&nbsp;' : ' ';
