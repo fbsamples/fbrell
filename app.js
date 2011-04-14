@@ -86,13 +86,26 @@ function makeOgUrl(data) {
   }, []).join('&')
 }
 
-// generate the connect js sdk script url
-function getConnectScriptUrl(version, locale, server, ssl) {
-  server = {
+function getBaseServer(server) {
+  return {
     sb: 'www.naitik.dev1315',
     bg: 'www.brent.devrs109',
     rh: 'www.rhe.devrs106',
-  }[server] || server || 'static.ak.connect'
+  }[server] || server
+}
+
+function makeFbUrl(server, ssl, domain, path, query) {
+  server = getBaseServer(server) || 'www'
+  var url = 'http' + (ssl ? 's' : '') + '://' + server + '.facebook.com/'
+  if (domain) url = url.replace('www', domain)
+  if (path) url += path
+  if (query) url += '?' + qs.encode(query)
+  return url
+}
+
+// generate the connect js sdk script url
+function getConnectScriptUrl(version, locale, server, ssl) {
+  server = getBaseServer(server) || 'static.ak.connect'
   var url = 'http' + (ssl ? 's' : '') + '://' + server + '.facebook.com/'
 
   if (server === 'static.ak.connect') {
@@ -222,7 +235,8 @@ app.dynamicHelpers({
   signedRequest: function(req, res) { return req.signedRequest },
 })
 app.all('*', function(req, res, next) {
-  var config = {};
+  var config = {}
+    , ssl = req.headers['x-forwarded-proto'] === 'https';
   [DefaultConfig, req.query].forEach(function(src) {
     for (var key in src) {
       config[key] = src[key]
@@ -230,8 +244,7 @@ app.all('*', function(req, res, next) {
   })
   config.urls = {
     sdk: getConnectScriptUrl(
-      config.version, config.locale, config.server,
-      req.headers['x-forwarded-proto'] === 'https'),
+      config.version, config.locale, config.server, ssl),
     main: assets.url('main'),
     mainCss: assets.url('main-css'),
   }
@@ -239,6 +252,7 @@ app.all('*', function(req, res, next) {
     config.version == 'mu' ? 'examples' : 'examples-old')
   req.rellConfig = config
   req.makeUrl = makeUrl.bind(null, config)
+  req.makeFbUrl = makeFbUrl.bind(null, config.server, ssl)
 
   next()
 })
@@ -337,6 +351,10 @@ app.get('/status', function(req, res) {
       version: package.version,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV || 'development',
+      oauthUrl: req.makeFbUrl('graph', 'oauth/authorize', {
+        client_id: req.rellConfig.appid,
+        redirect_uri: 'https://fbrell.com/echo',
+      })
     }),
     { 'content-type': 'text/javascript' }
   )
