@@ -345,7 +345,7 @@ app.all('/saved/:id', function(req, res, next) {
     })
     .end()
 })
-app.get('/status', function(req, res) {
+app.get('/info', function(req, res) {
   res.send(
     JSON.stringify({
       version: package.version,
@@ -355,7 +355,8 @@ app.get('/status', function(req, res) {
       oauthUrl: req.makeFbUrl('graph', 'oauth/authorize', {
         client_id: req.rellConfig.appid,
         redirect_uri: 'https://fbrell.com/echo',
-      })
+      }),
+      canvasUrl: req.makeFbUrl('apps', 'fbrelll/'),
     }),
     { 'content-type': 'text/javascript' }
   )
