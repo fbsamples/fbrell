@@ -351,6 +351,7 @@ app.get('/status', function(req, res) {
       version: package.version,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV || 'development',
+      config: req.rellConfig,
       oauthUrl: req.makeFbUrl('graph', 'oauth/authorize', {
         client_id: req.rellConfig.appid,
         redirect_uri: 'https://fbrell.com/echo',
