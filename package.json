@@ -3,7 +3,7 @@
   "description": "The source code for the http://fbrell.com/ website.",
   "homepage": "http://fbrell.com/",
   "keywords": ["website"],
-  "version": "1.9.4",
+  "version": "1.9.5",
   "author": "Naitik Shah <n@daaku.org>",
   "repository": {
     "type": "git",
@@ -11,13 +11,13 @@
   },
   "dependencies": {
     "async": ">= 0.1.8",
-    "cluster": ">= 0.5.5",
+    "cluster": ">= 0.5.6",
     "connect-assetmanager": ">= 0.0.18",
     "connect-assetmanager-handlers": ">= 0.0.17",
     "dotaccess": ">= 0.0.2",
-    "express": ">= 2.2.1",
+    "express": ">= 2.2.2",
     "jade": ">= 0.10.4",
-    "knox": ">= 0.0.2",
+    "knox": ">= 0.0.3",
     "nurl": ">= 0.1.2",
     "walker": ">= 0.0.3"
   },
