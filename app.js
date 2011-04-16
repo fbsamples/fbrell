@@ -68,8 +68,8 @@ var examples = function() {
 }()
 
 // generate a url, maintaining the non default query params
-function makeUrl(config, path) {
-  var url = nurl.parse(path)
+function makeUrl(config, given_url) {
+  var url = nurl.parse(given_url)
   for (var key in config) {
     if (key in { urls: 1, examplesRoot: 1, autoRun: 1 }) continue //FIXME
     var val = config[key]
@@ -357,7 +357,7 @@ app.get('/info', function(req, res) {
         client_id: req.rellConfig.appid,
         redirect_uri: 'https://fbrell.com/echo',
       }),
-      canvasUrl: req.makeFbUrl('apps', 'fbrelll/'),
+      canvasUrl: req.makeUrl(req.makeFbUrl('apps', 'fbrelll/')),
     }),
     { 'content-type': 'text/javascript' }
   )
