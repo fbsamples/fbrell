@@ -366,5 +366,6 @@ app.get('/og', function(req, res) {
   var data = nurl.parse(req.url).getQueryParams()
   if (!data['og:url']) data['og:url'] = makeOgUrl(data)
   if (!data['og:image']) data['og:image'] = 'http://fbrell.com/f8.jpg'
+  if (!data['og:description']) data['og:description'] = 'fbrell default description.'
   res.render('og', { layout: false, data: data })
 })
