@@ -11,7 +11,8 @@ html
     - each val, key in data
       - if (/^og:/.test(key))
         meta(property=key, content=val)
-    meta(property='fb:app_id', content='184484190795')
+    - if (!data['no_app_id'])
+      meta(property='fb:app_id', content='184484190795')
   body
     - if (data.title)
       h1= data.title
