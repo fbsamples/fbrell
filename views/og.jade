@@ -8,6 +8,8 @@ html
       meta(name='description', content=data.description)
     - if (data.keywords)
       meta(name='keywords', content=data.keywords)
+    - if (data.title && !data['og:title'])
+      meta(property='og:title', content=data.title)
     - each val, key in data
       - if (/^og:/.test(key))
         meta(property=key, content=val)
