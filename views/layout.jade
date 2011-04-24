@@ -11,4 +11,21 @@ html
     meta(property='og:type', content='website')
     meta(property='og:url', content='http://fbrell.com/')
     link(type='text/css', rel='stylesheet', href=rellConfig.urls.mainCss)
+  script
+    $L=function(c,d){for(var b=c.length,e=b,f=function(){if(!(this.readyState
+    &&this.readyState!=="complete"&&this.readyState!=="loaded")){this.onload=
+    this.onreadystatechange=null;--e||d()}},g=document.getElementsByTagName(
+    "head")[0],i=function(h){var a=document.createElement("script");a.async=
+    true;a.src=h;a.onload=a.onreadystatechange=f;g.appendChild(a)};b;)i(c[--b]
+    )};
+    $L(
+      [(document.location.protocol == 'https:' ? 'https://ssl' : 'http://www')
+        + '.google-analytics.com/ga.js'],
+      function() {
+        try {
+          var pageTracker = _gat._getTracker('UA-15507059-1');
+          pageTracker._trackPageview();
+        } catch(e) {}
+      }
+    );
   body(class=bodyClass) !{body}

@@ -34,11 +34,6 @@ Rell = {
     Log.init(document.getElementById('log'), Rell.config.level);
     Log.debug('Configuration', Rell.config);
     (Rell['init_' + Rell.config.version] || Rell.init_old)();
-
-    try {
-      var pageTracker = _gat._getTracker('UA-15507059-1');
-      pageTracker._trackPageview();
-    } catch(e) {}
   },
 
   /**
