@@ -67,6 +67,13 @@ var examples = function() {
   }
 }()
 
+function copy(src, target) {
+  target = target || {}
+  for (var key in src)
+    target[key] = src[key]
+  return target
+}
+
 // generate a url, maintaining the non default query params
 function makeUrl(config, given_url) {
   var url = nurl.parse(given_url)
@@ -79,7 +86,17 @@ function makeUrl(config, given_url) {
 }
 
 function makeOgUrl(data) {
-  var url = 'http://fbrell.com/og?'
+  var url = nurl.parse('http://fbrell.com/og')
+  if (data.title && data['og:type']) {
+    url = url.setPathname('/og/' + data['og:type'] + '/' + data.title)
+    data = copy(data)
+    delete data.title
+    delete data['og:type']
+  }
+  url = url.href
+  if (Object.keys(data).length > 0) {
+    url += '?'
+  }
   return url + Object.keys(data).sort().reduce(function(parts, key) {
     parts.push(qs.escape(key) + '=' + qs.escape(data[key]))
     return parts
@@ -364,6 +381,15 @@ app.get('/info', function(req, res) {
 })
 app.get('/og', function(req, res) {
   var data = nurl.parse(req.url).getQueryParams()
+  if (!data['og:url']) data['og:url'] = makeOgUrl(data)
+  if (!data['og:image']) data['og:image'] = 'http://fbrell.com/f8.jpg'
+  if (!data['og:description']) data['og:description'] = 'fbrell default description.'
+  res.render('og', { layout: false, data: data })
+})
+app.get('/og/:type/:title', function(req, res) {
+  var data = nurl.parse(req.url).getQueryParams()
+  data.title = req.params.title
+  data['og:type'] = req.params.type
   if (!data['og:url']) data['og:url'] = makeOgUrl(data)
   if (!data['og:image']) data['og:image'] = 'http://fbrell.com/f8.jpg'
   if (!data['og:description']) data['og:description'] = 'fbrell default description.'
