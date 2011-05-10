@@ -26,6 +26,7 @@ var DefaultConfig = {
   version: 'mu',
   status: 1,
   autoRun: true,
+  orange: false,
 }
 
 var examples = function() {
