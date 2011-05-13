@@ -6,6 +6,7 @@ var Tracer = {
   exclude: {
     'FB.Event.subscribers': 1,
     'FB.UIServer._popupMonitor': 1,
+    'FB.UIServer.__popupMonitor': 1,
     'FB.md5sum': 1,
     'FB.QS.decode': 1,
     'FB.QS.encode': 1,
