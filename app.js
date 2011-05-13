@@ -37,7 +37,7 @@ var examples = function() {
   // normalize directory paths
   function normalizeDir(target) {
     target = path.normalize(target)
-    if (target[0] !== '/') path.normalize(path.join(process.cwd(), target))
+    if (target[0] !== '/') target = path.normalize(path.join(process.cwd(), target))
     if (target[target.length-1] !== '/') target += '/'
     return target
   }
