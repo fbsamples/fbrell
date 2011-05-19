@@ -112,17 +112,17 @@ html.orange body {
   margin-top: 15%;
 }
 
-.help .bd {
+.narrow .bd {
   width: 520px;
   margin: 0 auto;
 }
-.help h1 {
+.narrow h1 {
   font-variant: small-caps;
 }
-.help dt {
+.narrow dt {
   font-weight: bold;
 }
-.help dl strong {
+.narrow dl strong {
   font-family: "Menlo Regular", Monaco, Consolas, monospace;
   font-size: 87%;
 }

@@ -68,6 +68,10 @@ var examples = function() {
   }
 }()
 
+function makeRandomCode() {
+  return 'f' + (Math.random()*(1<<30)).toString(16).replace('.','')
+}
+
 function copy(src, target) {
   target = target || {}
   for (var key in src)
@@ -232,6 +236,7 @@ var app = module.exports = express.createServer(
   express.bodyParser(),
   express.methodOverride(),
   express.static(__dirname + '/public'),
+  express.cookieParser(),
   signedRequestMiddleware,
   appDataMiddleware
 )
@@ -395,4 +400,20 @@ app.get('/og/:type/:title', function(req, res) {
   if (!data['og:image']) data['og:image'] = 'http://fbrell.com/f8.jpg'
   if (!data['og:description']) data['og:description'] = 'fbrell default description.'
   res.render('og', { layout: false, data: data })
+})
+app.get('/redirect', function(req, res) {
+  var redirect_code = req.cookies.redirect_code
+  if (!redirect_code) {
+    redirect_code = makeRandomCode()
+    res.cookie('redirect_code', redirect_code, { maxAge: 1000*60*60*24 })
+  }
+  res.render('redirect', { href: '/redirect/' + redirect_code })
+})
+app.get('/redirect/:code', function(req, res) {
+  var next = req.query.next
+    , redirect_code = req.cookies.redirect_code
+  if (!next) throw new Error('Expected "next" parameter.')
+  if (!redirect_code || redirect_code != req.params.code)
+    throw new Error('Unexpected code.')
+  res.redirect(next)
 })
