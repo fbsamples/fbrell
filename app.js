@@ -111,6 +111,7 @@ function makeOgUrl(data) {
 function getBaseServer(server) {
   return {
     sb: 'www.naitik.dev1315',
+    ns: 'www.naitik.dev1315',
     bg: 'www.brent.devrs109',
     rh: 'www.rhe.devrs106',
     pt: 'www.ptarjan.dev1115',
