@@ -24,6 +24,7 @@ var DefaultConfig = {
   server: '',
   trace: 1,
   version: 'mu',
+  module: 'all',
   status: 1,
   autoRun: true,
   orange: false,
@@ -128,7 +129,7 @@ function makeFbUrl(server, ssl, domain, path, query) {
 }
 
 // generate the connect js sdk script url
-function getConnectScriptUrl(version, locale, server, ssl) {
+function getConnectScriptUrl(version, locale, server, module, ssl) {
   server = getBaseServer(server) || 'static.ak.connect'
   var url = 'http' + (ssl ? 's' : '') + '://' + server + '.facebook.com/'
 
@@ -142,7 +143,7 @@ function getConnectScriptUrl(version, locale, server, ssl) {
 
   if (version === 'mu') {
     if (url.indexOf('//connect.facebook.net/') < 0) url += 'assets.php/'
-    url += locale + '/all.js'
+    url += locale + '/' + module + '.js'
   } else if (version === 'mid') {
     url += 'connect.php/' + locale + '/js/'
   } else {
@@ -269,7 +270,7 @@ app.all('*', function(req, res, next) {
   })
   config.urls = {
     sdk: getConnectScriptUrl(
-      config.version, config.locale, config.server, ssl),
+      config.version, config.locale, config.server, config.module, ssl),
     main: assets.url('main'),
     mainCss: assets.url('main-css'),
   }
