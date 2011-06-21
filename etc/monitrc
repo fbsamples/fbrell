@@ -1,8 +1,8 @@
 check host fbrell with address 127.0.0.1
   start program "/data/www/fbrell/etc/start"
-    as uid naitik and gid naitik
-  stop program "/home/naitik/.nave/installed/latest/bin/node /data/www/fbrell/server.js --stop"
-    as uid naitik and gid naitik
+    as uid naitik and gid users
+  stop program "/usr/bin/node /data/www/fbrell/server.js --stop"
+    as uid naitik and gid users
   if failed port 43600 protocol HTTP
     request /
     with timeout 5 seconds
