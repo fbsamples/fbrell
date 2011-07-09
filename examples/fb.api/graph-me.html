@@ -24,7 +24,7 @@ window.doPost = function() {
   FB.api(
     '/me/feed',
     'post',
-    { body: 'Trying the Graph' },
+    { message: 'Trying the Graph' },
     Log.info.bind('/me/feed POST callback')
   );
 };
