@@ -10,3 +10,15 @@ module.exports.amazon = {
   secret: '...',
   bucket: '...',
 }
+
+// you'll need this if you plan on using the soda tests
+module.exports.facebookTestUser = {
+  email: '...',
+  pass: '...',
+}
+
+// you'll need this if you plan on using saucelabs.com for running tests
+module.exports.sauce = {
+  user: '...',
+  key: '...',
+}

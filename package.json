@@ -21,5 +21,9 @@
     "nurl": ">= 0.1.2",
     "walker": ">= 0.0.3"
   },
+  "devDependencies": {
+    "expresso": ">= 0.8.1",
+    "soda": ">= 0.2.4"
+  },
   "engines": { "node": ">= 0.4.5" }
 }

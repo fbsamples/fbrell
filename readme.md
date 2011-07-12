@@ -23,3 +23,23 @@ Make sure you have [Node](http://nodejs.org/) (v0.4.x) and
 Then go to:
 
     http://localhost:43600/xfbml/fb:login-button
+
+
+Running Selenium Tests
+----------------------
+
+Download the [Selenium Server](http://seleniumhq.org/download/) and run it,
+maybe using something like:
+
+    java -jar selenium-server-standalone-2.0.0.jar
+
+Then run the tests using [expresso](http://visionmedia.github.com/expresso/)
+which should have been installed by the earlier `npm install` command:
+
+    ./node_modules/.bin/expresso tests.js
+
+If you signup for [Sauce Labs](https://saucelabs.com/) and enter your
+credentials into `settings.js`, then you can also run the tests in the cloud
+for free without needing to have Selenium running locally:
+
+    SAUCE=1 ./node_modules/.bin/expresso tests.js
