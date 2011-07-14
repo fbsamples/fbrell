@@ -210,6 +210,7 @@ var assets = function() {
     },
   }
 
+  var _manager = null
   return {
     middleware: function(options) {
       for (var groupName in groups) {
