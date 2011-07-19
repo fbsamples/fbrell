@@ -247,7 +247,6 @@ var app = module.exports = express.createServer(
 app.configure(function() {
   app.set('view engine', 'jade')
   app.set('views', __dirname + '/views')
-  if (process.sparkEnv) app.set('env', process.sparkEnv.name)
 })
 app.configure('development', function() {
   app.use(assets.middleware({ debug: true }))
