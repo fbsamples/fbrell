@@ -7,7 +7,7 @@ html(lang='en')
     - if (data.title && !data['og:title'])
       meta(property='og:title', content=data.title)
     - each val, key in data
-      - if (/^og:/.test(key))
+      - if (key.indexOf(':') > -1)
         meta(property=key, content=val)
     - if (!data['no_app_id'])
       meta(property='fb:app_id', content='184484190795')
@@ -25,7 +25,7 @@ html(lang='en')
               th Content
           tbody
             - each val, key in data
-              - if (/^og:/.test(key))
+              - if (key.indexOf(':') > -1)
                 tr
                   th= key
                   - if (val.indexOf('http') === 0)
