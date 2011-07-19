@@ -119,12 +119,42 @@ html.orange body {
 .narrow h1 {
   font-variant: small-caps;
 }
+.narrow h1 a {
+  color: #000000;
+}
 .narrow dt {
   font-weight: bold;
 }
 .narrow dl strong {
   font-family: "Menlo Regular", Monaco, Consolas, monospace;
   font-size: 87%;
+}
+.narrow img {
+  max-width: 520px;
+}
+
+/**
+ * Info table
+ */
+table.info {
+  text-align: left;
+  border: 1px solid #1D4088;
+  border-collapse: collapse;
+  margin-bottom: 1.5em;
+  width: 100%;
+}
+table.info th, table.info td {
+  padding: 0.4em 0.5em;
+}
+table.info thead th, table.info thead td {
+  background-color: #627AAD;
+  color: #ffffff;
+}
+table.info tbody tr:hover th, table.info tbody tr:hover td {
+  background-color: #efefef;
+}
+table.info tbody th {
+  color: #808080;
 }
 
 /**

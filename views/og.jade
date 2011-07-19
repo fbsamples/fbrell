@@ -1,13 +1,9 @@
 !!! 5
-html
+html(lang='en')
   head
     meta(charset='utf-8')
     - if (data.title)
       title= data.title
-    - if (data.description)
-      meta(name='description', content=data.description)
-    - if (data.keywords)
-      meta(name='keywords', content=data.keywords)
     - if (data.title && !data['og:title'])
       meta(property='og:title', content=data.title)
     - each val, key in data
@@ -15,13 +11,27 @@ html
         meta(property=key, content=val)
     - if (!data['no_app_id'])
       meta(property='fb:app_id', content='184484190795')
-  body
-    - if (data.title)
-      h1= data.title
-    - if (data.description)
-      p= data.description
-    - each val, key in data
-      - if (/^og:/.test(key))
-        p
-          strong #{key} &mdash; #{val}
-    img(src=data['og:image'])
+    link(type='text/css', rel='stylesheet', href=rellConfig.urls.mainCss)
+  body(class='narrow')
+    div.bd
+      - if (data.title)
+        h1
+          a(href=data['og:url'])= data.title
+      div
+        table.info
+          thead
+            tr
+              th Property
+              th Content
+          tbody
+            - each val, key in data
+              - if (/^og:/.test(key))
+                tr
+                  th= key
+                  - if (val.indexOf('http') === 0)
+                    td
+                      a(href=val)= val
+                  - else
+                    td= val
+      a(href=data['og:image'])
+        img(src=data['og:image'])
