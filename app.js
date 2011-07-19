@@ -388,20 +388,14 @@ app.get('/info', function(req, res) {
     { 'content-type': 'text/javascript' }
   )
 })
-app.get('/og', function(req, res) {
+app.get('/og/:type?/:title?', function(req, res) {
   var data = nurl.parse(req.url).getQueryParams()
+  if (req.params.title) data.title = req.params.title
+  if (req.params.type) data['og:type'] = req.params.type
   if (!data['og:url']) data['og:url'] = makeOgUrl(data)
   if (!data['og:image']) data['og:image'] = 'http://fbrell.com/f8.jpg'
-  if (!data['og:description']) data['og:description'] = 'fbrell default description.'
-  res.render('og', { layout: false, data: data })
-})
-app.get('/og/:type/:title', function(req, res) {
-  var data = nurl.parse(req.url).getQueryParams()
-  data.title = req.params.title
-  data['og:type'] = req.params.type
-  if (!data['og:url']) data['og:url'] = makeOgUrl(data)
-  if (!data['og:image']) data['og:image'] = 'http://fbrell.com/f8.jpg'
-  if (!data['og:description']) data['og:description'] = 'fbrell default description.'
+  if (!data['og:description'])
+    data['og:description'] = 'fbrell default description.'
   res.render('og', { layout: false, data: data })
 })
 app.get('/redirect', function(req, res) {
