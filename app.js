@@ -110,6 +110,26 @@ function makeOgUrl(data) {
   }, []).join('&')
 }
 
+function makeOgImage(url) {
+  var images = [
+    'beach_skyseeker_3184914.jpg',
+    'beetle_gnilenkov_4647458067.jpg',
+    'car_damianmorysfotos_5933730674.jpg',
+    'circuits_ladyada_5074936971.jpg',
+    'dogs_mythicseabass_4662963501.jpg',
+    'flower_serrasclimb_3999125500.jpg',
+    'jailed_flower_vpolat_3069134052.jpg',
+    'stone_house_aamaianos_3040806369.jpg',
+    'taxi_rotia_2806339125.jpg',
+    'valley_markgee6_90348619.jpg',
+  ]
+    , url = nurl.parse(url)
+    , key = url.pathname + url.search
+    , hash = crypto.createHash('md5').update(key).digest('hex').slice(0, 8)
+    , index = parseInt(hash, 16) % images.length
+  return 'http://fbrell.com/images/' + images[index]
+}
+
 function getBaseServer(server) {
   return {
     sb: 'www.naitik.dev1315',
@@ -393,7 +413,7 @@ app.get('/og/:type?/:title?', function(req, res) {
   if (req.params.title) data.title = req.params.title
   if (req.params.type) data['og:type'] = req.params.type
   if (!data['og:url']) data['og:url'] = makeOgUrl(data)
-  if (!data['og:image']) data['og:image'] = 'http://fbrell.com/f8.jpg'
+  if (!data['og:image']) data['og:image'] = makeOgImage(data['og:url'])
   if (!data['og:description'])
     data['og:description'] = 'fbrell default description.'
   res.render('og', { layout: false, data: data })
