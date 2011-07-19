@@ -440,7 +440,13 @@ app.get('/og/:type?/:title?', function(req, res) {
   if (!data['og:image']) data['og:image'] = makeOgImage(data['og:url'])
   if (!data['og:description'])
     data['og:description'] = makeOgDescription(data['og:url'])
-  res.render('og', { layout: false, data: data })
+  res.render('og', {
+    layout: false,
+    data: data,
+    linterUrl: nurl.parse('https://developers.facebook.com/tools/lint')
+                 .setQueryParam('url', data['og:url'])
+                 .toString(),
+  })
 })
 app.get('/redirect', function(req, res) {
   var redirect_code = req.cookies.redirect_code

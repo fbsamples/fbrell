@@ -112,6 +112,9 @@ html.orange body {
   margin-top: 15%;
 }
 
+/**
+ * Narrow View
+ */
 .narrow .bd {
   width: 520px;
   margin: 0 auto;
@@ -131,6 +134,14 @@ html.orange body {
 }
 .narrow img {
   max-width: 520px;
+}
+
+/**
+ * /og stuff
+ */
+.lint-this {
+  margin-top: 1.5em;
+  display: block;
 }
 
 /**
