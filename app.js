@@ -110,8 +110,16 @@ function makeOgUrl(data) {
   }, []).join('&')
 }
 
+function hashedPick(url, data) {
+  var url = nurl.parse(url)
+    , key = url.pathname + url.search
+    , hash = crypto.createHash('md5').update(key).digest('hex').slice(0, 8)
+    , index = parseInt(hash, 16) % data.length
+  return data[index]
+}
+
 function makeOgImage(url) {
-  var images = [
+  return 'http://fbrell.com/images/' + hashedPick(url, [
     'beach_skyseeker_3184914.jpg',
     'beetle_gnilenkov_4647458067.jpg',
     'car_damianmorysfotos_5933730674.jpg',
@@ -122,12 +130,28 @@ function makeOgImage(url) {
     'stone_house_aamaianos_3040806369.jpg',
     'taxi_rotia_2806339125.jpg',
     'valley_markgee6_90348619.jpg',
-  ]
-    , url = nurl.parse(url)
-    , key = url.pathname + url.search
-    , hash = crypto.createHash('md5').update(key).digest('hex').slice(0, 8)
-    , index = parseInt(hash, 16) % images.length
-  return 'http://fbrell.com/images/' + images[index]
+  ])
+}
+
+function makeOgDescription(url) {
+  return hashedPick(url, [
+    'You might have seen a housefly, maybe even a super-fly, but I bet you' +
+    ' ain\'t never seen a donkey fly!',
+
+    'If I\'m not back in five minutes... just wait longer.',
+
+    'I keep forgetting about the goddamn tiger!',
+
+    'I refuse to play your Chinese food mind games!',
+
+    'Everybody remember where we parked.',
+
+    'Oh, my, yes.',
+
+    'Hello there, children.',
+
+    'Yeah, I eat the whole apple. The core, stem, seeds, everything.',
+  ])
 }
 
 function getBaseServer(server) {
@@ -415,7 +439,7 @@ app.get('/og/:type?/:title?', function(req, res) {
   if (!data['og:url']) data['og:url'] = makeOgUrl(data)
   if (!data['og:image']) data['og:image'] = makeOgImage(data['og:url'])
   if (!data['og:description'])
-    data['og:description'] = 'fbrell default description.'
+    data['og:description'] = makeOgDescription(data['og:url'])
   res.render('og', { layout: false, data: data })
 })
 app.get('/redirect', function(req, res) {
