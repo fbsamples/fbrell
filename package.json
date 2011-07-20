@@ -18,7 +18,6 @@
     "express": ">= 2.2.2",
     "jade": ">= 0.10.4",
     "knox": ">= 0.0.3",
-    "nurl": ">= 0.1.2",
     "walker": ">= 0.0.3"
   },
   "devDependencies": {

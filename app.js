@@ -6,7 +6,7 @@ var async = require('async')
   , express = require('express')
   , fs = require('fs')
   , knox = require('knox')
-  , nurl = require('nurl')
+  , nurl = require('url')
   , path = require('path')
   , qs = require('querystring')
   , util = require('util')
@@ -83,24 +83,24 @@ function copy(src, target) {
 
 // generate a url, maintaining the non default query params
 function makeUrl(config, given_url) {
-  var url = nurl.parse(given_url)
+  var url = nurl.parse(given_url, true)
   for (var key in config) {
     if (key in { urls: 1, examplesRoot: 1, autoRun: 1 }) continue //FIXME
     var val = config[key]
-    if (DefaultConfig[key] != val) url = url.setQueryParam(key, val)
+    if (DefaultConfig[key] != val) url.query[key] = val
   }
-  return url.href
+  return nurl.format(url)
 }
 
 function makeOgUrl(data) {
   var url = nurl.parse('http://fbrell.com/og')
   if (data.title && data['og:type']) {
-    url = url.setPathname('/og/' + data['og:type'] + '/' + data.title)
+    url.pathname = '/og/' + data['og:type'] + '/' + data.title
     data = copy(data)
     delete data.title
     delete data['og:type']
   }
-  url = url.href
+  url = nurl.format(url)
   if (Object.keys(data).length > 0) {
     url += '?'
   }
@@ -222,15 +222,14 @@ function signedRequestMiddleware(req, res, next) {
 }
 
 function appDataMiddleware(req, res, next) {
-  var url = nurl.parse(req.url)
-    , appData = url.getQueryParam('app_data') || (
+  var url = nurl.parse(req.url, true)
+    , appData = url.query.app_data || (
         req.signedRequest && req.signedRequest.app_data)
   if (appData) {
     var parts = appData.split('_')
-    req.url = url
-      .setQueryParam('server', parts.shift())
-      .setPathname(parts.join('/'))
-      .toString()
+    url.query.server = parts.shift()
+    url.pathname = parts.join('/')
+    req.url = nurl.format(url)
   }
   next()
 }
@@ -433,7 +432,7 @@ app.get('/info', function(req, res) {
   )
 })
 app.get('/og/:type?/:title?', function(req, res) {
-  var data = nurl.parse(req.url).getQueryParams()
+  var data = nurl.parse(req.url, true).query
   if (req.params.title) data.title = req.params.title
   if (req.params.type) data['og:type'] = req.params.type
   if (!data['og:url']) data['og:url'] = makeOgUrl(data)
@@ -443,9 +442,8 @@ app.get('/og/:type?/:title?', function(req, res) {
   res.render('og', {
     layout: false,
     data: data,
-    linterUrl: nurl.parse('https://developers.facebook.com/tools/lint')
-                 .setQueryParam('url', data['og:url'])
-                 .toString(),
+    linterUrl:
+      req.makeFbUrl('developers', 'tools/lint', { url: data['og:url'] }),
   })
 })
 app.get('/redirect', function(req, res) {
