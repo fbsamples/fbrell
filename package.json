@@ -3,26 +3,26 @@
   "description": "The source code for the http://fbrell.com/ website.",
   "homepage": "http://fbrell.com/",
   "keywords": ["website"],
-  "version": "1.9.5",
+  "version": "2.0.0",
   "author": "Naitik Shah <n@daaku.org>",
   "repository": {
     "type": "git",
     "url": "git://github.com/nshah/rell.git"
   },
   "dependencies": {
-    "async": ">= 0.1.8",
-    "cluster": ">= 0.5.6",
-    "connect-assetmanager": ">= 0.0.18",
+    "async": ">= 0.1.9",
+    "cluster": ">= 0.6.8",
+    "connect-assetmanager": ">= 0.0.21",
     "connect-assetmanager-handlers": ">= 0.0.17",
-    "dotaccess": ">= 0.0.2",
-    "express": ">= 2.2.2",
-    "jade": ">= 0.10.4",
-    "knox": ">= 0.0.3",
-    "walker": ">= 0.0.3"
+    "dotaccess": ">= 0.0.3",
+    "express": ">= 2.4.3",
+    "jade": ">= 0.13.0",
+    "knox": ">= 0.0.9",
+    "walker": ">= 0.0.4"
   },
   "devDependencies": {
     "expresso": ">= 0.8.1",
     "soda": ">= 0.2.4"
   },
-  "engines": { "node": ">= 0.4.5" }
+  "engines": { "node": ">= 0.4.9" }
 }
