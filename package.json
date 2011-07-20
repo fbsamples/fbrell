@@ -7,7 +7,7 @@
   "author": "Naitik Shah <n@daaku.org>",
   "repository": {
     "type": "git",
-    "url": "git://github.com/nshah/rell.git"
+    "url": "https://github.com/nshah/rell"
   },
   "dependencies": {
     "async": ">= 0.1.9",
