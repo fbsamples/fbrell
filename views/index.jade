@@ -27,8 +27,8 @@
 #FB_HiddenContainer
 script
   $L(
-    [!{JSON.stringify(rellConfig.urls.main)},
-     !{JSON.stringify(rellConfig.urls.sdk)}],
+    [!{JSON.stringify(staticUrls.main)},
+     !{JSON.stringify(staticUrls.sdk)}],
     function() {
       Rell.init(!{JSON.stringify(rellConfig)})
       var signedRequest = !{JSON.stringify(signedRequest) || 'null'}

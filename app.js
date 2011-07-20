@@ -13,7 +13,7 @@ var async = require('async')
   , walker = require('walker')
 
   , settings = require('./settings')
-  , package = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8'))
+  , meta = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8'))
 
 var s3 = knox.createClient(settings.amazon)
 
@@ -82,10 +82,9 @@ function copy(src, target) {
 }
 
 // generate a url, maintaining the non default query params
-function makeUrl(config, given_url) {
-  var url = nurl.parse(given_url, true)
+function makeUrl(config, givenUrl) {
+  var url = nurl.parse(givenUrl, true)
   for (var key in config) {
-    if (key in { urls: 1, examplesRoot: 1, autoRun: 1 }) continue //FIXME
     var val = config[key]
     if (DefaultConfig[key] != val) url.query[key] = val
   }
@@ -97,8 +96,8 @@ function makeOgUrl(data) {
   if (data.title && data['og:type']) {
     url.pathname = '/og/' + data['og:type'] + '/' + data.title
     data = copy(data)
-    delete data.title
-    delete data['og:type']
+    ;delete data.title
+    ;delete data['og:type']
   }
   url = nurl.format(url)
   if (Object.keys(data).length > 0) {
@@ -110,8 +109,8 @@ function makeOgUrl(data) {
   }, []).join('&')
 }
 
-function hashedPick(url, data) {
-  var url = nurl.parse(url)
+function hashedPick(href, data) {
+  var url = nurl.parse(href)
     , key = url.pathname + url.search
     , hash = crypto.createHash('md5').update(key).digest('hex').slice(0, 8)
     , index = parseInt(hash, 16) % data.length
@@ -202,7 +201,7 @@ function loadExample(req, res, next) {
   var pathname = req.params[0]
     , filename = pathname + '.html'
   examples.get(
-    req.rellConfig.examplesRoot,
+    req.examplesRoot,
     filename,
     function(er, exampleCode) {
       req.exampleCode = exampleCode
@@ -300,9 +299,10 @@ app.configure('production', function() {
   app.use(express.errorHandler())
 })
 app.dynamicHelpers({
-  rellConfig: function(req, res) { return req.rellConfig },
   makeUrl: function(req, res) { return req.makeUrl },
+  rellConfig: function(req, res) { return req.rellConfig },
   signedRequest: function(req, res) { return req.signedRequest },
+  staticUrls: function(req, res) { return req.staticUrls },
 })
 app.all('*', function(req, res, next) {
   var config = {}
@@ -312,15 +312,15 @@ app.all('*', function(req, res, next) {
       config[key] = src[key]
     }
   })
-  config.urls = {
+  req.rellConfig = config
+  req.staticUrls = {
     sdk: getConnectScriptUrl(
       config.version, config.locale, config.server, config.module, ssl),
     main: assets.url('main'),
     mainCss: assets.url('main-css'),
   }
-  config.examplesRoot = path.join(__dirname,
+  req.examplesRoot = path.join(__dirname,
     config.version == 'mu' ? 'examples' : 'examples-old')
-  req.rellConfig = config
   req.makeUrl = makeUrl.bind(null, config)
   req.makeFbUrl = makeFbUrl.bind(null, config.server, ssl)
 
@@ -352,7 +352,7 @@ app.all('/simple/*', loadExample, function(req, res, next) {
   })
 })
 app.get('/examples', function(req, res, next) {
-  examples.list(req.rellConfig.examplesRoot, function(er, data) {
+  examples.list(req.examplesRoot, function(er, data) {
     if (er) return next(er)
     res.render('examples', {
       examples: data,
@@ -418,7 +418,7 @@ app.all('/saved/:id', function(req, res, next) {
 app.get('/info', function(req, res) {
   res.send(
     JSON.stringify({
-      version: package.version,
+      version: meta.version,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV || 'development',
       config: req.rellConfig,
@@ -427,6 +427,7 @@ app.get('/info', function(req, res) {
         redirect_uri: 'https://fbrell.com/echo',
       }),
       canvasUrl: req.makeUrl(req.makeFbUrl('apps', 'fbrelll/')),
+      sdkUrl: req.staticUrls.sdk,
     }),
     { 'content-type': 'text/javascript' }
   )
