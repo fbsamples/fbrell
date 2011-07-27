@@ -2,6 +2,31 @@ var soda = require('soda')
   , assert = require('assert')
   , settings = require('./settings')
 
+exports.inter = function() {
+  var client = createSodaClient('interactive')
+    , wrapMethods = soda.commands.slice(0)
+  wrapMethods.push('session')
+  wrapMethods.forEach(function(name) {
+    var old = client[name]
+    client[name] = function() {
+      var args = Array.prototype.slice.call(arguments)
+        , index = name === 'session' ? 0 : 2
+      args[index] = function(er) {
+        if (er) {
+          console.error(name, er)
+          return
+        }
+        var cbArgs = Array.prototype.slice.call(arguments)
+        cbArgs.shift()
+        console.info(name + ' callback was invoked.')
+      }
+      old.apply(this, args)
+    }
+  })
+  client.session()
+  return client
+}
+
 function createSodaClient(name) {
   if (process.env.SAUCE) {
     return soda.createSauceClient({
