@@ -1,6 +1,7 @@
-fb = require('./infra.js')
+var fb = require('./infra/core.js')
+  , soda = require('./infra/soda.js')
 
-fb.sodaTest(exports, 'login and logout', function(browser) {
+soda.sodaTest(exports, 'login and logout', function(browser) {
   return browser
     .and(fb.runExample({ url: '/saved/79f242491065630b3dfe66cde4fa532b'}))
     .and(fb.waitAssertTextPresent('unknown'))
