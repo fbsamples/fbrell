@@ -41,6 +41,7 @@ function(url) {
       .selectWindow('wall')
       .and(waitAssertLinkPresent(url))
       .close()
+      .selectWindow()
   }
 }
 
@@ -54,6 +55,7 @@ function(url) {
       .waitForPageToLoad(4000)
       .assertElementNotPresent(linkXPath(url))
       .close()
+      .selectWindow()
   }
 }
 
