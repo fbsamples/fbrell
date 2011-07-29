@@ -1,6 +1,7 @@
 var assert = require('assert')
   , settings = require('./../../settings.js')
 
+var wall_url = 'http://www.facebook.com/profile.php?sk=wall'
 
 /**
  * UI LIBS
@@ -36,7 +37,7 @@ var assertStreamContainsLink = exports.assertStreamContainsLink =
 function(url) {
   return function(browser) {
     browser
-      .openWindow('http://www.facebook.com/profile.php?sk=wall', 'wall')
+      .openWindow(wall_url, 'wall')
       .waitForPopUp('wall', 1000)
       .selectWindow('wall')
       .and(waitAssertLinkPresent(url))
@@ -49,7 +50,7 @@ var assertStreamDoesNotContainLink = exports.assertStreamDoesNotContainLink =
 function(url) {
   return function(browser) {
     browser
-      .openWindow('http://www.facebook.com/profile.php?sk=wall', 'wall')
+      .openWindow(wall_url, 'wall')
       .waitForPopUp('wall', 1000)
       .selectWindow('wall')
       .waitForPageToLoad(4000)
