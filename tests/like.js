@@ -13,17 +13,9 @@ soda.sodaTest(exports, 'like/unlike with edge events', function(browser) {
     .and(fb.runLoggedInExample({ url: like_url }))
     .and(clickLike(browser))
     .and(fb.waitAssertTextPresent('You liked http://fbrell.com/'))
-    .and(clickUnlike(browser))
-    .and(fb.waitAssertTextPresent('You unliked http://fbrell.com/'))
-})
-
-soda.sodaTest(exports, 'like/unlike into personal stream', function(browser) {
-  var og_url = 'http://fbrell.com/og/website/like_testing'
-  return browser
-    .and(fb.runLoggedInExample({ url: like_url }))
-    .and(clickLike())
     .and(fb.assertStreamContainsLink(og_url))
     .and(clickUnlike(browser))
+    .and(fb.waitAssertTextPresent('You unliked http://fbrell.com/'))
     .and(fb.assertStreamDoesNotContainLink(og_url))
 })
 
