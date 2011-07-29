@@ -11,7 +11,6 @@ var like_url = 'saved/13859253c3801058354b280b6109b8bf'
 soda.sodaTest(exports, 'like/unlike with edge events', function(browser) {
   return browser
     .and(fb.runLoggedInExample({ url: like_url }))
-    .and(clickUnlike(browser)) // ensure we're unliked to start.
     .and(clickLike(browser))
     .and(fb.waitAssertTextPresent('You liked http://fbrell.com/'))
     .and(fb.assertStreamContainsLink(og_url))
