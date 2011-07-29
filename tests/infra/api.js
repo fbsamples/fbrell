@@ -14,7 +14,7 @@ var callWithAccessToken = exports.callWithAccessToken = function(url, cb) {
       cb(er, null)
     } else {
       url = graph_url + url + access_token
-      request({uri:url}, function(er, response, body) {
+      request({ uri:url }, function(er, response, body) {
         passResponseToCallback(er, response, body, cb)
       })
     }
@@ -30,7 +30,7 @@ var requestAccessToken = exports.requestAccessToken = function(cb) {
               '&client_secret=' + settings.facebook.secret +
               '&grant_type=client_credentials'
 
-    request({uri:url}, function(er, response, body) {
+    request({ uri:url }, function(er, response, body) {
       passResponseToCallback(er, response, body, cb)
     })
   }

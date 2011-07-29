@@ -15,13 +15,49 @@ var waitAssertTextPresent = exports.waitAssertTextPresent = function(text) {
   }
 }
 
+var waitAssertLinkPresent = exports.waitAssertLinkPresent = function(url) {
+  return function(browser) {
+    browser
+      .waitForElementPresent(linkXPath(url))
+      .assertElementPresent(linkXPath(url))
+  }
+}
+
+function linkXPath(url) {
+  return "xpath=//a[contains(@href,'" + url + "')]"
+}
 
 /**
  * FB UI LIBS
  *
  * Generically useful functions for fb-ui testing
  */
-var fbPopupLogin = exports.fbPopupLogin = function(opts) {
+var assertStreamContainsLink = exports.assertStreamContainsLink =
+function(url) {
+  return function(browser) {
+    browser
+      .openWindow('http://www.facebook.com/profile.php?sk=wall', 'wall')
+      .waitForPopUp('wall', 1000)
+      .selectWindow('wall')
+      .and(waitAssertLinkPresent(url))
+      .close()
+      .selectWindow()
+  }
+}
+
+var assertStreamDoesNotContainLink = exports.assertStreamDoesNotContainLink =
+function(url) {
+  return function(browser) {
+    browser
+      .openWindow('http://www.facebook.com/profile.php?sk=wall', 'wall')
+      .waitForPopUp('wall', 1000)
+      .selectWindow('wall')
+      .waitForPageToLoad(4000)
+      .assertElementNotPresent(linkXPath(url))
+  }
+}
+
+var popupLogin = exports.popupLogin = function(opts) {
   opts = opts || {}
   return function(browser) {
     browser
@@ -47,7 +83,7 @@ exports.runLoggedInExample = function(opts) {
       .open(opts.url)
       .waitForPageToLoad(2000)
       .click('css=.login-button')
-      .and(fbPopupLogin(opts))
+      .and(popupLogin(opts))
       .and(waitAssertTextPresent('connected'))
       .click('css=.run-code')
   }
