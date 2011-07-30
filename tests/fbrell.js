@@ -1,6 +1,7 @@
-fb = require('./infra.js')
+var fb = require('./infra/core.js')
+  , soda = require('./infra/soda.js')
 
-fb.sodaTest(exports, 'home and examples page', function(browser) {
+soda.sodaTest(exports, 'home and examples page', function(browser) {
   return browser
     .open('/')
     .waitForPageToLoad(2000)

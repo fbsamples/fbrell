@@ -1,7 +1,10 @@
-var soda = require('soda')
-  , assert = require('assert')
-  , settings = require('./../settings.js')
+var assert = require('assert')
+  , soda = require('soda')
 
+/**
+ * Browser
+ * Use this to interact with the browser on the command line.
+ */
 exports.browser = function() {
   var client = createSodaClient('interactive')
     , wrapMethods = soda.commands.slice(0)
@@ -27,6 +30,9 @@ exports.browser = function() {
   return client
 }
 
+/**
+ * SODA
+ */
 exports.sodaTest = function(exports, name, test) {
   exports[name] = function(beforeExit) {
     var passed = false
@@ -42,6 +48,7 @@ exports.sodaTest = function(exports, name, test) {
   }
 }
 
+// private
 function createSodaClient(name) {
   if (process.env.SAUCE) {
     return soda.createSauceClient({
@@ -62,60 +69,3 @@ function createSodaClient(name) {
     })
   }
 }
-
-waitAssertTextPresent = exports.waitAssertTextPresent = function(text) {
-  return function(browser) {
-    browser
-      .waitForTextPresent(text)
-      .assertTextPresent(text)
-  }
-}
-
-fbPopupLogin = exports.fbPopupLogin = function(opts) {
-  opts = opts || {}
-  return function(browser) {
-    browser
-      .waitForPopUp()
-      .selectPopUp('Log In | Facebook')
-      .and(waitAssertTextPresent('Log in to use your Facebook account with'))
-      .type('id=email', opts.email || settings.facebookTestUser.email)
-      .type('id=pass', opts.pass || settings.facebookTestUser.pass)
-      .click('name=login')
-      .deselectPopUp()
-  }
-}
-
-exports.runLoggedInExample = function(opts) {
-  return function(browser) {
-    browser
-      .open(opts.url)
-      .waitForPageToLoad(2000)
-      .click('css=.login-button')
-      .and(fbPopupLogin(opts))
-      .and(waitAssertTextPresent('connected'))
-      .click('css=.run-code')
-  }
-}
-
-exports.runExample = function(opts) {
-  return function(browser) {
-    browser
-      .open(opts.url)
-      .waitForPageToLoad(2000)
-      .click('css=.run-code')
-  }
-}
-
-function runInIFrame(selector, inIFrame) {
-  return function(browser) {
-    inIFrame(
-      browser
-        .waitForPageToLoad(1000)
-        .selectFrame(selector)
-    ).selectFrame('relative=top')
-  }
-}
-
-exports.runInIFrameDialog = runInIFrame.bind(null,
-                                             'css=.fb_dialog_iframe iframe')
-exports.runInIFramePlugin = runInIFrame.bind(null, 'css=#jsroot iframe')
