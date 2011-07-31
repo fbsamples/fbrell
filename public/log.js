@@ -1,3 +1,6 @@
+var jsDump = require('jsDump')
+  , Delegator = require('delegator')
+
 var Log = {
   levels: ['error', 'info', 'debug'],
   root: null,
@@ -107,3 +110,5 @@ var Log = {
     });
   }
 };
+
+if (typeof module !== 'undefined') module.exports = Log

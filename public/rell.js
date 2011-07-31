@@ -1,3 +1,6 @@
+var Log = require('./log')
+  , Tracer = require('./tracer')
+
 // stolen from prototypejs
 // used to set innerHTML and execute any contained <scripts>
 var ScriptSoup ={
@@ -25,7 +28,7 @@ var ScriptSoup ={
   }
 };
 
-Rell = {
+var Rell = {
   /**
    * go go go
    */
@@ -166,3 +169,5 @@ Rell = {
     form.appendChild(el);
   }
 };
+
+if (typeof module !== 'undefined') module.exports = Rell

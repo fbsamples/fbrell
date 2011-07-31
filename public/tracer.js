@@ -1,3 +1,6 @@
+var Log = require('./log')
+  , jsDump = require('jsDump')
+
 var Tracer = {
   level: -1,
   bdCache: '',
@@ -106,3 +109,5 @@ var Tracer = {
     return wrapped;
   }
 };
+
+if (typeof module !== 'undefined') module.exports = Tracer

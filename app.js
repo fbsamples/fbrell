@@ -1,4 +1,5 @@
 var async = require('async')
+  , browserify = require('browserify')
   , assetHandler = require('connect-assetmanager-handlers')
   , assetManager = require('connect-assetmanager')
   , crypto = require('crypto')
@@ -235,16 +236,6 @@ function appDataMiddleware(req, res, next) {
 
 var assets = function() {
   var groups = {
-    main: {
-      dataType: 'javascript',
-      files: [
-        'delegator.js',
-        'jsDump-1.0.0.js',
-        'log.js',
-        'tracer.js',
-        'rell.js',
-      ],
-    },
     'main-css': {
       dataType: 'css',
       files: [
@@ -278,10 +269,27 @@ var assets = function() {
   }
 }()
 
+var browserifyJS
+  , browserifyJSConfig = {
+      mount: '/browserify.js',
+      require: __dirname + '/public/rell.js',
+    }
+
+function browserifyJSCaching(req, res, next) {
+  if (req.url.split('?')[0] === browserifyJSConfig.mount) {
+    var ttl = 24 * 365 * 60 * 60
+      , expires = new Date(Date.now() + (ttl * 1000))
+    res.setHeader('Expires', expires.toString())
+    res.setHeader('Cache-Control', 'public, max-age=' + ttl)
+  }
+  next()
+}
+
 var app = module.exports = express.createServer(
   express.bodyParser(),
   express.methodOverride(),
   express.static(__dirname + '/public'),
+  browserifyJSCaching,
   express.cookieParser(),
   signedRequestMiddleware,
   appDataMiddleware
@@ -293,10 +301,17 @@ app.configure(function() {
 app.configure('development', function() {
   app.use(assets.middleware({ debug: true }))
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }))
+
+  browserifyJS = browserify(browserifyJSConfig)
+  app.use(browserifyJS)
 })
 app.configure('production', function() {
   app.use(assets.middleware({ debug: false }))
   app.use(express.errorHandler())
+
+  browserifyJSConfig.filter = require('uglify-js')
+  browserifyJS = browserify(browserifyJSConfig)
+  app.use(browserifyJS)
 })
 app.dynamicHelpers({
   makeUrl: function(req, res) { return req.makeUrl },
@@ -316,7 +331,7 @@ app.all('*', function(req, res, next) {
   req.staticUrls = {
     sdk: getConnectScriptUrl(
       config.version, config.locale, config.server, config.module, ssl),
-    main: assets.url('main'),
+    main: '/browserify.js?_t=' + (+browserifyJS.modified),
     mainCss: assets.url('main-css'),
   }
   req.examplesRoot = path.join(__dirname,

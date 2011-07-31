@@ -1,20 +1,20 @@
 - bodyClass = 'main'
 #interactive
   .controls
-    a.login-button(onclick='Rell.login()')
+    a.login-button(onclick='require("./rell").login()')
       span Login
     span#auth-status-label Status:
     span#auth-status unknown
     span.bar |
-    a(onclick='Rell.disconnect()') Disconnect
+    a(onclick='require("./rell").disconnect()') Disconnect
     span.bar |
-    a(onclick='Rell.logout()') Logout
+    a(onclick='require("./rell").logout()') Logout
   form(action=makeUrl('/saved'), method='post', target='_top')
     textarea#jscode(name='code')= exampleCode
     .controls
       strong
         a(href=makeUrl('/examples')) Examples
-      a(class='fb-blue run-code', onclick='Rell.runCode()')
+      a(class='fb-blue run-code', onclick='require("./rell").runCode()')
         span Run Code
       label(class='fb-gray save-code')
         input(type='submit', value='Save Code')
@@ -30,6 +30,8 @@ script
     [!{JSON.stringify(staticUrls.main)},
      !{JSON.stringify(staticUrls.sdk)}],
     function() {
+      var Rell = require('./rell')
+        , Log = require('./log')
       Rell.init(!{JSON.stringify(rellConfig)})
       var signedRequest = !{JSON.stringify(signedRequest) || 'null'}
       if (signedRequest) Log.info('signed_request', signedRequest)
