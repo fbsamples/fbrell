@@ -7,4 +7,5 @@
 /examples-old/secret/
 /examples/secret/
 /node_modules/
+/npm-debug.log
 /settings.js
