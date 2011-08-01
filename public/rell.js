@@ -28,15 +28,24 @@ var ScriptSoup ={
   }
 };
 
+function $(id) {
+  return document.getElementById(id)
+}
+
 var Rell = {
   /**
    * go go go
    */
   init: function(config) {
     Rell.config = config;
-    Log.init(document.getElementById('log'), Rell.config.level);
+    Log.init($('log'), Rell.config.level);
     Log.debug('Configuration', Rell.config);
     (Rell['init_' + Rell.config.version] || Rell.init_old)();
+    $('rell-login').onclick = Rell.login
+    $('rell-disconnect').onclick = Rell.disconnect
+    $('rell-logout').onclick = Rell.logout
+    $('rell-run-code').onclick = Rell.runCode
+    $('rell-log-clear').onclick = Log.clear
   },
 
   /**
@@ -74,7 +83,7 @@ var Rell = {
         } else if (result == 3) {
           status = 'notConnected';
         }
-        var el = document.getElementById('auth-status');
+        var el = $('auth-status');
         el.className = status;
         el.innerHTML = status;
       }, 500);
@@ -89,7 +98,7 @@ var Rell = {
   init_mu: function() {
     FB.Event.subscribe('fb.log', Log.info.bind('fb.log'));
     FB.Event.subscribe('auth.statusChange', function(response) {
-      var el = document.getElementById('auth-status');
+      var el = $('auth-status');
       el.className = response.status;
       el.innerHTML = response.status;
     });
@@ -124,7 +133,7 @@ var Rell = {
    * Run's the code in the textarea.
    */
   runCode: function() {
-    var root = document.getElementById('jsroot');
+    var root = $('jsroot');
     ScriptSoup.set(root, Rell.getCode());
     if (Rell.config.version == 'mu') {
       FB.XFBML.parse(root);
@@ -134,7 +143,7 @@ var Rell = {
   },
 
   getCode: function() {
-    return document.getElementById('jscode').value;
+    return $('jscode').value;
   },
 
   login: function() {

@@ -1,27 +1,27 @@
 - bodyClass = 'main'
 #interactive
   .controls
-    a.login-button(onclick='require("./rell").login()')
+    a#rell-login
       span Login
     span#auth-status-label Status:
     span#auth-status unknown
     span.bar |
-    a(onclick='require("./rell").disconnect()') Disconnect
+    a#rell-disconnect Disconnect
     span.bar |
-    a(onclick='require("./rell").logout()') Logout
+    a#rell-logout Logout
   form(action=makeUrl('/saved'), method='post', target='_top')
     textarea#jscode(name='code')= exampleCode
     .controls
       strong
         a(href=makeUrl('/examples')) Examples
-      a(class='fb-blue run-code', onclick='require("./rell").runCode()')
+      a#rell-run-code.fb-blue
         span Run Code
       label(class='fb-gray save-code')
         input(type='submit', value='Save Code')
   #jsroot
 #log-container
   .controls
-    button(onclick='Log.clear()') Clear
+    button#rell-log-clear Clear
   #log
 #fb-root
 #FB_HiddenContainer
