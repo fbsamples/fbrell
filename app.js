@@ -271,7 +271,7 @@ var assets = function() {
 
 var browserifyJS
   , browserifyJSConfig = {
-      mount: '/browserify.js',
+      mount: '/browserify',
       require: __dirname + '/public/rell.js',
     }
 
@@ -331,7 +331,7 @@ app.all('*', function(req, res, next) {
   req.staticUrls = {
     sdk: getConnectScriptUrl(
       config.version, config.locale, config.server, config.module, ssl),
-    main: '/browserify.js?_t=' + (+browserifyJS.modified),
+    main: '/browserify?_t=' + (+browserifyJS.modified),
     mainCss: assets.url('main-css'),
   }
   req.examplesRoot = path.join(__dirname,
