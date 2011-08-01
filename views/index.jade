@@ -26,14 +26,11 @@
 #fb-root
 #FB_HiddenContainer
 script
-  $L(
-    [!{JSON.stringify(staticUrls.main)},
-     !{JSON.stringify(staticUrls.sdk)}],
+  $L(!{JSON.stringify([staticUrls.main, staticUrls.sdk])},
     function() {
-      var Rell = require('./rell')
-        , Log = require('./log')
-      Rell.init(!{JSON.stringify(rellConfig)})
-      var signedRequest = !{JSON.stringify(signedRequest) || 'null'}
-      if (signedRequest) Log.info('signed_request', signedRequest)
+      require('./rell').init(
+        !{JSON.stringify(rellConfig)},
+        !{JSON.stringify(signedRequest) || 'null'}
+      )
     }
-  );
+  )
