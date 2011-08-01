@@ -1,7 +1,7 @@
 var fb = require('./infra/core.js')
   , soda = require('./infra/soda.js')
 
-soda.sodaTest(exports, 'cancel feed iframe dialog', function(browser) {
+soda.makeTest(exports, 'cancel feed iframe dialog', function(browser) {
   return browser
     .and(fb.runLoggedInExample({
       url: '/saved/afedcd65e0c7fe1258468b96514d2c48' }))
@@ -14,7 +14,7 @@ soda.sodaTest(exports, 'cancel feed iframe dialog', function(browser) {
 })
 
 // TODO(jubishop): I think this test is broken
-soda.sodaTest(exports, 'post via feed iframe dialog', function(browser) {
+soda.makeTest(exports, 'post via feed iframe dialog', function(browser) {
   var message = 'Test run at ' + Date.now()
   return browser
     .and(fb.runLoggedInExample({

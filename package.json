@@ -18,8 +18,8 @@
     "express": ">= 2.4.3",
     "jade": ">= 0.13.0",
     "knox": ">= 0.0.9",
-    "walker": ">= 0.0.4",
     "request": ">= 2.0.1"
+    "walker": ">= 0.0.4",
   },
   "devDependencies": {
     "expresso": ">= 0.8.1",

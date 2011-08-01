@@ -33,7 +33,7 @@ exports.browser = function() {
 /**
  * SODA
  */
-exports.sodaTest = function(exports, name, test) {
+exports.makeTest = function(exports, name, test) {
   exports[name] = function(beforeExit) {
     var passed = false
     test(createSodaClient(name).chain.session().setTimeout(5000))

@@ -3,21 +3,21 @@ var fb = require('./infra/core.js')
   , soda = require('./infra/soda.js')
   , settings = require('./../settings.js')
 
-var like_url = 'saved/f0c173b5d7308d03853db553c497a7b0'
+var likeUrl = 'saved/f0c173b5d7308d03853db553c497a7b0'
 
 /**
  * Tests
  */
-soda.sodaTest(exports, 'like/unlike with edge events', function(browser) {
-  og_url = 'http://fbrell.com/og/website/blah'
+soda.makeTest(exports, 'like/unlike with edge events', function(browser) {
+  var ogUrl = 'http://fbrell.com/og/website/blah'
   return browser
-    .and(fb.runLoggedInExample({ url: like_url }))
+    .and(fb.runLoggedInExample({ url: likeUrl }))
     .and(clickLike(browser))
-    .and(fb.waitAssertTextPresent('You liked ' + og_url))
-    .and(fb.assertStreamContainsLink(og_url))
+    .and(fb.waitAssertTextPresent('You liked ' + ogUrl))
+    .and(fb.assertStreamContainsLink(ogUrl))
     .and(clickUnlike(browser))
-    .and(fb.waitAssertTextPresent('You unliked ' + og_url))
-    .and(fb.assertStreamDoesNotContainLink(og_url))
+    .and(fb.waitAssertTextPresent('You unliked ' + ogUrl))
+    .and(fb.assertStreamDoesNotContainLink(ogUrl))
 })
 
 /**

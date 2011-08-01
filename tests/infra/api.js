@@ -10,11 +10,10 @@ var graph_url = 'https://graph.facebook.com/'
  */
 var callWithAccessToken = exports.callWithAccessToken = function(url, cb) {
   requestAccessToken(function(er, access_token) {
-    if (er) {
-      cb(er, null)
-    } else {
+    if (er) cb(er)
+    else {
       url = graph_url + url + access_token
-      request({ uri:url }, function(er, response, body) {
+      request({ uri: url }, function(er, response, body) {
         passResponseToCallback(er, response, body, cb)
       })
     }
@@ -22,15 +21,14 @@ var callWithAccessToken = exports.callWithAccessToken = function(url, cb) {
 }
 
 var requestAccessToken = exports.requestAccessToken = function(cb) {
-  if (access_token) {
-    cb(null, access_token)
-  } else {
-    var url = graph_url + 'oauth/access_token?' + 
-              'client_id=' + settings.facebook.id + 
+  if (access_token) cb(null, access_token)
+  else {
+    var url = graph_url + 'oauth/access_token?' +
+              'client_id=' + settings.facebook.id +
               '&client_secret=' + settings.facebook.secret +
               '&grant_type=client_credentials'
 
-    request({ uri:url }, function(er, response, body) {
+    request({ uri: url }, function(er, response, body) {
       passResponseToCallback(er, response, body, cb)
     })
   }
@@ -53,6 +51,6 @@ exports.createTestUser = function(cb) {
 
 // private
 function passResponseToCallback(er, response, body, cb) {
-  if (!er && response.statusCode == 200) { cb(null, body) }
-  else { cb(er, '') }
+  if (!er && response.statusCode == 200) cb(null, body)
+  else cb(er, '')
 }
