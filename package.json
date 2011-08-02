@@ -19,7 +19,7 @@
     "dotaccess": ">= 1.0.1",
     "express": ">= 2.4.3",
     "jade": ">= 0.13.0",
-    "jsDump": ">= 1.0.0",
+    "jsDump": "https://github.com/nshah/jsDump/tarball/gh-pages",
     "knox": ">= 0.0.9",
     "uglify-js": ">= 1.0.6",
     "walker": ">= 1.0.2"
