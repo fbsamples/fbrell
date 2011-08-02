@@ -36,7 +36,7 @@ exports.browser = function() {
 exports.makeTest = function(exports, name, test) {
   exports[name] = function(beforeExit) {
     var passed = false
-    test(createSodaClient(name).chain.session().setTimeout(5000))
+    test(createSodaClient(name).chain.session())
       .testComplete()
       .end(function(er) {
         if (er) throw er

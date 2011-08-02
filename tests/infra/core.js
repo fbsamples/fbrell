@@ -1,4 +1,5 @@
 var assert = require('assert')
+  , api = require('./api.js')
   , settings = require('./../../settings.js')
 
 var wall_url = 'http://www.facebook.com/profile.php?sk=wall'
@@ -38,7 +39,7 @@ function(url) {
   return function(browser) {
     browser
       .openWindow(wall_url, 'wall')
-      .waitForPopUp('wall', 1000)
+      .waitForPopUp('wall', 10000)
       .selectWindow('wall')
       .and(waitAssertLinkPresent(url))
       .close()
@@ -51,12 +52,19 @@ function(url) {
   return function(browser) {
     browser
       .openWindow(wall_url, 'wall')
-      .waitForPopUp('wall', 1000)
+      .waitForPopUp('wall', 10000)
       .selectWindow('wall')
-      .waitForPageToLoad(4000)
+      .waitForPageToLoad(10000)
       .assertElementNotPresent(linkXPath(url))
       .close()
       .selectWindow()
+  }
+}
+
+var assertLikesPage = exports.assertLikesPage = function(pageTitle) {
+  return function(browser) {
+    browser.
+      and(api.requestUserAccessToken())
   }
 }
 
@@ -84,7 +92,7 @@ exports.runLoggedInExample = function(opts) {
   return function(browser) {
     browser
       .open(opts.url)
-      .waitForPageToLoad(2000)
+      .waitForPageToLoad(10000)
       .click('css=.login-button')
       .and(popupLogin(opts))
       .and(waitAssertTextPresent('connected'))
@@ -96,7 +104,7 @@ exports.runExample = function(opts) {
   return function(browser) {
     browser
       .open(opts.url)
-      .waitForPageToLoad(2000)
+      .waitForPageToLoad(10000)
       .click('css=.run-code')
   }
 }
@@ -105,7 +113,7 @@ function runInIFrame(selector, inIFrame) {
   return function(browser) {
     inIFrame(
       browser
-        .waitForPageToLoad(1000)
+        .waitForPageToLoad(10000)
         .selectFrame(selector)
     ).selectFrame('relative=top')
   }

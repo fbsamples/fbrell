@@ -11,7 +11,6 @@ var async = require('async')
   , qs = require('querystring')
   , util = require('util')
   , walker = require('walker')
-
   , settings = require('./settings')
   , meta = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8'))
 

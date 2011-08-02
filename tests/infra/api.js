@@ -1,19 +1,21 @@
 var assert = require('assert')
   , request = require('request')
+  , qs = require('querystring')
   , settings = require('./../../settings.js')
 
-var graph_url = 'https://graph.facebook.com/'
-  , access_token = null
+var graphUrl = 'https://graph.facebook.com/'
+var fbUrl = 'https://www.facebook.com/'
+var rellCode = null
 
 /**
  * Generic API Wrappers
  */
 var callWithAccessToken = exports.callWithAccessToken = function(url, cb) {
-  requestAccessToken(function(er, access_token) {
+  requestAccessToken(function(er, accessToken) {
     if (er) cb(er)
     else {
-      url = graph_url + url + access_token
-      request({ uri: url }, function(er, response, body) {
+      fullUrl = graphUrl + url + accessToken
+      request({ uri: fullUrl }, function(er, response, body) {
         passResponseToCallback(er, response, body, cb)
       })
     }
@@ -21,16 +23,30 @@ var callWithAccessToken = exports.callWithAccessToken = function(url, cb) {
 }
 
 var requestAccessToken = exports.requestAccessToken = function(cb) {
-  if (access_token) cb(null, access_token)
-  else {
-    var url = graph_url + 'oauth/access_token?' +
-              'client_id=' + settings.facebook.id +
-              '&client_secret=' + settings.facebook.secret +
-              '&grant_type=client_credentials'
+  var url = graphUrl + 'oauth/access_token?' +
+            'client_id=' + settings.facebook.id +
+            '&client_secret=' + settings.facebook.secret +
+            '&grant_type=client_credentials'
 
-    request({ uri: url }, function(er, response, body) {
-      passResponseToCallback(er, response, body, cb)
-    })
+  request({ uri: url }, function(er, response, body) {
+    passResponseToCallback(er, response, body, cb)
+  })
+}
+
+var requestUserAccessToken = exports.requestUserAccessToken =
+function() {
+  var url = fbUrl + 'dialog/oauth?' + 
+            'client_id=' + settings.facebook.id + 
+            '&redirect_uri=http://fbrell.com'
+
+  return function(browser) {
+    browser.openWindow(url, 'login')
+           .waitForPopUp('login', 10000)
+           .selectWindow('login')
+           .waitForTitle('Welcome — Facebook Read Eval Log Loop')
+           .assertTitle('Welcome — Facebook Read Eval Log Loop')
+           .waitForCondition('rellCode = browser.url', 10000)
+           .openWindow(rellCode, 'newwindow')
   }
 }
 

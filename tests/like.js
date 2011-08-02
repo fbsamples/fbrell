@@ -14,6 +14,7 @@ soda.makeTest(exports, 'like/unlike with edge events', function(browser) {
     .and(fb.runLoggedInExample({ url: likeUrl }))
     .and(clickLike(browser))
     .and(fb.waitAssertTextPresent('You liked ' + ogUrl))
+    .and(fb.assertLikesPage('blah'))
     .and(fb.assertStreamContainsLink(ogUrl))
     .and(clickUnlike(browser))
     .and(fb.waitAssertTextPresent('You unliked ' + ogUrl))
