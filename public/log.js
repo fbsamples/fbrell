@@ -108,6 +108,10 @@ var Log = {
         // ignore, the body is probably missing
       }
     });
+  },
+
+  flashTrace: function(title, obj) {
+    Log.info(decodeURIComponent(title), decodeURIComponent(obj))
   }
 };
 
