@@ -302,6 +302,7 @@ app.configure('development', function() {
   app.use(assets.middleware({ debug: true }))
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }))
 
+  browserifyJSConfig.watch = true
   browserifyJS = browserify(browserifyJSConfig)
   app.use(browserifyJS)
 })
