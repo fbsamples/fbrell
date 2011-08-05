@@ -112,7 +112,11 @@ var Rell = {
       appId : Rell.config.appid,
       cookie: true,
       status: Rell.config.status != '0',
-      channelUrl: window.location.protocol + '//fbrell.com/channel.html'
+      channelUrl: (
+        window.location.protocol + '//' +
+        window.location.host +
+        '/channel.html'
+      )
     });
 
     if (top != self) {
