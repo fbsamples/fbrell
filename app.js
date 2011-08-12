@@ -198,6 +198,13 @@ function getConnectScriptUrl(version, locale, server, module, ssl) {
   return url
 }
 
+function makePageTabUrl(req) {
+  var data = { sk: 'app_' + req.rellConfig.appid }
+  if (req.rellConfig.server) data.app_data = req.rellConfig.server
+  return req.makeUrl(
+    req.makeFbUrl('www', 'pages/Rell-Page-for-Tabs/141929622497380', data))
+}
+
 function loadExample(req, res, next) {
   var pathname = req.params[0]
     , filename = pathname + '.html'
@@ -444,6 +451,7 @@ app.get('/info', function(req, res) {
       }),
       canvasUrl: req.makeUrl(req.makeFbUrl('apps', 'fbrelll/')),
       sdkUrl: req.staticUrls.sdk,
+      pageTabUrl: makePageTabUrl(req),
     }),
     { 'content-type': 'text/javascript' }
   )
