@@ -112,6 +112,7 @@ var Rell = {
       appId : Rell.config.appid,
       cookie: true,
       status: Rell.config.status != '0',
+      oauth: Rell.config.oauth == '1',
       channelUrl: (
         window.location.protocol + '//' +
         window.location.host +
