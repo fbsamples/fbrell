@@ -234,8 +234,8 @@ function appDataMiddleware(req, res, next) {
         req.signedRequest && req.signedRequest.app_data)
   if (appData) {
     var parts = appData.split('_')
-    url.query.server = parts.shift()
-    url.pathname = parts.join('/')
+    req.query.server = url.query.server = parts.shift()
+    url.pathname = parts.join('/') || '/'
     req.url = nurl.format(url)
   }
   next()
