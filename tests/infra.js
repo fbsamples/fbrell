@@ -45,7 +45,7 @@ exports.sodaTest = function(exports, name, test) {
 function createSodaClient(name) {
   if (process.env.SAUCE) {
     return soda.createSauceClient({
-      'url': 'http://fbrell.com/',
+      'url': 'http://www.fbrell.com/',
       'username': settings.sauce.user,
       'access-key': settings.sauce.key,
       'os': process.env.SAUCE_OS || 'Windows 2003',
@@ -56,7 +56,7 @@ function createSodaClient(name) {
     })
   } else {
     return soda.createClient({
-      url: 'http://fbrell.com/',
+      url: 'http://www.fbrell.com/',
       host: '127.0.0.1',
       port: 4444,
     })

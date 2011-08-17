@@ -1,9 +1,9 @@
 {
   "name": "fbrell",
-  "description": "The source code for the http://fbrell.com/ website.",
-  "homepage": "http://fbrell.com/",
+  "description": "The source code for the http://www.fbrell.com/ website.",
+  "homepage": "http://www.fbrell.com/",
   "keywords": ["website"],
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": "Naitik Shah <n@daaku.org>",
   "repository": {
     "type": "git",

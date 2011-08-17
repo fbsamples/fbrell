@@ -93,7 +93,7 @@ function makeUrl(config, givenUrl) {
 }
 
 function makeOgUrl(data) {
-  var url = nurl.parse('http://fbrell.com/og')
+  var url = nurl.parse('http://www.fbrell.com/og')
   if (data.title && data['og:type']) {
     url.pathname = '/og/' + data['og:type'] + '/' + data.title
     data = copy(data)
@@ -119,7 +119,7 @@ function hashedPick(href, data) {
 }
 
 function makeOgImage(url) {
-  return 'http://fbrell.com/images/' + hashedPick(url, [
+  return 'http://www.fbrell.com/images/' + hashedPick(url, [
     'beach_skyseeker_3184914.jpg',
     'beetle_gnilenkov_4647458067.jpg',
     'car_damianmorysfotos_5933730674.jpg',
@@ -447,7 +447,7 @@ app.get('/info', function(req, res) {
       config: req.rellConfig,
       oauthUrl: req.makeFbUrl('graph', 'oauth/authorize', {
         client_id: req.rellConfig.appid,
-        redirect_uri: 'https://fbrell.com/echo',
+        redirect_uri: 'https://www.fbrell.com/echo',
       }),
       canvasUrl: req.makeUrl(req.makeFbUrl('apps', 'fbrelll/')),
       sdkUrl: req.staticUrls.sdk,

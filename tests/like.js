@@ -7,10 +7,10 @@ fb.sodaTest(exports, 'like and unlike with edge events', function(browser) {
     .and(fb.runInIFramePlugin(function(browser) {
       return browser.click('css=.like_button_no_like')
     }))
-    .and(fb.waitAssertTextPresent('You liked http://fbrell.com/'))
+    .and(fb.waitAssertTextPresent('You liked http://www.fbrell.com/'))
     .and(fb.runExample({ url: url }))
     .and(fb.runInIFramePlugin(function(browser) {
       return browser.click('css=.like_button_like .tombstone_cross')
     }))
-    .and(fb.waitAssertTextPresent('You unliked http://fbrell.com/'))
+    .and(fb.waitAssertTextPresent('You unliked http://www.fbrell.com/'))
 })
