@@ -205,6 +205,23 @@ function makePageTabUrl(req) {
     req.makeFbUrl('www', 'pages/Rell-Page-for-Tabs/141929622497380', data))
 }
 
+function prepExampleCode(req, exampleCode) {
+  if (exampleCode) {
+    exampleCode = exampleCode
+      .replace(/{{redirectCode}}/g, req.cookies.redirect_code)
+  }
+  return exampleCode
+}
+
+function setupRedirectCode(req, res, next) {
+  var redirectCode = req.cookies.redirect_code
+  if (!redirectCode) {
+    redirectCode = makeRandomCode()
+    res.cookie('redirect_code', redirectCode, { maxAge: 1000*60*60*24 })
+  }
+  next()
+}
+
 function loadExample(req, res, next) {
   var pathname = req.params[0]
     , filename = pathname + '.html'
@@ -212,7 +229,7 @@ function loadExample(req, res, next) {
     req.examplesRoot,
     filename,
     function(er, exampleCode) {
-      req.exampleCode = exampleCode
+      req.exampleCode = prepExampleCode(req, exampleCode)
       next()
     })
 }
@@ -299,7 +316,8 @@ var app = module.exports = express.createServer(
   browserifyJSCaching,
   express.cookieParser(),
   signedRequestMiddleware,
-  appDataMiddleware
+  appDataMiddleware,
+  setupRedirectCode
 )
 app.configure(function() {
   app.set('view engine', 'jade')
@@ -431,7 +449,7 @@ app.all('/saved/:id', function(req, res, next) {
           req.rellConfig.autoRun = false
           res.render('index', {
             title: 'Stored Example',
-            exampleCode: exampleCode,
+            exampleCode: prepExampleCode(req, exampleCode),
           })
         })
         .setEncoding('utf8')
@@ -472,18 +490,13 @@ app.get('/og/:type?/:title?', function(req, res) {
   })
 })
 app.get('/redirect', function(req, res) {
-  var redirect_code = req.cookies.redirect_code
-  if (!redirect_code) {
-    redirect_code = makeRandomCode()
-    res.cookie('redirect_code', redirect_code, { maxAge: 1000*60*60*24 })
-  }
-  res.render('redirect', { href: '/redirect/' + redirect_code })
+  res.render('redirect', { href: '/redirect/' + req.cookies.redirect_code })
 })
 app.get('/redirect/:code', function(req, res) {
   var next = req.query.next
-    , redirect_code = req.cookies.redirect_code
+    , redirectCode = req.cookies.redirect_code
   if (!next) throw new Error('Expected "next" parameter.')
-  if (!redirect_code || redirect_code != req.params.code)
+  if (!redirectCode || redirectCode != req.params.code)
     throw new Error('Unexpected code.')
   res.redirect(next)
 })
