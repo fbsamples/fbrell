@@ -1,0 +1,14 @@
+<script>
+FB.getLoginStatus(function(response) {
+  if (response.status != 'connected') {
+    alert('Click the Login button on the top left, authorize this application, and then reload the page')
+  }
+
+  FB.ui({
+    method: 'apprequests',
+    message: 'A request especially for a specific user.',
+    to: '1677846385',
+    data: 'send-to-one-42'
+  }, Log.info.bind('FB.ui callback'));
+})
+</script>
