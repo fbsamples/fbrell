@@ -29,6 +29,7 @@ var DefaultConfig = {
   status: 1,
   autoRun: true,
   orange: false,
+  oauth: 1,
 }
 
 var examples = function() {
