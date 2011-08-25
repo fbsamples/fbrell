@@ -483,6 +483,8 @@ app.get('/og/:type?/:title?', function(req, res) {
   if (!data['og:image']) data['og:image'] = makeOgImage(data['og:url'])
   if (!data['og:description'])
     data['og:description'] = makeOgDescription(data['og:url'])
+  if (!data['fb:app_id'] && !data.no_app_id)
+    data['fb:app_id'] = req.rellConfig.appid
   res.render('og', {
     layout: false,
     data: data,

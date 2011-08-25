@@ -9,8 +9,6 @@ html(lang='en')
     - each val, key in data
       - if (key.indexOf(':') > -1)
         meta(property=key, content=val)
-    - if (!data['no_app_id'])
-      meta(property='fb:app_id', content='184484190795')
     link(type='text/css', rel='stylesheet', href=staticUrls.mainCss)
   body(class='narrow')
     div.bd
