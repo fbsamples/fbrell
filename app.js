@@ -253,7 +253,7 @@ function appDataMiddleware(req, res, next) {
   if (appData) {
     var parts = appData.split('_')
     req.query.server = url.query.server = parts.shift()
-    url.pathname = parts.join('/') || '/'
+    url.pathname = '/' + parts.join('/')
     req.url = nurl.format(url)
   }
   next()
