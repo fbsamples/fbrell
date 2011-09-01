@@ -8,7 +8,7 @@ html
     script(src=staticUrls.sdk)
     script
       FB.init({
-        appId: !{JSON.stringify(rellConfig.appid)},
+        appId: !{jsonify(rellConfig.appid)},
         cookie: true,
         xfbml: true
       })

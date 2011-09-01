@@ -340,6 +340,18 @@ app.configure('production', function() {
   browserifyJS = browserify(browserifyJSConfig)
   app.use(browserifyJS)
 })
+app.helpers({
+  jsonify: function(thing) {
+    var json = JSON.stringify(thing)
+    if (json) {
+      return json
+        .replace(/</g,   '\\u003c')
+        .replace(/@/g,   '\\u0040')
+        .replace(/-->/g, '--\\>')
+    }
+    return json
+  }
+})
 app.dynamicHelpers({
   makeUrl: function(req, res) { return req.makeUrl },
   rellConfig: function(req, res) { return req.rellConfig },
