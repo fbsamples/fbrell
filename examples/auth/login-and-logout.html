@@ -5,7 +5,7 @@ function updateButton(response) {
   Log.info('Updating Button', response);
   var button = document.getElementById('fb-auth');
 
-  if (response.session) {
+  if (response.status === 'connected') {
     button.innerHTML = 'Logout';
     button.onclick = function() {
       FB.logout(function(response) {
@@ -17,7 +17,7 @@ function updateButton(response) {
     button.onclick = function() {
       FB.login(function(response) {
         Log.info('FB.login callback', response);
-        if (response.session) {
+        if (response.status === 'connected') {
           Log.info('User is logged in');
         } else {
           Log.info('User is logged out');

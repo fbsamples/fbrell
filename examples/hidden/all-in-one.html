@@ -1,12 +1,12 @@
-<fb:login-button perms="read_stream,publish_stream">
+<fb:login-button scope="read_stream,publish_stream">
   Grant Permissions to make more examples work
 </fb:login-button>
 
 <button onclick="doPostViaGraph()">Post to Stream via Graph API</button>
 <button onclick="doPostViaUI()">Post to Stream via UI</button>
 
-<h1>Session</h1>
-<div id="session"></div>
+<h1>authResponse</h1>
+<div id="authResponse"></div>
 
 <h1>Like</h1>
 <fb:like href="http://www.fbrell.com/"></fb:like>
@@ -77,16 +77,16 @@ window.doPostViaUI = function() {
 };
 
 function showSession(response) {
-  var div = document.getElementById('session');
-  if (!response.session) {
+  var div = document.getElementById('authResponse');
+  if (!response.authResponse) {
     div.innerHTML = '<em>Not Connected</em>';
   } else {
     var html = '<table>';
-    for (var key in response.session) {
+    for (var key in response.authResponse) {
       html += (
         '<tr>' +
           '<th>' + key + '</th>' +
-          '<td>' + response.session[key] + '</td>' +
+          '<td>' + response.authResponse[key] + '</td>' +
         '</tr>'
       );
     }
@@ -100,7 +100,7 @@ FB.getLoginStatus(function(response) {
   showSession(response);
   publicData();
 
-  if (response.session) {
+  if (response.authResponse) {
     userData();
   }
 });

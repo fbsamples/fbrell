@@ -3,7 +3,7 @@
 var
   info   = document.getElementById('info'),
   update = function(response) {
-    if (!response.session) {
+    if (response.status != 'connected') {
       info.innerHTML = '<em>You must login using the controls at the top.</em>';
       return;
     }
@@ -11,7 +11,7 @@ var
     FB.api(
       {
         method: 'fql.query',
-        query: 'SELECT name, pic_square FROM user WHERE uid=' + response.session.uid
+        query: 'SELECT name, pic_square FROM user WHERE uid=' + response.authResponse.userID
       },
       function(response) {
         info.innerHTML = (

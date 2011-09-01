@@ -4,7 +4,7 @@
 var
   info       = document.getElementById('info'),
   checkPerms = function(response) {
-    if (!response.session) {
+    if (response.status !== 'connected') {
       info.innerHTML = '<em>You are not connected.</em>';
       return;
     }
@@ -12,7 +12,7 @@ var
     FB.api(
       {
         method: 'fql.query',
-        query: 'SELECT publish_stream FROM permissions WHERE uid=' + response.session.uid
+        query: 'SELECT publish_stream FROM permissions WHERE uid=' + response.authResponse.userID
       },
       function(response) {
         info.innerHTML = (

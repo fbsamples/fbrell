@@ -4,15 +4,12 @@
 document.getElementById('fb-login').onclick = function() {
   var cb = function(response) {
     Log.info('FB.login callback', response);
-    if (response.session) {
+    if (response.status === 'connected') {
       Log.info('User logged in');
-      if (response.perms) {
-        Log.info('User granted permissions');
-      }
     } else {
       Log.info('User is logged out');
     }
   };
-  FB.login(cb, { perms: 'publish_stream' });
+  FB.login(cb, { scope: 'publish_stream' });
 };
 </script>

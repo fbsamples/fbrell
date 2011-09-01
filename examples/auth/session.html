@@ -1,18 +1,18 @@
-<div id="session"></div>
+<div id="authResponse"></div>
 
 <script>
 var
-  div         = document.getElementById('session'),
+  div         = document.getElementById('authResponse'),
   showSession = function(response) {
-    if (!response.session) {
+    if (!response.authResponse) {
       div.innerHTML = '<em>Not Connected</em>';
     } else {
       var html = '<table>';
-      for (var key in response.session) {
+      for (var key in response.authResponse) {
         html += (
           '<tr>' +
             '<th>' + key + '</th>' +
-            '<td>' + response.session[key] + '</td>' +
+            '<td>' + response.authResponse[key] + '</td>' +
           '</tr>'
         );
       }

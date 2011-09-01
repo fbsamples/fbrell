@@ -1,11 +1,11 @@
-<fb:login-button perms="email"></fb:login-button>
+<fb:login-button scope="email"></fb:login-button>
 <div id="me"></div>
 
 <script>
 var
   div    = document.getElementById('me'),
   showMe = function(response) {
-    if (!response.session) {
+    if (response.status !== 'connected') {
       div.innerHTML = '<em>Not Connected</em>';
     } else {
       FB.api('/me', function(response) {

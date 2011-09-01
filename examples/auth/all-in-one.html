@@ -7,7 +7,7 @@ right</strong>.
 
 <button id="fb-login-status">FB.getLoginStatus()</button>
 <button id="fb-login-status-force">FB.getLoginStatus() force=true</button>
-<button id="fb-get-session">FB.getSession()</button>
+<button id="fb-get-auth-response">FB.getAuthResponse()</button>
 <button id="fb-login">FB.login()</button>
 <button id="fb-permissions">FB.login() with Permissions</button>
 <button id="fb-logout">FB.logout()</button>
@@ -38,8 +38,8 @@ document.getElementById('fb-login-status-force').onclick = function() {
   }, true);
 };
 
-document.getElementById('fb-get-session').onclick = function() {
-  Log.info('FB.getSession', FB.getSession());
+document.getElementById('fb-get-auth-response').onclick = function() {
+  Log.info('FB.getAuthResponse', FB.getAuthResponse());
 };
 
 document.getElementById('fb-login').onclick = function() {
@@ -53,7 +53,7 @@ document.getElementById('fb-permissions').onclick = function() {
     function(response) {
       Log.info('FB.login with permissions callback', response);
     },
-    { perms: 'offline_access' }
+    { scope: 'offline_access' }
   );
 };
 

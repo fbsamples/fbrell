@@ -1,10 +1,10 @@
-<fb:login-button perms="user_photos">
+<fb:login-button scope="user_photos">
   Grant Permissions
 </fb:login-button>
 
 <script>
 function getPhotos(response) {
-  if (response.session) {
+  if (response.status === 'connected') {
     FB.api('/me/photos', Log.info.bind('/me/photos callback'));
   }
 }

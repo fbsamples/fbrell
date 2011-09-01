@@ -3,7 +3,7 @@
 <script>
 var profilePicsDiv = document.getElementById('profile_pics');
 FB.getLoginStatus(function(response) {
-  if (!response.session) {
+  if (response.status != 'connected') {
     profilePicsDiv.innerHTML = '<em>You are not connected</em>';
     return;
   }

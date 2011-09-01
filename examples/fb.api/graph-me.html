@@ -1,4 +1,4 @@
-<fb:login-button perms="read_stream,publish_stream">
+<fb:login-button scope="read_stream,publish_stream">
   Grant Permissions to make more examples work
 </fb:login-button>
 
@@ -30,7 +30,7 @@ window.doPost = function() {
 };
 
 FB.getLoginStatus(function(response) {
-  if (response.session) {
+  if (response.status === 'connected') {
     userData();
   }
   publicData();

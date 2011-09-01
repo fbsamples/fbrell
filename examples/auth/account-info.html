@@ -10,7 +10,7 @@ function showAccountInfo() {
   FB.api(
     {
       method: 'fql.query',
-      query: 'SELECT name, pic_square FROM user WHERE uid='+FB.getSession().uid
+      query: 'SELECT name, pic_square FROM user WHERE uid='+FB.getUserID()
     },
     function(response) {
       Log.info('API Callback', response);
@@ -39,7 +39,7 @@ function showLoginButton() {
  */
 function onStatus(response) {
   Log.info('onStatus', response);
-  if (response.session) {
+  if (response.status === 'connected') {
     showAccountInfo();
   } else {
     showLoginButton();
