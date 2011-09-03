@@ -515,3 +515,6 @@ app.get('/redirect/:code', function(req, res) {
     throw new Error('Unexpected code.')
   res.redirect(next)
 })
+app.get('/trigger/error', function(req, res) {
+  throw new Error('This was thrown in /trigger/error at ' + new Date())
+})
