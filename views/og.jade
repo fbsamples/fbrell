@@ -2,17 +2,17 @@
 html(lang='en')
   head
     meta(charset='utf-8')
-    - if (data.title)
+    if data.title
       title= data.title
-    - if (data.title && !data['og:title'])
+    if data.title && !data['og:title']
       meta(property='og:title', content=data.title)
-    - each val, key in data
-      - if (key.indexOf(':') > -1)
+    each val, key in data
+      if key.indexOf(':') > -1
         meta(property=key, content=val)
     link(type='text/css', rel='stylesheet', href=staticUrls.mainCss)
   body(class='narrow')
     div.bd
-      - if (data.title)
+      if data.title
         h1
           a(href=data['og:url'])= data.title
       div
@@ -22,14 +22,14 @@ html(lang='en')
               th Property
               th Content
           tbody
-            - each val, key in data
-              - if (key.indexOf(':') > -1)
+            each val, key in data
+              if key.indexOf(':') > -1
                 tr
                   th= key
-                  - if (val.indexOf('http') === 0)
+                  if val.indexOf('http') === 0
                     td
                       a(href=val)= val
-                  - else
+                  else
                     td= val
       a(href=data['og:image'])
         img(src=data['og:image'])

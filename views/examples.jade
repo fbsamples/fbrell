@@ -1,11 +1,11 @@
 - title = 'Examples'
 - bodyClass = 'examples'
 h1 Examples
-- each category in Object.keys(examples).sort()
-  - if ('bugs secret tests fbml hidden'.indexOf(category) == -1)
+each category in Object.keys(examples).sort()
+  if 'bugs secret tests fbml hidden'.indexOf(category) == -1
     h2= category
     ul
-      - each file in Object.keys(examples[category]).sort()
+      each file in Object.keys(examples[category]).sort()
         - var name = file.substring(0, file.length-5)
         li
           a(href=makeUrl('/' + category + '/' + name))= name
