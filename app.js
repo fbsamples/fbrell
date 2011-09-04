@@ -521,9 +521,6 @@ app.get('/rog/:encoded', function(req, res) {
   if (!pairs.hasPairWithName('og:description'))
     pairs.addPair('og:description', makeOgDescription(ogUrl))
 
-  if (!pairs.hasPairWithName('fb:app_id'))
-    pairs.addPair('fb:app_id', req.rellConfig.appid)
-
   res.render('rog', {
     layout: false,
     pairs: pairs,
