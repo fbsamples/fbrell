@@ -1,0 +1,31 @@
+!!! 5
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    if pairs.hasPairWithName('og:title')
+      title= pairs.getFirstByName('og:title')
+    each pair in pairs.getPairs()
+      meta(property=pair[0], content=pair[1])
+    link(type='text/css', rel='stylesheet', href=staticUrls.mainCss)
+  body(class='narrow')
+    div.bd
+      if pairs.hasPairWithName('og:title')
+        h1: a(href=pairs.getFirstByName('og:url'))= pairs.getFirstByName('og:title')
+      div
+        table.info
+          thead
+            tr
+              th Property
+              th Content
+          tbody
+            each pair in pairs.getPairs()
+              tr
+                th= pair[0]
+                if pair[1].indexOf('http') === 0
+                  td
+                    a(href=pair[1])= pair[1]
+                else
+                  td= pair[1]
+      a(href=pairs.getFirstByName('og:image'))
+        img(src=pairs.getFirstByName('og:image'))
+      a.lint-this(href=linterUrl) Lint this.

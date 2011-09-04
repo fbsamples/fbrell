@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "async": ">= 0.1.9",
+    "b64url": ">= 1.0.0",
     "browserify": "https://github.com/nshah/node-browserify/tarball/master",
     "cluster": ">= 0.6.9",
     "cluster-loggly": ">= 1.0.0",

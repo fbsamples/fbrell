@@ -12,6 +12,8 @@ var async = require('async')
   , qs = require('querystring')
   , util = require('util')
   , walker = require('walker')
+  , b64url = require('b64url')
+  , Pairs = require('./pairs')
 
   , settings = require('./settings')
   , meta = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8'))
@@ -502,6 +504,31 @@ app.get('/og/:type?/:title?', function(req, res) {
     data: data,
     linterUrl:
       req.makeFbUrl('developers', 'tools/lint', { url: data['og:url'] }),
+  })
+})
+app.get('/rog/:encoded', function(req, res) {
+  var pairs = Pairs(JSON.parse(b64url.decode(req.params.encoded)))
+    , ogUrl = pairs.getFirstByName('og:url')
+
+  if (!pairs.hasPairWithName('og:url')) {
+    ogUrl = 'http://www.fbrell.com/rog/' + req.params.encoded
+    pairs.addPair('og:url', ogUrl)
+  }
+
+  if (!pairs.hasPairWithName('og:image'))
+    pairs.addPair('og:image', makeOgImage(ogUrl))
+
+  if (!pairs.hasPairWithName('og:description'))
+    pairs.addPair('og:description', makeOgDescription(ogUrl))
+
+  if (!pairs.hasPairWithName('fb:app_id'))
+    pairs.addPair('fb:app_id', req.rellConfig.appid)
+
+  res.render('rog', {
+    layout: false,
+    pairs: pairs,
+    linterUrl:
+      req.makeFbUrl('developers', 'tools/lint', { url: ogUrl }),
   })
 })
 app.get('/redirect', function(req, res) {
