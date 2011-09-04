@@ -21,7 +21,7 @@ html(lang='en')
             each pair in pairs.getPairs()
               tr
                 th= pair[0]
-                if pair[1].indexOf('http') === 0
+                if typeof pair[1] == 'string' && pair[1].indexOf('http') === 0
                   td
                     a(href=pair[1])= pair[1]
                 else
