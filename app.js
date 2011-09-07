@@ -1,7 +1,9 @@
 var async = require('async')
-  , browserify = require('browserify')
+  , Pairs = require('./pairs')
   , assetHandler = require('connect-assetmanager-handlers')
   , assetManager = require('connect-assetmanager')
+  , b64url = require('b64url')
+  , browserify = require('browserify')
   , crypto = require('crypto')
   , dotaccess = require('dotaccess')
   , express = require('express')
@@ -12,8 +14,6 @@ var async = require('async')
   , qs = require('querystring')
   , util = require('util')
   , walker = require('walker')
-  , b64url = require('b64url')
-  , Pairs = require('./pairs')
 
   , settings = require('./settings')
   , meta = JSON.parse(fs.readFileSync(__dirname + '/package.json', 'utf8'))
@@ -32,6 +32,7 @@ var DefaultConfig = {
   autoRun: true,
   orange: false,
   oauth: 1,
+  frictionlessRequests: 1,
 }
 
 var examples = function() {

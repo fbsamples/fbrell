@@ -98,6 +98,9 @@ var Rell = {
    */
   init_mu: function() {
     FB.Event.subscribe('fb.log', Log.info.bind('fb.log'));
+    FB.Event.subscribe('auth.login', function(response) {
+      Log.info('auth.login event', response);
+    })
     FB.Event.subscribe('auth.statusChange', function(response) {
       var el = $('auth-status');
       el.className = response.status;
@@ -113,6 +116,7 @@ var Rell = {
       cookie: true,
       status: Rell.config.status != '0',
       oauth: Rell.config.oauth == '1',
+      frictionlessRequests: Rell.config.frictionlessRequests,
       channelUrl: (
         window.location.protocol + '//' +
         window.location.host +
