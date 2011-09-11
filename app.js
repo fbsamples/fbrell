@@ -529,6 +529,17 @@ app.get('/rog/:encoded', function(req, res) {
       req.makeFbUrl('developers', 'tools/lint', { url: ogUrl }),
   })
 })
+app.get('/rog-302/:count/:encoded', function(req, res) {
+  var count = parseInt(req.params.count, 10)
+  if (count === 0)
+    res.redirect('http://www.fbrell.com/rog/' + req.params.encoded)
+  res.redirect(
+    'http://www.fbrell.com/rog-302/' +
+    (--count) +
+    '/' +
+    req.params.encoded
+  )
+})
 app.get('/redirect', function(req, res) {
   res.render('redirect', { href: '/redirect/' + req.cookies.redirect_code })
 })
@@ -542,4 +553,7 @@ app.get('/redirect/:code', function(req, res) {
 })
 app.get('/trigger/error', function(req, res) {
   throw new Error('This was thrown in /trigger/error at ' + new Date())
+})
+app.get('/trigger/404', function(req, res) {
+  res.send('You got nothing.', 404)
 })
