@@ -529,16 +529,21 @@ app.get('/rog/:encoded', function(req, res) {
       req.makeFbUrl('developers', 'tools/lint', { url: ogUrl }),
   })
 })
-app.get('/rog-302/:count/:encoded', function(req, res) {
+app.get('/rog-redirect/:status/:count/:encoded', function(req, res) {
   var count = parseInt(req.params.count, 10)
+    , status = parseInt(req.params.status, 10)
   if (count === 0)
-    res.redirect('http://www.fbrell.com/rog/' + req.params.encoded)
-  res.redirect(
-    'http://www.fbrell.com/rog-302/' +
+    res.redirect('http://www.fbrell.com/rog/' + req.params.encoded, status)
+
+  var url = (
+    'http://www.fbrell.com/rog-redirect/' +
+    status +
+    '/' +
     (--count) +
     '/' +
     req.params.encoded
   )
+  res.redirect(url, status)
 })
 app.get('/redirect', function(req, res) {
   res.render('redirect', { href: '/redirect/' + req.cookies.redirect_code })
