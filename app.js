@@ -511,7 +511,7 @@ app.get('/rog/:encoded', function(req, res) {
   var pairs = Pairs(JSON.parse(b64url.decode(req.params.encoded)))
     , ogUrl = pairs.getFirstByName('og:url')
 
-  if (!pairs.hasPairWithName('og:url')) {
+  if (!ogUrl) {
     ogUrl = 'http://www.fbrell.com/rog/' + req.params.encoded
     pairs.addPair('og:url', ogUrl)
   }
