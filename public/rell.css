@@ -167,6 +167,9 @@ table.info tbody tr:hover th, table.info tbody tr:hover td {
 table.info tbody th {
   color: #808080;
 }
+table.info td {
+  word-break: break-all;
+}
 
 /**
  * Interactive
