@@ -8,4 +8,7 @@ test ! -f $DAEMONIZE && DAEMONIZE=/usr/local/sbin/daemonize
 NODE=`which node`
 test ! -f $NODE && NODE=~naitik/.nave/installed/latest/bin/node
 
-$DAEMONIZE $NODE $BASE/server.js
+$DAEMONIZE \
+  -o /data/log/fbrell.out \
+  -e /data/log/fbrell.err \
+  $NODE $BASE/app.js

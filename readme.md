@@ -18,7 +18,7 @@ Make sure you have [Node](http://nodejs.org/) (v0.4.x) and
     cp settings.js.sample settings.js
     vim settings.js # put in your settings
     npm install
-    node server.js
+    ./app.js
 
 Then go to:
 

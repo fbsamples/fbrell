@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 var async = require('async')
   , Pairs = require('./pairs')
   , assetHandler = require('connect-assetmanager-handlers')
@@ -562,3 +563,6 @@ app.get('/trigger/error', function(req, res) {
 app.get('/trigger/404', function(req, res) {
   res.send('You got nothing.', 404)
 })
+
+process.env.NODE_ENV = path.existsSync('/System') ? 'development' : 'production'
+app.listen(43600)
