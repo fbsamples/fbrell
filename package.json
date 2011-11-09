@@ -3,7 +3,7 @@
   "description": "The source code for the http://www.fbrell.com/ website.",
   "homepage": "http://www.fbrell.com/",
   "keywords": ["website"],
-  "version": "2.2.0",
+  "version": "2.2.1",
   "author": "Naitik Shah <n@daaku.org>",
   "repository": {
     "type": "git",
