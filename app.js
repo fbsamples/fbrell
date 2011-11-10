@@ -26,7 +26,7 @@ var DefaultConfig = {
   level: 'debug',
   locale: 'en_US',
   server: '',
-  trace: 1,
+  trace: 0,
   version: 'mu',
   module: 'all',
   status: 1,
