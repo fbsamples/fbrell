@@ -1,0 +1,21 @@
+<fb:login-button scope="offline_access,publish_actions,publish_stream,read_stream">
+  Grant Permissions
+</fb:login-button>
+<h1>Access Token:</h1>
+<pre id="access-token"></pre>
+
+<script>
+var
+  pre  = document.getElementById('access-token'),
+  show = function(response) {
+    var html = 'Not Connected'
+    if (response.authResponse) {
+      html = response.authResponse.accessToken
+    }
+    pre.innerHTML = html
+  }
+FB.getLoginStatus(function(response) {
+  show(response)
+  FB.Event.subscribe('auth.authResponseChange', show)
+})
+</script>
