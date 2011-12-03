@@ -10,8 +10,8 @@ Facebook Connect JavaScript SDK. The SDK is available
 Getting Started
 ---------------
 
-Make sure you have [Node](http://nodejs.org/) (v0.4.x) and
-[npm](https://github.com/isaacs/npm) (v1.x) installed, and then:
+Make sure you have [Node](http://nodejs.org/) (v0.6.x) and
+[npm](https://github.com/isaacs/npm) (v1.1.x) installed, and then:
 
     git clone git://github.com/nshah/rell.git
     cd rell
