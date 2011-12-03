@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml">
+<head>
+<title>Bug: 131499690293289</title>
+</head>
+<body>
+
+<div id="fb-root"></div>
+<div id="debug"></div>
+
+<script src='http://connect.facebook.net/en_US/all.js'></script>
+<script>
+window.fbAsyncInit = function(){
+  FB.Event.subscribe('auth.login', function(r) {
+    document.getElementById('debug').innerHTML = FB.JSON.stringify(r);
+  });
+
+  FB.init({
+  appId: '184484190795',
+  channelUrl: 'http://www.fbrell.com/channel.html',
+  status: true,
+  cookie: true,
+  xfbml: true,
+  oauth: true
+  });
+
+  FB.getLoginStatus(function(response) {
+    console.log(response);
+  });
+}
+</script>
+
+<div class="fb-login-button" data-show-faces="false" data-width="200" data-max-rows="1" data-scope='email,rsvp_event'>Login with Facebook</div>
+</body>
+</html>
