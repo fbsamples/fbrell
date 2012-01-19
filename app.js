@@ -506,6 +506,15 @@ app.get('/og/:type?/:title?', function(req, res) {
     data: data,
     linterUrl:
       req.makeFbUrl('developers', 'tools/lint', { url: data['og:url'] }),
+    likeUrl: req.makeFbUrl('www', 'plugins/like.php', {
+      href: data['og:url'],
+      show_faces: true,
+      action: 'like',
+      colorscheme: 'light',
+      width: 450,
+      height: 80,
+      appId: req.rellConfig.appid,
+    }),
   })
 })
 app.get('/rog/:encoded', function(req, res) {
@@ -528,6 +537,15 @@ app.get('/rog/:encoded', function(req, res) {
     pairs: pairs,
     linterUrl:
       req.makeFbUrl('developers', 'tools/lint', { url: ogUrl }),
+    likeUrl: req.makeFbUrl('www', 'plugins/like.php', {
+      href: ogUrl,
+      show_faces: true,
+      action: 'like',
+      colorscheme: 'light',
+      width: 450,
+      height: 80,
+      appId: req.rellConfig.appid,
+    }),
   })
 })
 app.get('/rog-redirect/:status/:count/:encoded', function(req, res) {
