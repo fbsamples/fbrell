@@ -418,7 +418,7 @@ app.get('/examples', function(req, res, next) {
   })
 })
 app.all('/echo*?', function(req, res, next) {
-  res.send(JSON.stringify({
+  var debug = {
     method: req.method,
     url: req.url,
     pathname: nurl.parse(req.url).pathname,
@@ -427,7 +427,9 @@ app.all('/echo*?', function(req, res, next) {
     signedRequest: req.signedRequest,
     headers: req.headers,
     rawBody: req.rawBody,
-  }), { 'Content-Type': 'text/javascript' }, 200)
+  }
+  console.log(debug)
+  res.send(JSON.stringify(debug), { 'Content-Type': 'text/javascript' }, 200)
 })
 app.post('/saved', function(req, res, next) {
   var exampleCode = req.body.code
