@@ -161,8 +161,8 @@ function makeOgDescription(url) {
 
 function getBaseServer(server) {
   return {
-    sb: 'www.naitik.dev1315',
-    ns: 'www.naitik.dev1315',
+    sb: 'www.naitik.dev3584',
+    ns: 'www.naitik.dev3584',
     bg: 'www.brent.devrs109',
     rh: 'www.rhe.devrs106',
     pt: 'www.ptarjan.dev1115',
