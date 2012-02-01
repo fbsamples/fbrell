@@ -1,0 +1,58 @@
+<h1>Login</h1>
+<button onclick="window.popLogin(200, 200)">Smaller</button>
+<button onclick="window.popLogin(400, 800)">Bigger</button>
+<button onclick="window.popLogin(363, 630)">About Right</button>
+
+<h1>Feed</h1>
+<button onclick="window.popFeed(200, 200)">Smaller</button>
+<button onclick="window.popFeed(400, 800)">Bigger</button>
+<button onclick="window.popFeed(363, 630)">About Right</button>
+
+<script>
+var echoUrl = window.location.protocol + '//' + window.location.host + '/echo'
+
+function pop(url, name, height, width) {
+  height = height || 200
+  width = width || 200
+  return window.open(
+    url,
+    name,
+    'location=0,status=0,width=' + width + ',height=' + height
+  )
+}
+
+window.popLogin = function(height, width) {
+  pop(
+    (
+      FB.getDomain('www') + 'dialog/permissions.request?' +
+      FB.QS.encode({
+        app_id: FB._apiKey,
+        display: 'popup',
+        response_type: 'code',
+        redirect_uri: echoUrl
+      })
+    ),
+    'popLogin',
+    height,
+    width
+  )
+}
+
+window.popFeed = function(height, width) {
+  pop(
+    (
+      FB.getDomain('www') + 'dialog/feed?' +
+      FB.QS.encode({
+        app_id: FB._apiKey,
+        display: 'popup',
+        link: 'https://www.fbrell.com/',
+        picture: 'http://fbrell.com/f8.jpg',
+        redirect_uri: echoUrl
+      })
+    ),
+    'popFeed',
+    height,
+    width
+  )
+}
+</script>
