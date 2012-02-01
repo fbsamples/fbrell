@@ -429,7 +429,14 @@ app.all('/echo*?', function(req, res, next) {
     rawBody: req.rawBody,
   }
   console.log(debug)
-  res.send(JSON.stringify(debug), { 'Content-Type': 'text/javascript' }, 200)
+  var html = (
+    '<!doctype html>' +
+    '<body>' +
+      '<h1>Echo</h1>' +
+      '<pre>' + util.inspect(debug) + '</pre>' +
+    '</body>'
+  )
+  res.send(html, { 'Content-Type': 'text/html' }, 200)
 })
 app.post('/saved', function(req, res, next) {
   var exampleCode = req.body.code
