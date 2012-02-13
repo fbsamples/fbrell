@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-var async = require('async')
-  , Pairs = require('./pairs')
+var Pairs = require('./pairs')
   , assetHandler = require('connect-assetmanager-handlers')
   , assetManager = require('connect-assetmanager')
   , b64url = require('b64url')
