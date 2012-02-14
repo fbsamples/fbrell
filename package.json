@@ -27,5 +27,5 @@
     "expresso": "0.9.x",
     "soda": "0.2.x"
   },
-  "engines": { "node": ">= 0.6.x" }
+  "engines": { "node": "0.6.x" }
 }
