@@ -10,6 +10,7 @@ var Pairs = require('./pairs')
   , fs = require('fs')
   , knox = require('knox')
   , nurl = require('url')
+  , os = require('os')
   , path = require('path')
   , qs = require('querystring')
   , util = require('util')
@@ -487,6 +488,7 @@ app.get('/info', function(req, res) {
       version: meta.version,
       nodeVersion: process.version,
       environment: process.env.NODE_ENV || 'development',
+      platform: os.platform() + '-' + os.release(),
       config: req.rellConfig,
       oauthUrl: req.makeFbUrl('graph', 'oauth/authorize', {
         client_id: req.rellConfig.appid,
