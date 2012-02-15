@@ -11,14 +11,14 @@
 document.getElementById('send-to-many').onclick = function() {
   FB.ui({
     method: 'apprequests',
-    message: 'You should learn more about the @[19292868552:Platform].'
+    message: 'You should learn more about the Platform.'
   }, Log.info.bind('send-to-many callback'));
 }
 
 document.getElementById('custom-filters').onclick = function() {
   FB.ui({
     method: 'apprequests',
-    message: 'Have you heard about @[184484190795:Rell]?',
+    message: 'Have you heard about Rell?',
     data: 'invite-to-rell-42',
     filters: [{name: 'Daaku', user_ids: ['1677846385']}, 'app_non_users', {name: 'Games People', user_ids: [703, 6203644]}]
   }, Log.info.bind('send-to-many callback'));
@@ -27,7 +27,7 @@ document.getElementById('custom-filters').onclick = function() {
 document.getElementById('send-to-one').onclick = function() {
   FB.ui({
     method: 'apprequests',
-    message: 'A request especially for @[1677846385:Daaku].',
+    message: 'A request especially for Daaku.',
     to: '1677846385',
     data: 'send-to-one-42'
   }, Log.info.bind('send-to-one callback'));
