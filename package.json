@@ -3,12 +3,13 @@
   "description": "The source code for the http://www.fbrell.com/ website.",
   "homepage": "https://www.fbrell.com/",
   "keywords": ["website"],
-  "version": "2.3.0",
+  "version": "2.3.1",
   "author": "Naitik Shah <n@daaku.org>",
   "repository": {
     "type": "git",
     "url": "https://github.com/nshah/rell"
   },
+  "scripts": { "test": "NODE_PATH=./lib mocha --ui exports --timeout 150000 --slow 5000 --ignore-leaks" },
   "dependencies": {
     "b64url": "1.0.x",
     "browserify": "1.9.x",
@@ -24,7 +25,8 @@
     "walker": "1.0.x"
   },
   "devDependencies": {
-    "expresso": "0.9.x",
+    "mocha": "0.12.x",
+    "selenium-launcher": "1.1.x",
     "soda": "0.2.x"
   },
   "engines": { "node": "0.6.x" }
