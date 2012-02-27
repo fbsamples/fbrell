@@ -1,7 +1,7 @@
 {
   "name": "fbrell",
   "description": "The source code for the http://www.fbrell.com/ website.",
-  "homepage": "http://www.fbrell.com/",
+  "homepage": "https://www.fbrell.com/",
   "keywords": ["website"],
   "version": "2.3.0",
   "author": "Naitik Shah <n@daaku.org>",
