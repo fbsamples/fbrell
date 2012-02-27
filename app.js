@@ -583,4 +583,4 @@ app.get('/trigger/404', function(req, res) {
 })
 
 process.env.NODE_ENV = path.existsSync('/System') ? 'development' : 'production'
-app.listen(43600)
+if (require.main === module) app.listen(43600)
