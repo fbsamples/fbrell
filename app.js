@@ -36,6 +36,10 @@ var DefaultConfig = {
   frictionlessRequests: 1,
 }
 
+var SkipUrl = {
+  autoRun: true,
+}
+
 var examples = function() {
   // caches
   var _contentCache = {}
@@ -91,6 +95,7 @@ function copy(src, target) {
 function makeUrl(config, givenUrl) {
   var url = nurl.parse(givenUrl, true)
   for (var key in config) {
+    if (SkipUrl[key]) continue
     var val = config[key]
     if (DefaultConfig[key] != val) url.query[key] = val
   }
