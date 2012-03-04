@@ -53,7 +53,7 @@ document.getElementById('fb-permissions').onclick = function() {
     function(response) {
       Log.info('FB.login with permissions callback', response);
     },
-    { scope: 'offline_access' }
+    { scope: 'publish_actions' }
   );
 };
 
