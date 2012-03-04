@@ -15,8 +15,8 @@ FB.Event.subscribe('auth.logout', function(response) {
 FB.Event.subscribe('auth.statusChange', function(response) {
   Log.info('auth.statusChange event handler', response);
 });
-FB.Event.subscribe('auth.sessionChange', function(response) {
-  Log.info('auth.sessionChange event handler', response);
+FB.Event.subscribe('auth.authResponseChange', function(response) {
+  Log.info('auth.authResponseChange event handler', response);
 });
 
 document.getElementById('fb-login-status').onclick = function() {
