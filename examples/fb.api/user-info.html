@@ -24,6 +24,6 @@ var
   };
 FB.getLoginStatus(function(response) {
   showMe(response);
-  FB.Event.subscribe('auth.sessionChange', showMe);
+  FB.Event.subscribe('auth.authResponseChange', showMe);
 });
 </script>

@@ -3,7 +3,7 @@
 <script>
 var
   div         = document.getElementById('authResponse'),
-  showSession = function(response) {
+  showAuthRecord = function(response) {
     if (!response.authResponse) {
       div.innerHTML = '<em>Not Connected</em>';
     } else {
@@ -20,7 +20,7 @@ var
     }
   };
 FB.getLoginStatus(function(response) {
-  showSession(response);
-  FB.Event.subscribe('auth.sessionChange', showSession);
+  showAuthRecord(response);
+  FB.Event.subscribe('auth.authResponseChange', showAuthRecord);
 });
 </script>

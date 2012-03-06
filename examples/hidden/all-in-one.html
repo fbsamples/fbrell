@@ -76,7 +76,7 @@ window.doPostViaUI = function() {
   FB.ui(publish, Log.info.bind('stream.publish callback'));
 };
 
-function showSession(response) {
+function showAuthRecord(response) {
   var div = document.getElementById('authResponse');
   if (!response.authResponse) {
     div.innerHTML = '<em>Not Connected</em>';
@@ -95,9 +95,9 @@ function showSession(response) {
 }
 
 FB.getLoginStatus(function(response) {
-  FB.Event.subscribe('auth.sessionChange', showSession);
+  FB.Event.subscribe('auth.authResponseChange', showAuthRecord);
 
-  showSession(response);
+  showAuthRecord(response);
   publicData();
 
   if (response.authResponse) {
