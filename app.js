@@ -494,7 +494,7 @@ app.get('/info', function(req, res) {
       environment: process.env.NODE_ENV || 'development',
       platform: os.platform() + '-' + os.release(),
       config: req.rellConfig,
-      oauthUrl: req.makeFbUrl('graph', 'oauth/authorize', {
+      oauthUrl: req.makeFbUrl('www', 'dialog/oauth', {
         client_id: req.rellConfig.appid,
         redirect_uri: 'https://www.fbrell.com/echo',
       }),
