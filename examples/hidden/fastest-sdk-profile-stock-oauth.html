@@ -1,0 +1,107 @@
+<!doctype html>
+<html xmlns:fb="http://www.facebook.com/2008/fbml">
+  <head>
+    <meta charset="utf-8">
+    <title>Stock OAuth</title>
+    <style type="text/css">
+      /* note: don't use visibility or display to hide iframes, as that
+       * prevents it from being loaded in certain browsers. */
+      #fb-oauth-ping {
+        position: absolute;
+        top: -10000px;
+      }
+    </style>
+
+    <script>
+      // mini profiler
+      Profile = {
+        _startTime: new Date(),
+        _pointTimes: {},
+
+        point: function(name) {
+          Profile._pointTimes[name] = new Date()
+        },
+
+        render: function() {
+          var diff
+            , html = '<table>'
+          for (var name in Profile._pointTimes) {
+            diff = Profile._pointTimes[name] - Profile._startTime
+            html += '<tr><th>' + name + '</th><td>' + diff + 'ms</td></tr>'
+          }
+          html += '</table>'
+          document.getElementById('profile').innerHTML = html
+        }
+      }
+
+      // invoked by the sdk when it's finished loading.
+      window.fbAsyncInit = function() {
+        Profile.point('fbAsyncInit -- JS SDK loaded')
+
+        FB.Event.subscribe('auth.login', function(response) {
+          Profile.point('JS SDK "auth.login" event')
+
+          FB.api('/me', function(response) {
+            Profile.point('/me Graph API response')
+
+            var html = '<table>'
+            for (var key in response) {
+              html += (
+                '<tr>' +
+                  '<th>' + key + '</th>' +
+                  '<td>' + response[key] + '</td>' +
+                '</tr>'
+              )
+            }
+            document.getElementById('api').innerHTML = html
+            Profile.render()
+          })
+        })
+
+        FB.Event.subscribe('xfbml.render', function() {
+          Profile.point('JS SDK "xfbml.render" event')
+        })
+
+        FB.init({
+          appId: '184484190795',
+          cookie: true,
+          xfbml: true,
+          channelUrl: (
+            window.location.protocol + '//' +
+            window.location.host +
+            '/channel.html'
+          )
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <fb:login-button autologoutlink="true"></fb:login-button>
+
+    <div id="fb-root"></div>
+    <script>
+      (function() {
+        var e = document.createElement('script')
+        e.src = 'https://connect.facebook.net/en_US/all.js'
+        document.getElementById('fb-root').appendChild(e)
+      }())
+    </script>
+
+    <h2>OAuth Response</h2>
+    <p>
+    Response is a query string containing:
+    </p>
+    <ol>
+      <li><a href="https://developers.facebook.com/docs/authentication/signed_request/">signed_request</a></li>
+      <li><a href="https://developers.facebook.com/docs/authentication/">access_token</a></li>
+      <li>expires_in</li>
+    </ol>
+    <p id="response"></p>
+
+    <h2>Graph API Response</h2>
+    <p id="api"></p>
+
+    <h2>Time since page load</h2>
+    <p id="profile"></p>
+  </body>
+</html>
