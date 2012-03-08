@@ -31,7 +31,6 @@ var DefaultConfig = {
   module: 'all',
   status: 1,
   autoRun: true,
-  oauth: 1,
   frictionlessRequests: 1,
 }
 
