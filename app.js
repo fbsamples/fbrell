@@ -268,6 +268,13 @@ function appDataMiddleware(req, res, next) {
   next()
 }
 
+function addCacheHeaders(res, ttl) {
+  var expires = new Date(Date.now() + (ttl * 1000))
+  res.setHeader('Expires', expires.toString())
+  res.setHeader('Cache-Control', 'public, max-age=' + ttl)
+  return res
+}
+
 var assets = function() {
   var groups = {
     'main-css': {
@@ -311,10 +318,7 @@ var browserifyJS
 
 function browserifyJSCaching(req, res, next) {
   if (req.url.split('?')[0] === browserifyJSConfig.mount) {
-    var ttl = 24 * 365 * 60 * 60
-      , expires = new Date(Date.now() + (ttl * 1000))
-    res.setHeader('Expires', expires.toString())
-    res.setHeader('Cache-Control', 'public, max-age=' + ttl)
+    addCacheHeaders(res, 24 * 365 * 60 * 60)
   }
   next()
 }
@@ -417,6 +421,7 @@ app.all('/simple/*', loadExample, function(req, res, next) {
   })
 })
 app.get('/channel', function(req, res, next) {
+  addCacheHeaders(res, 24 * 365 * 60 * 60)
   res.render('channel', { layout: false })
 })
 app.get('/examples', function(req, res, next) {
