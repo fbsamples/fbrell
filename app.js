@@ -32,10 +32,12 @@ var DefaultConfig = {
   status: 1,
   autoRun: true,
   frictionlessRequests: 1,
+  channelUrl: null,
 }
 
 var SkipUrl = {
   autoRun: true,
+  channelUrl: true,
 }
 
 var examples = function() {
@@ -374,6 +376,8 @@ app.all('*', function(req, res, next) {
     }
   })
   req.rellConfig = config
+  req.rellConfig.channelUrl = makeUrl(config, '/channel')
+
   req.staticUrls = {
     sdk: getConnectScriptUrl(
       config.version, config.locale, config.server, config.module, ssl),
@@ -411,6 +415,9 @@ app.all('/simple/*', loadExample, function(req, res, next) {
     title: req.params[0].replace('/', ' &middot; '),
     exampleCode: req.exampleCode,
   })
+})
+app.get('/channel', function(req, res, next) {
+  res.render('channel', { layout: false })
 })
 app.get('/examples', function(req, res, next) {
   examples.list(req.examplesRoot, function(er, data) {

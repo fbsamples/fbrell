@@ -119,7 +119,7 @@ var Rell = {
       channelUrl: (
         window.location.protocol + '//' +
         window.location.host +
-        '/channel.html'
+        Rell.config.channelUrl
       )
     });
 
