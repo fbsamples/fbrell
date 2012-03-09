@@ -111,18 +111,22 @@ var Rell = {
       Tracer.instrument('FB', FB);
     }
 
-    FB.init({
+    var options = {
       appId : Rell.config.appid,
       cookie: true,
       status: Rell.config.status != '0',
-      frictionlessRequests: Rell.config.frictionlessRequests,
-      channelUrl: (
+      frictionlessRequests: Rell.config.frictionlessRequests
+    }
+
+    if (Rell.config.channel != '0') {
+      options.channelUrl = (
         window.location.protocol + '//' +
         window.location.host +
         Rell.config.channelUrl
       )
-    });
+    }
 
+    FB.init(options);
     if (top != self) {
       FB.Canvas.setAutoResize(true);
     }

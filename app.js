@@ -34,6 +34,7 @@ var DefaultConfig = {
   autoRun: true,
   frictionlessRequests: 1,
   channelUrl: null,
+  channel: 1,
 }
 
 var SkipUrl = {
