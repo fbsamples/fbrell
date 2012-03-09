@@ -9,6 +9,7 @@ var Pairs = require('./pairs')
   , express = require('express')
   , fs = require('fs')
   , knox = require('knox')
+  , ms = require('ms')
   , nurl = require('url')
   , os = require('os')
   , path = require('path')
@@ -269,9 +270,8 @@ function appDataMiddleware(req, res, next) {
 }
 
 function addCacheHeaders(res, ttl) {
-  var expires = new Date(Date.now() + (ttl * 1000))
-  res.setHeader('Expires', expires.toString())
-  res.setHeader('Cache-Control', 'public, max-age=' + ttl)
+  res.setHeader('Expires', new Date(Date.now() + ttl).toUTCString())
+  res.setHeader('Cache-Control', 'public, max-age=' + (ttl / 1000))
   return res
 }
 
@@ -318,7 +318,7 @@ var browserifyJS
 
 function browserifyJSCaching(req, res, next) {
   if (req.url.split('?')[0] === browserifyJSConfig.mount) {
-    addCacheHeaders(res, 24 * 365 * 60 * 60)
+    addCacheHeaders(res, ms('365d'))
   }
   next()
 }
@@ -421,7 +421,7 @@ app.all('/simple/*', loadExample, function(req, res, next) {
   })
 })
 app.get('/channel', function(req, res, next) {
-  addCacheHeaders(res, 24 * 365 * 60 * 60)
+  addCacheHeaders(res, ms('365d'))
   res.render('channel', { layout: false })
 })
 app.get('/examples', function(req, res, next) {
