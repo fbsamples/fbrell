@@ -97,6 +97,11 @@ var Rell = {
    * name is magical
    */
   init_mu: function() {
+    if (!FB) {
+      Log.error('SDK failed to load.');
+      return;
+    }
+
     FB.Event.subscribe('fb.log', Log.info.bind('fb.log'));
     FB.Event.subscribe('auth.login', function(response) {
       Log.info('auth.login event', response);
