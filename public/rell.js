@@ -97,7 +97,7 @@ var Rell = {
    * name is magical
    */
   init_mu: function() {
-    if (!FB) {
+    if (!window.FB) {
       Log.error('SDK failed to load.');
       return;
     }
