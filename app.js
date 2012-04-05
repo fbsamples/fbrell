@@ -167,13 +167,15 @@ function makeOgDescription(url) {
 }
 
 function getBaseServer(server) {
-  return {
+  server = {
     sb: 'www.naitik.dev3584',
     ns: 'www.naitik.dev3584',
     bg: 'www.brent.devrs109',
     rh: 'www.rhe.devrs106',
     pt: 'www.ptarjan.dev1115',
   }[server] || server
+  if (server.indexOf('www') !== 0) server = 'www.' + server
+  return server
 }
 
 function makeFbUrl(server, ssl, domain, path, query) {
