@@ -174,6 +174,7 @@ function getBaseServer(server) {
     rh: 'www.rhe.devrs106',
     pt: 'www.ptarjan.dev1115',
   }[server] || server
+  if (!server) server = 'www'
   if (server.indexOf('www') !== 0) server = 'www.' + server
   return server
 }
