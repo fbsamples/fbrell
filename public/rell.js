@@ -106,11 +106,7 @@ var Rell = {
     FB.Event.subscribe('auth.login', function(response) {
       Log.info('auth.login event', response);
     })
-    FB.Event.subscribe('auth.statusChange', function(response) {
-      var el = $('auth-status');
-      el.className = response.status;
-      el.innerHTML = response.status;
-    });
+    FB.Event.subscribe('auth.statusChange', Rell.onStatusChange);
 
     if (Rell.config.trace && Rell.config.trace !== '0') {
       Tracer.instrument('FB', FB);
@@ -140,7 +136,14 @@ var Rell = {
       Rell.autoRunCode();
     } else {
       FB.getLoginStatus(function() { Rell.autoRunCode(); });
+      FB.getLoginStatus(Rell.onStatusChange);
     }
+  },
+
+  onStatusChange: function(response) {
+    var el = $('auth-status');
+    el.className = response.status;
+    el.innerHTML = response.status;
   },
 
   autoRunCode: function() {
