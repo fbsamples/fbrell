@@ -4,12 +4,5 @@ html
     meta(charset='utf-8')
     title #{title}
   body
-    #fb-root
-    script(src=staticUrls.sdk)
-    script
-      FB.init({
-        appId: !{jsonify(rellConfig.appid)},
-        cookie: true,
-        xfbml: true
-      })
+    include simple-sdk-init
     #example !{exampleCode}
