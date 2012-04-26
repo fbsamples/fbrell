@@ -190,7 +190,7 @@ function makeFbUrl(server, ssl, domain, path, query) {
 
 // generate the connect js sdk script url
 function getConnectScriptUrl(version, locale, server, module, ssl) {
-  server = getBaseServer(server) || 'static.ak.connect'
+  server = server ? getBaseServer(server) : 'static.ak.connect'
   var url = 'http' + (ssl ? 's' : '') + '://' + server + '.facebook.com/'
 
   if (server === 'static.ak.connect') {
