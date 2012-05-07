@@ -115,11 +115,14 @@ var Rell = {
     var options = {
       appId : Rell.config.appid,
       cookie: true,
-      status: Rell.config.status != '0',
-      frictionlessRequests: Rell.config.frictionlessRequests
+      status: Rell.config.status && Rell.config.status != '0',
+      frictionlessRequests: (
+        Rell.config.frictionlessRequests &&
+          Rell.config.frictionlessRequests != '0'
+      )
     }
 
-    if (Rell.config.channel != '0') {
+    if (Rell.config.channel && Rell.config.channel != '0') {
       options.channelUrl = (
         window.location.protocol + '//' +
         window.location.host +
@@ -132,7 +135,7 @@ var Rell = {
       FB.Canvas.setAutoResize(true);
     }
 
-    if (Rell.config.status == '0') {
+    if (Rell.config.status && Rell.config.status == '0') {
       Rell.autoRunCode();
     } else {
       FB.getLoginStatus(function() { Rell.autoRunCode(); });
