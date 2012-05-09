@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/nshah/go.browserify"
 	"github.com/nshah/rell/context"
+	"github.com/nshah/rell/examples"
 	"go/build"
 	"log"
 )
@@ -34,6 +35,7 @@ func getBrowserifyDir() string {
 // module. Essentiall does a "require("./rell").init(x...)" call.
 type Init struct {
 	Context *context.Context
+	Example *examples.Example
 }
 
 func (i *Init) URLs() []string {
@@ -45,9 +47,16 @@ func (i *Init) URLs() []string {
 }
 
 func (i *Init) Script() string {
-	encoded, err := json.Marshal(i.Context)
+	encodedContext, err := json.Marshal(i.Context)
 	if err != nil {
 		log.Fatalf("Failed to json.Marshal context: %s", err)
 	}
-	return fmt.Sprintf("require('./rell').init(%s)", string(encoded))
+	encodedExample, err := json.Marshal(i.Example)
+	if err != nil {
+		log.Fatalf("Failed to json.Marshal example: %s", err)
+	}
+	return fmt.Sprintf(
+		"require('./rell').init(%s, %s)",
+		string(encodedContext),
+		string(encodedExample))
 }

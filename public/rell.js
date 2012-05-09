@@ -36,12 +36,12 @@ var Rell = {
   /**
    * go go go
    */
-  init: function(config, signedRequest) {
+  init: function(config, example) {
     Rell.config = config;
+    Rell.config.autoRun = example ? example.autoRun : false;
     Log.init($('log'), Rell.config.level);
     Log.debug('Configuration', Rell.config);
     (Rell['init_' + Rell.config.version] || Rell.init_old)();
-    if (signedRequest) Log.info('signed_request', signedRequest)
     $('rell-login').onclick = Rell.login
     $('rell-disconnect').onclick = Rell.disconnect
     $('rell-logout').onclick = Rell.logout

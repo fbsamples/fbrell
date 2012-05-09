@@ -75,7 +75,7 @@ func renderExample(context *context.Context, example *examples.Example) h.HTML {
 	return &view.Page{
 		Title:    example.Title,
 		Class:    "main",
-		Resource: []loader.Resource{&js.Init{Context: context}},
+		Resource: []loader.Resource{&js.Init{Context: context, Example: example}},
 		Body: &h.Frag{
 			&h.Div{
 				ID: "interactive",

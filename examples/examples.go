@@ -25,10 +25,10 @@ var hidden = map[string]bool{
 }
 
 type Example struct {
-	Name    string
-	Content []byte
-	AutoRun bool
-	Title   string
+	Name    string `json:"-"`
+	Content []byte `json:"-"`
+	AutoRun bool   `json:"autoRun"`
+	Title   string `json:"-"`
 }
 
 type Category struct {
