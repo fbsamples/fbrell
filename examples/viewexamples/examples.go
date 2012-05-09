@@ -2,8 +2,10 @@
 package viewexamples
 
 import (
+	"errors"
 	"fmt"
 	"github.com/nshah/go.h"
+	"github.com/nshah/go.h.js.fb"
 	"github.com/nshah/go.h.js.loader"
 	"github.com/nshah/rell/context"
 	"github.com/nshah/rell/examples"
@@ -55,9 +57,56 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 }
 
 func Raw(w http.ResponseWriter, r *http.Request) {
+	_, example, err := parse(r)
+	if err != nil {
+		view.Error(w, err)
+		return
+	}
+	if !example.AutoRun {
+		view.Error(w, errors.New("Not allowed to view this example in raw mode."))
+		return
+	}
+	w.Write(example.Content)
 }
 
 func Simple(w http.ResponseWriter, r *http.Request) {
+	context, example, err := parse(r)
+	if err != nil {
+		view.Error(w, err)
+		return
+	}
+	if !example.AutoRun {
+		view.Error(
+			w, errors.New("Not allowed to view this example in simple mode."))
+		return
+	}
+	h.Write(w, &h.Document{
+		Inner: &h.Frag{
+			&h.Head{
+				Inner: &h.Frag{
+					&h.Meta{Charset: "utf-8"},
+					&h.Title{h.String(example.Title)},
+				},
+			},
+			&h.Body{
+				Inner: &h.Frag{
+					&loader.HTML{
+						Resource: []loader.Resource{
+							&fb.Init{
+								AppID:      context.AppID,
+								ChannelURL: context.ChannelURL(),
+								URL:        context.SdkURL(),
+							},
+						},
+					},
+					&h.Div{
+						ID:    "example",
+						Inner: h.Unsafe(string(example.Content)),
+					},
+				},
+			},
+		},
+	})
 }
 
 func SdkChannel(w http.ResponseWriter, r *http.Request) {

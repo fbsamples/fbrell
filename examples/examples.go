@@ -147,6 +147,11 @@ func Load(version, path string) (*Example, error) {
 	parts := strings.Split(path, "/")
 	if len(parts) == 2 {
 		return emptyExample, nil
+	} else if len(parts) == 4 {
+		if parts[1] != "raw" && parts[1] != "simple" {
+			return nil, fmt.Errorf("Invalid URL: %s", path)
+		}
+		parts = []string{"", parts[2], parts[3]}
 	} else if len(parts) != 3 {
 		return nil, fmt.Errorf("Invalid URL: %s", path)
 	}
