@@ -6,7 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"go/build"
+	"github.com/nshah/go.flag.pkgpath"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -42,6 +42,10 @@ type DB struct {
 }
 
 var (
+	// Directory for disk backed DBs.
+	oldExamplesDir string
+	newExamplesDir string
+
 	// We have two disk backed DBs.
 	old *DB
 	mu  *DB
@@ -72,16 +76,16 @@ func init() {
 		"rell.amazon.secret",
 		"",
 		"The Amazon API secret to access the bucket.")
-
-	var err error
-	old, err = loadDir("github.com/nshah/rell/examples/db/old")
-	if err != nil {
-		log.Fatal(err)
-	}
-	mu, err = loadDir("github.com/nshah/rell/examples/db/mu")
-	if err != nil {
-		log.Fatal(err)
-	}
+	pkgpath.DirVar(
+		&oldExamplesDir,
+		"rell.examples.old",
+		"github.com/nshah/rell/examples/db/old",
+		"The directory contain examples for the old SDK.")
+	pkgpath.DirVar(
+		&newExamplesDir,
+		"rell.examples.new",
+		"github.com/nshah/rell/examples/db/mu",
+		"The directory contain examples for the new SDK.")
 }
 
 // Get's the shared S3 bucket instance.
@@ -94,13 +98,9 @@ func bucket() *s3.Bucket {
 
 // Loads a specific examples directory.
 func loadDir(path string) (*DB, error) {
-	pkg, err := build.Import(path, "", build.FindOnly)
+	categories, err := ioutil.ReadDir(path)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to find package %s: %s", path, err)
-	}
-	categories, err := ioutil.ReadDir(pkg.Dir)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read directory %s: %s", pkg.Dir, err)
+		return nil, fmt.Errorf("Failed to read directory %s: %s", path, err)
 	}
 	db := &DB{Category: make([]*Category, 0, len(categories))}
 	for _, categoryFileInfo := range categories {
@@ -115,7 +115,7 @@ func loadDir(path string) (*DB, error) {
 			Name:   categoryName,
 			Hidden: hidden[categoryName],
 		}
-		categoryDir := filepath.Join(pkg.Dir, categoryName)
+		categoryDir := filepath.Join(path, categoryName)
 		examples, err := ioutil.ReadDir(categoryDir)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read category %s: %s", categoryDir, err)
@@ -181,8 +181,21 @@ func Load(version, path string) (*Example, error) {
 
 // Get the DB for a given SDK Version.
 func GetDB(version string) *DB {
+	var err error
 	if version == "mu" {
+		if mu == nil {
+			mu, err = loadDir(newExamplesDir)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 		return mu
+	}
+	if old == nil {
+		old, err = loadDir(oldExamplesDir)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	return old
 }
