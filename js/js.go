@@ -5,30 +5,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/nshah/go.browserify"
+	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/rell/context"
 	"github.com/nshah/rell/examples"
-	"go/build"
 	"log"
 )
 
-// The default script.
-var defaultScript = &browserify.Script{
-	Dir:   getBrowserifyDir(),
-	Entry: "rell.js",
-}
+// The default script. The working directory is set in init().
+var defaultScript = &browserify.Script{Entry: "rell.js"}
 
 func init() {
-	defaultScript.URL() // called for side-effect of priming the internal cache
-}
-
-// Find the package relative directory to use as the browserify directory.
-func getBrowserifyDir() string {
-	pkg, err := build.Import(
-		"github.com/nshah/rell/public", "", build.FindOnly)
-	if err != nil {
-		log.Fatalf("Failed to find browserify directory: %s", err)
-	}
-	return pkg.Dir
+	pkgpath.DirVar(
+		&defaultScript.Dir,
+		"rell.browserify",
+		"github.com/nshah/rell/public",
+		"The browserify working directory.")
 }
 
 // Represents configuration for initializing the rell
