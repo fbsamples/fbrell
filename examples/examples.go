@@ -80,12 +80,12 @@ func init() {
 		&oldExamplesDir,
 		"rell.examples.old",
 		"github.com/nshah/rell/examples/db/old",
-		"The directory contain examples for the old SDK.")
+		"The directory containing examples for the old SDK.")
 	pkgpath.DirVar(
 		&newExamplesDir,
 		"rell.examples.new",
 		"github.com/nshah/rell/examples/db/mu",
-		"The directory contain examples for the new SDK.")
+		"The directory containing examples for the new SDK.")
 }
 
 // Get's the shared S3 bucket instance.
