@@ -10,6 +10,7 @@ import (
 	"github.com/nshah/rell/og"
 	"github.com/nshah/rell/view"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -62,7 +63,35 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 
 // Handles /rog-redirect/ requests.
 func Redirect(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "", 302)
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) != 5 {
+		view.Error(w, fmt.Errorf("Invalid URL: %s", r.URL.Path))
+		return
+	}
+	status, err := strconv.Atoi(parts[2])
+	if err != nil || (status != 301 && status != 302) {
+		view.Error(w, fmt.Errorf("Invalid status: %s", parts[2]))
+		return
+	}
+	count, err := strconv.Atoi(parts[3])
+	if err != nil {
+		view.Error(w, fmt.Errorf("Invalid count: %s", parts[3]))
+		return
+	}
+	context, err := context.FromRequest(r)
+	if err != nil {
+		view.Error(w, err)
+		return
+	}
+	if count == 0 {
+		http.Redirect(
+			w, r, context.AbsoluteURL("/rog/"+parts[4]).String(), status)
+	} else {
+		count--
+		url := context.AbsoluteURL(fmt.Sprintf(
+			"/rog-redirect/%d/%d/%s", status, count, parts[4]))
+		http.Redirect(w, r, url.String(), status)
+	}
 }
 
 // Renders <meta> tags for object.
