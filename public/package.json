@@ -1,0 +1,21 @@
+{
+  "name": "rell",
+  "description": "The client side code for http://www.fbrell.com/ website.",
+  "homepage": "https://www.fbrell.com/",
+  "keywords": ["website"],
+  "version": "3.0.1",
+  "author": "Naitik Shah <n@daaku.org>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nshah/go.rell"
+  },
+  "dependencies": {
+    "delegator": "1.3.x",
+    "jsDump": "1.1.x"
+  },
+  "devDependencies": {
+    "browserify": "1.10.x",
+    "uglify-js": "1.2.x"
+  },
+  "engines": { "node": "0.6.x" }
+}

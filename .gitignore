@@ -6,6 +6,5 @@
 /etc/sub.class1.server.ca.pem
 /examples-old/secret/
 /examples/secret/
-/node_modules/
-/npm-debug.log
-/settings.js
+/public/node_modules/
+/public/npm-debug.log

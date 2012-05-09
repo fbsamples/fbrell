@@ -1,5 +1,5 @@
-fbrell
-======
+rell
+====
 
 Facebook Read Eval Log Loop is an interactive environment for exploring the
 Facebook Connect JavaScript SDK. The SDK is available
@@ -7,38 +7,18 @@ Facebook Connect JavaScript SDK. The SDK is available
 
 [Try it out](http://www.fbrell.com/xfbml/fb:login-button).
 
-Getting Started
----------------
+Development Environment
+-----------------------
 
-Make sure you have [Node](http://nodejs.org/) (v0.6.4):
+You'll need these to make modifications to rell:
 
-    git clone https://github.com/nshah/rell
-    cd rell
-    cp settings.js.sample settings.js
-    vim settings.js # put in your settings
-    npm install
-    ./app.js
+- [Node](http://nodejs.org/) tested with version 0.6.17.
+- [Go](http://golang.org/) tested with version 1.0.1.
+- [Git](http://gitscm.com/) tested with version 1.7.10.
 
-Then go to:
+Install the main command which will automatically pull dependencies:
 
-    http://localhost:43600/xfbml/fb:login-button
-
-
-Running Selenium Tests
-----------------------
-
-Download the [Selenium Server](http://seleniumhq.org/download/) and run it,
-maybe using something like:
-
-    java -jar selenium-server-standalone-2.0.0.jar
-
-Then run the tests using [expresso](http://visionmedia.github.com/expresso/)
-which should have been installed by the earlier `npm install` command:
-
-    ./node_modules/.bin/expresso tests.js
-
-If you signup for [Sauce Labs](https://saucelabs.com/) and enter your
-credentials into `settings.js`, then you can also run the tests in the cloud
-for free without needing to have Selenium running locally:
-
-    SAUCE=1 ./node_modules/.bin/expresso tests.js
+```sh
+go install -u https://github.com/nshah/rell
+rell -h
+```
