@@ -2,6 +2,7 @@
 package viewexamples
 
 import (
+	"fmt"
 	"github.com/nshah/go.h"
 	"github.com/nshah/go.h.js.loader"
 	"github.com/nshah/rell/context"
@@ -60,6 +61,14 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 }
 
 func SdkChannel(w http.ResponseWriter, r *http.Request) {
+	const maxAge = 31536000 // 1 year
+	context, err := context.FromRequest(r)
+	if err != nil {
+		view.Error(w, err)
+		return
+	}
+	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
+	h.Write(w, &h.Script{Src: context.SdkURL()})
 }
 
 func Example(w http.ResponseWriter, r *http.Request) {
