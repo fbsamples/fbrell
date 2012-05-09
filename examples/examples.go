@@ -145,7 +145,7 @@ func loadDir(path string) (*DB, error) {
 // Load an Example for a given version and path.
 func Load(version, path string) (*Example, error) {
 	parts := strings.Split(path, "/")
-	if len(parts) == 2 {
+	if len(parts) == 2 && parts[1] == "" {
 		return emptyExample, nil
 	} else if len(parts) == 4 {
 		if parts[1] != "raw" && parts[1] != "simple" {
