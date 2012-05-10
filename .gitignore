@@ -4,7 +4,6 @@
 /etc/encrypted.ssl.key
 /etc/ssl.crt
 /etc/sub.class1.server.ca.pem
-/examples-old/secret/
-/examples/secret/
+/examples/db/mu/secret/
 /public/node_modules/
 /public/npm-debug.log
