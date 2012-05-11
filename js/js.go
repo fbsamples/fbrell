@@ -2,6 +2,7 @@
 package js
 
 import (
+	"flag"
 	"encoding/json"
 	"fmt"
 	"github.com/nshah/go.browserify"
@@ -17,9 +18,14 @@ var defaultScript = &browserify.Script{Entry: "rell.js"}
 func init() {
 	pkgpath.DirVar(
 		&defaultScript.Dir,
-		"rell.browserify",
+		"rell.browserify.dir",
 		"github.com/nshah/rell/public",
 		"The browserify working directory.")
+	flag.StringVar(
+		&defaultScript.Override,
+		"rell.browserify.override",
+		"",
+		"Pre-generated browserify output file.")
 }
 
 // Represents configuration for initializing the rell
