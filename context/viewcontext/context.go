@@ -21,6 +21,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		"pageTabURL": context.PageTabURL(),
 		"canvasURL":  context.CanvasURL(),
 		"channelURL": context.ChannelURL(),
+		"sdkURL":     context.SdkURL(),
 	}
 	json.NewEncoder(w).Encode(info)
 }
