@@ -8,12 +8,15 @@ bump_pkgver() {
   sed -i -e "s/$current_full/pkgver=$new_version/" PKGBUILD
 }
 
-echo "Pushing latest"
-cd /home/naitik/pkgs/src/rell/latest
+REV=$1
+DIR=$(cd $(dirname "$0"); pwd)
+echo "Pushing $REV"
+cd $DIR/$REV
 bump_pkgver
 makepkg --holdver
 mkdir -p ~/pkgs/repo
-mv ~/pkgs/src/*/*/*pkg.tar.xz ~/pkgs/repo/
-repo-add ~/pkgs/repo/custom.db.tar.gz ~/pkgs/repo/*.pkg.tar.xz
-echo "y" | sudo pacman -Sy rell-latest
-sudo /etc/rc.d/rell-latest restart
+PKGS=$(ls *pkg.tar.xz)
+mv $PKGS ~/pkgs/repo/
+repo-add ~/pkgs/repo/custom.db.tar.gz ~/pkgs/repo/$PKGS
+echo "y" | sudo pacman -Sy rell-$REV
+sudo /etc/rc.d/rell-$REV restart

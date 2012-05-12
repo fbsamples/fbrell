@@ -2,55 +2,52 @@
 
 . /etc/rc.conf
 . /etc/rc.d/functions
-. /etc/conf.d/TOKEN_PKGNAME
 
-DAEMON_COMMAND=/usr/bin/TOKEN_PKGNAME
+PKGNAME=`basename $0`
+DAEMON_COMMAND=/usr/bin/$PKGNAME
+DAEMON_OUT=/var/log/$PKGNAME.out
+DAEMON_ERR=/var/log/$PKGNAME.err
+DAEMON_PID=/run/$PKGNAME.pid
+DAEMON_PID=/run/lock/$PKGNAME.lock
+CONF_FILE=/etc/conf.d/$PKGNAME
 PID=$(pidof -o %PPID $DAEMON_COMMAND)
+
 case $1 in
 start)
-	stat_busy "Starting TOKEN_PKGNAME Daemon"
+	stat_busy "Starting $PKGNAME Daemon"
 
   if [[ ! -z $PID ]]; then
 		stat_fail
 		exit 1
   fi
 
-  touch $daemon_out
-  touch $daemon_err
-  chown TOKEN_PKGNAME:TOKEN_PKGNAME $daemon_out
-  chown TOKEN_PKGNAME:TOKEN_PKGNAME $daemon_err
+  touch $DAEMON_OUT
+  touch $DAEMON_ERR
+  chown $PKGNAME:$PKGNAME $DAEMON_OUT
+  chown $PKGNAME:$PKGNAME $DAEMON_ERR
 
   daemonize \
     -a \
-    -c $daemon_pwd \
-    -e $daemon_err \
-    -o $daemon_out \
-    -u $daemon_user \
-    -p $daemon_pid \
-    -l $daemon_lock \
+    -c / \
+    -e $DAEMON_ERR \
+    -o $DAEMON_OUT \
+    -u $PKGNAME \
+    -p $DAEMON_PID \
+    -l $DAEMON_PID \
     \
-    $DAEMON_COMMAND \
-    -rell.client.id="$rell_client_id" \
-    -rell.client.secret="$rell_client_secret" \
-    -rell.amazon.key="$rell_amazon_key" \
-    -rell.amazon.secret="$rell_amazon_secret" \
-    -rell.browserify.override="$rell_browserify_override" \
-    -rell.public="$rell_public" \
-    -rell.examples.new="$rell_examples_new" \
-    -rell.examples.old="$rell_examples_old" \
-    -rell.address="$rell_address"
+    $DAEMON_COMMAND -c $CONF_FILE
   if [[ $? -ne 0 ]]; then
 		stat_fail
 		exit 1
   fi
-	add_daemon TOKEN_PKGNAME
+	add_daemon $PKGNAME
 	stat_done
 	;;
 
 stop)
-	stat_busy "Stopping TOKEN_PKGNAME Daemon"
+	stat_busy "Stopping $PKGNAME Daemon"
 	if [[ ! -z $PID ]]  && kill "$PID" &>/dev/null; then
-		rm_daemon TOKEN_PKGNAME
+		rm_daemon $PKGNAME
 		stat_done
 	else
 		stat_fail

@@ -1,21 +1,16 @@
 build() {
-  unset GIT_DIR
+  unset GIT_DIR # this can interefere with "go get"
   msg "Cleaning old build"
   rm -rf $pkgdir/*
 
   export GOPATH=${srcdir}
   cd ${GOPATH}
-  gitabs=${GOPATH}/${_goimport}
+  gitabs=${GOPATH}/src/github.com/nshah/rell
 
-  if [ -d ${_goimport} ]; then
-    msg "Updating existing repository"
-    cd ${_goimport}
-    git pull
-  else
-    msg "Initial clone"
-    mkdir -p ${_gitcontainer}
-    cd ${_gitcontainer}
-    git clone ${_gitroot}
+  if [ ! -e ${gitabs} ]; then
+    mkdir -p $(dirname ${gitabs})
+    cd $(dirname ${gitabs})
+    ln -s $srcdir/../../..  $(basename ${gitabs})
   fi
 
   cd $gitabs
@@ -40,17 +35,10 @@ build() {
   install -d $gitabs/examples/db/old $pkgdir/usr/share/$pkgname/examples/old
   cp -r $gitabs/examples/db/old $pkgdir/usr/share/$pkgname/examples
 
-  msg "Creating rc script"
-  rcname=$pkgdir/etc/rc.d/$pkgname
-  mkdir -p $(dirname $rcname)
-  rc > $rcname
-  chmod +x $rcname
+  msg "Installing rc script"
+  install -D $srcdir/../../rc $pkgdir/etc/rc.d/$pkgname
 
   msg "Creating static resources"
   cd $gitabs/public
   ./node_modules/.bin/browserify -e rell.js > $pkgdir/usr/share/$pkgname/browserify.js
-}
-
-rc() {
-  cat $srcdir/../../rc | sed -e "s/TOKEN_PKGNAME/$pkgname/g"
 }
