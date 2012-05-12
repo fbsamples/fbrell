@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/nshah/go.browserify"
 	"github.com/nshah/go.flag.pkgpath"
+	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.httpstats"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
@@ -27,6 +28,7 @@ var (
 func main() {
 	const public = "/public/"
 	flag.Parse()
+	flagconfig.Parse()
 	mux := http.NewServeMux()
 	mux.Handle(public,
 		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
