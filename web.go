@@ -48,4 +48,5 @@ func main() {
 	if err != nil {
 		log.Fatalln("ListenAndServe: ", err)
 	}
+	log.Println("Exiting")
 }
