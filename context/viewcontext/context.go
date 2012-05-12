@@ -22,7 +22,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		"canvasURL":  context.CanvasURL(),
 		"channelURL": context.ChannelURL(),
 		"sdkURL":     context.SdkURL(),
-		"version":    "3.0.7",
+		"version":    "3.0.8",
 	}
 	json.NewEncoder(w).Encode(info)
 }
