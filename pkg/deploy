@@ -7,15 +7,20 @@ bump_pkgver() {
   sed -i -e "s/pkgver=.*/pkgver=$new_version/" PKGBUILD
 }
 
+pkgname() {
+  grep "pkgname=" PKGBUILD | sed -e 's/pkgname=//'
+}
+
 REV=$1
 DIR=$(cd $(dirname "$0"); pwd)
-echo "Pushing $REV"
 cd $DIR/$REV
+PKGNAME=$(pkgname)
+echo "Pushing $REV ($PKGNAME)"
 bump_pkgver
 makepkg --holdver
 mkdir -p ~/pkgs/repo
 PKGS=$(ls *pkg.tar.xz)
 mv $PKGS ~/pkgs/repo/
 repo-add ~/pkgs/repo/custom.db.tar.gz ~/pkgs/repo/$PKGS
-echo "y" | sudo pacman -Sy rell-$REV
-sudo /etc/rc.d/rell-$REV restart
+echo "y" | sudo pacman -Sy $PKGNAME
+sudo /etc/rc.d/$PKGNAME restart
