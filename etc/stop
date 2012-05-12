@@ -1,3 +1,0 @@
-#!/bin/sh
-
-lsof -Fp -iTCP:43600 -sTCP:LISTEN | sed -e 's/^p//' | xargs kill
