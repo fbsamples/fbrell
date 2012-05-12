@@ -1,0 +1,12 @@
+pkgname=rell
+pkgver=324
+pkgrel=1
+pkgdesc="Rell web app and resources."
+arch=('i686' 'x86_64')
+url="https://github.com/nshah/rell"
+license=('Apache')
+depends=('daemonize')
+makedepends=('git' 'nodejs')
+install=rell.install
+
+source $(dirname $(dirname $srcdir))/shared.sh
