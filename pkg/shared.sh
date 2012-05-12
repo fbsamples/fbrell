@@ -5,7 +5,8 @@ build() {
 
   export GOPATH=${srcdir}
   cd ${GOPATH}
-  gitabs=${GOPATH}/src/github.com/nshah/rell
+  goimport=github.com/nshah/rell
+  gitabs=${GOPATH}/src/$goimport
 
   if [ ! -e ${gitabs} ]; then
     mkdir -p $(dirname ${gitabs})
@@ -25,7 +26,7 @@ build() {
   mkdir -p $bindir
   binfile=$bindir/$pkgname
   msg "Building"
-  go build -o $binfile
+  go build $goimport -o $binfile
 
   msg "Copying resources"
   install -d $gitabs/public $pkgdir/usr/share/$pkgname/public
