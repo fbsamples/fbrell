@@ -206,14 +206,14 @@ func (c *Context) AbsoluteURL(path string) *url.URL {
 // JSON representation of Context.
 func (c *Context) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]interface{}{
-		"appid":                strconv.FormatUint(c.AppID, 10),
+		"appID":                strconv.FormatUint(c.AppID, 10),
 		"level":                c.Level,
 		"trace":                c.Trace,
 		"version":              c.Version,
 		"status":               c.Status,
 		"frictionlessRequests": c.FrictionlessRequests,
 		"channel":              c.UseChannel,
-		"channelUrl":           c.ChannelURL(),
+		"channelURL":           c.ChannelURL(),
 		"signedRequest":        c.SignedRequest,
 	})
 }

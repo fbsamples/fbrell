@@ -73,7 +73,7 @@ var Rell = {
       if (document.location.protocol == 'https:') {
         xd_receiver = '/xd_receiver_ssl.html';
       }
-      FB.Facebook.init(Rell.config.appid, xd_receiver);
+      FB.Facebook.init(Rell.config.appID, xd_receiver);
       // sigh
       window.setInterval(function() {
         var
@@ -113,7 +113,7 @@ var Rell = {
     }
 
     var options = {
-      appId : Rell.config.appid,
+      appId : Rell.config.appID,
       cookie: true,
       status: Rell.config.status && Rell.config.status != '0',
       frictionlessRequests: (
@@ -126,7 +126,7 @@ var Rell = {
       options.channelUrl = (
         window.location.protocol + '//' +
         window.location.host +
-        Rell.config.channelUrl
+        Rell.config.channelURL
       )
     }
 
