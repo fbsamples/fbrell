@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+bump_pkgver() {
+  current_full=$(cat PKGBUILD | grep pkgver)
+  new_version=$(echo $current_full | sed -e 's/.*=//' | awk '{print $1 + 1}')
+  sed -i -e "s/$current_full/pkgver=$new_version/" PKGBUILD
+}
+
+echo "Pushing latest"
+cd /home/naitik/pkgs/src/rell/latest
+bump_pkgver
+makepkg --holdver
+mkdir -p ~/pkgs/repo
+mv ~/pkgs/src/*/*/*pkg.tar.xz ~/pkgs/repo/
+repo-add ~/pkgs/repo/custom.db.tar.gz ~/pkgs/repo/*.pkg.tar.xz
+echo "y" | sudo pacman -Sy rell-latest
+sudo /etc/rc.d/rell-latest restart

@@ -1,0 +1,17 @@
+pkgname=rell-latest
+pkgver=8
+pkgrel=1
+pkgdesc="Rell web app and resources."
+arch=('i686' 'x86_64')
+url="https://github.com/nshah/rell"
+license=('Apache')
+depends=('daemonize')
+makedepends=('git' 'nodejs')
+install=rell-latest.install
+
+_goimport="src/github.com/nshah/rell"
+_gitroot=/home/naitik/git/rell
+_gitname=$(basename $_goimport)
+_gitcontainer=$(dirname $_goimport)
+
+source $(dirname $(dirname $srcdir))/shared.sh

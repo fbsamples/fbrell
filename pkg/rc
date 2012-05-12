@@ -1,0 +1,70 @@
+#!/bin/bash
+
+. /etc/rc.conf
+. /etc/rc.d/functions
+. /etc/conf.d/TOKEN_PKGNAME
+
+DAEMON_COMMAND=/usr/bin/TOKEN_PKGNAME
+PID=$(pidof -o %PPID $DAEMON_COMMAND)
+case $1 in
+start)
+	stat_busy "Starting TOKEN_PKGNAME Daemon"
+
+  if [[ ! -z $PID ]]; then
+		stat_fail
+		exit 1
+  fi
+
+  touch $daemon_out
+  touch $daemon_err
+  chown TOKEN_PKGNAME:TOKEN_PKGNAME $daemon_out
+  chown TOKEN_PKGNAME:TOKEN_PKGNAME $daemon_err
+
+  daemonize \
+    -a \
+    -c $daemon_pwd \
+    -e $daemon_err \
+    -o $daemon_out \
+    -u $daemon_user \
+    -p $daemon_pid \
+    -l $daemon_lock \
+    \
+    $DAEMON_COMMAND \
+    -rell.client.id="$rell_client_id" \
+    -rell.client.secret="$rell_client_secret" \
+    -rell.amazon.key="$rell_amazon_key" \
+    -rell.amazon.secret="$rell_amazon_secret" \
+    -rell.browserify.override="$rell_browserify_override" \
+    -rell.public="$rell_public" \
+    -rell.examples.new="$rell_examples_new" \
+    -rell.examples.old="$rell_examples_old" \
+    -rell.address="$rell_address"
+  if [[ $? -ne 0 ]]; then
+		stat_fail
+		exit 1
+  fi
+	add_daemon TOKEN_PKGNAME
+	stat_done
+	;;
+
+stop)
+	stat_busy "Stopping TOKEN_PKGNAME Daemon"
+	if [[ ! -z $PID ]]  && kill "$PID" &>/dev/null; then
+		rm_daemon TOKEN_PKGNAME
+		stat_done
+	else
+		stat_fail
+		exit 1
+	fi
+	;;
+
+restart)
+	$0 stop
+	$0 start
+	;;
+
+*)
+	echo "Usage: $0 {start|stop|restart}" >&2
+	exit 1
+
+esac
