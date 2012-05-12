@@ -26,7 +26,7 @@ build() {
   mkdir -p $bindir
   binfile=$bindir/$pkgname
   msg "Building"
-  go build $goimport -o $binfile
+  go build -o $binfile $goimport
 
   msg "Copying resources"
   install -d $gitabs/public $pkgdir/usr/share/$pkgname/public
