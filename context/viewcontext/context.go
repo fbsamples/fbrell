@@ -20,7 +20,6 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		"context":    context,
 		"pageTabURL": context.PageTabURL(),
 		"canvasURL":  context.CanvasURL(),
-		"channelURL": context.ChannelURL(),
 		"sdkURL":     context.SdkURL(),
 		"version":    "3.0.8",
 	}
