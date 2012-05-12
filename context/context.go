@@ -145,6 +145,7 @@ func (c *Context) PageTabURL() string {
 		values.Set("app_data", c.Env)
 	}
 	url := fburl.URL{
+		Scheme:    c.Scheme,
 		SubDomain: fburl.DWww,
 		Env:       c.Env,
 		Path:      "/pages/Rell-Page-for-Tabs/141929622497380",
@@ -156,6 +157,7 @@ func (c *Context) PageTabURL() string {
 // Get the URL for loading this application in a Canvas page on Facebook.
 func (c *Context) CanvasURL() string {
 	url := fburl.URL{
+		Scheme:    c.Scheme,
 		SubDomain: fburl.DApps,
 		Env:       c.Env,
 		Path:      "/fbrelll/",

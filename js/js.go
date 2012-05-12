@@ -2,8 +2,8 @@
 package js
 
 import (
-	"flag"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/nshah/go.browserify"
 	"github.com/nshah/go.flag.pkgpath"

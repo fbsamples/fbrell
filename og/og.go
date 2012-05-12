@@ -113,7 +113,7 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 		copiedValues.Del("og:type")
 		copiedValues.Del("og:title")
 		url := url.URL{
-			Scheme:   "http",
+			Scheme:   context.Scheme,
 			Host:     context.Host,
 			Path:     "/og/" + object.Type() + "/" + object.Title(),
 			RawQuery: sortedEncode(copiedValues),
