@@ -3,9 +3,8 @@
 set -e
 
 bump_pkgver() {
-  current_full=$(cat PKGBUILD | grep pkgver)
-  new_version=$(echo $current_full | sed -e 's/.*=//' | awk '{print $1 + 1}')
-  sed -i -e "s/$current_full/pkgver=$new_version/" PKGBUILD
+  new_version=$(git log --pretty=format:'' | wc -l)
+  sed -i -e "s/pkgver=.*/pkgver=$new_version/" PKGBUILD
 }
 
 REV=$1
