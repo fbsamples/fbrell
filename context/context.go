@@ -168,7 +168,7 @@ func (c *Context) CanvasURL() string {
 
 // Get a Channel URL for the SDK.
 func (c *Context) ChannelURL() string {
-	return c.URL("/channel/").String()
+	return c.AbsoluteURL("/channel/").String()
 }
 
 // Serialize the context back to URL values.

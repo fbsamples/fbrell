@@ -123,11 +123,7 @@ var Rell = {
     }
 
     if (Rell.config.channel && Rell.config.channel != '0') {
-      options.channelUrl = (
-        window.location.protocol + '//' +
-        window.location.host +
-        Rell.config.channelURL
-      )
+      options.channelUrl = Rell.config.channelURL
     }
 
     FB.init(options);
