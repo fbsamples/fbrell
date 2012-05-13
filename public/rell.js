@@ -108,21 +108,18 @@ var Rell = {
     })
     FB.Event.subscribe('auth.statusChange', Rell.onStatusChange);
 
-    if (Rell.config.trace && Rell.config.trace !== '0') {
+    if (Rell.config.trace) {
       Tracer.instrument('FB', FB);
     }
 
     var options = {
       appId : Rell.config.appID,
       cookie: true,
-      status: Rell.config.status && Rell.config.status != '0',
-      frictionlessRequests: (
-        Rell.config.frictionlessRequests &&
-          Rell.config.frictionlessRequests != '0'
-      )
+      status: Rell.config.status,
+      frictionlessRequests: Rell.config.frictionlessRequests
     }
 
-    if (Rell.config.channel && Rell.config.channel != '0') {
+    if (Rell.config.channel) {
       options.channelUrl = Rell.config.channelURL
     }
 
@@ -131,7 +128,7 @@ var Rell = {
       FB.Canvas.setAutoResize(true);
     }
 
-    if (Rell.config.status && Rell.config.status == '0') {
+    if (Rell.config.status) {
       Rell.autoRunCode();
     } else {
       FB.getLoginStatus(function() { Rell.autoRunCode(); });
