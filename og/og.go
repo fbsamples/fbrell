@@ -72,8 +72,7 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		return nil, fmt.Errorf(
 			"Failed base64 decode of string \"%s\" with error: %s", b64, err)
 	}
-
-	var strSlices [][]string
+	var strSlices [][]interface{}
 	err = json.Unmarshal(jsonBytes, &strSlices)
 	if err != nil {
 		return nil, fmt.Errorf("Failed json unmarshal: %s", err)
@@ -84,7 +83,20 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		if len(row) != 2 {
 			return nil, fmt.Errorf("Got more than two elements in pair: %v", row)
 		}
-		object.AddPair(row[0], row[1])
+		if row[0] == nil {
+			return nil, fmt.Errorf("First element in pair is null: %v", row)
+		}
+		key := fmt.Sprint(row[0])
+		val := ""
+		if row[1] != nil {
+			switch t := row[1].(type) {
+			default:
+				val = fmt.Sprint(t)
+			case float64:
+				val = fmt.Sprint(uint64(t))
+			}
+		}
+		object.AddPair(key, val)
 	}
 
 	if object.URL() == "" {
