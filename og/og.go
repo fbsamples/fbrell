@@ -25,7 +25,8 @@ type Pair struct {
 
 // An ordered list of Pairs representing a raw Object.
 type Object struct {
-	Pairs []Pair
+	Pairs   []Pair
+	context *context.Context
 }
 
 // Padding is wasteful, but go wants it.
@@ -78,7 +79,7 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		return nil, fmt.Errorf("Failed json unmarshal: %s", err)
 	}
 
-	object := &Object{}
+	object := &Object{context: context}
 	for _, row := range strSlices {
 		if len(row) != 2 {
 			return nil, fmt.Errorf("Got more than two elements in pair: %v", row)
@@ -93,13 +94,13 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		object.AddPair("og:url", url)
 	}
 
-	object.generateDefaults(context)
+	object.generateDefaults()
 	return object, nil
 }
 
 // Create a new Object from query string data.
 func NewFromValues(context *context.Context, values url.Values) (*Object, error) {
-	object := &Object{}
+	object := &Object{context: context}
 	for key, values := range values {
 		if strings.Contains(key, ":") {
 			for _, value := range values {
@@ -125,14 +126,15 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
 	}
 
-	object.generateDefaults(context)
+	object.generateDefaults()
 	return object, nil
 }
 
-func (o *Object) generateDefaults(context *context.Context) {
+func (o *Object) generateDefaults() {
 	url := o.URL()
 	if o.ImageURL() == "" {
-		img := context.AbsoluteURL("/public/images/" + hashedPick(url, stockImages))
+		img := o.context.AbsoluteURL(
+			"/public/images/" + hashedPick(url, stockImages))
 		o.AddPair("og:image", img.String())
 	}
 	if o.Description() == "" {
@@ -175,6 +177,8 @@ func (o *Object) LintURL() string {
 	values := url.Values{}
 	values.Set("url", o.URL())
 	u := &fburl.URL{
+		Scheme:    o.context.Scheme,
+		Env:       o.context.Env,
 		SubDomain: fburl.DDevelopers,
 		Path:      "/tools/lint",
 		Values:    values,
@@ -187,6 +191,8 @@ func (o *Object) LikeURL() string {
 	values := url.Values{}
 	values.Set("href", o.URL())
 	u := &fburl.URL{
+		Scheme:    o.context.Scheme,
+		Env:       o.context.Env,
 		SubDomain: fburl.DWww,
 		Path:      "/plugins/like",
 		Values:    values,
