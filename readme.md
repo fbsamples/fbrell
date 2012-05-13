@@ -3,9 +3,9 @@ rell
 
 Facebook Read Eval Log Loop is an interactive environment for exploring the
 Facebook Connect JavaScript SDK. The SDK is available
-[here](http://github.com/facebook/connect-js).
+[here](https://developers.facebook.com/docs/reference/javascript/).
 
-[Try it out](http://www.fbrell.com/xfbml/fb:login-button).
+[Try it out](https://www.fbrell.com/xfbml/fb:login-button).
 
 Development Environment
 -----------------------
