@@ -88,8 +88,6 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 	}
 
 	if object.URL() == "" {
-		// We set a default URL hardcoded to production because more often than
-		// not local instances are not publicly accessable and hence not crawlable.
 		url := context.AbsoluteURL("/rog/" + b64).String()
 		object.AddPair("og:url", url)
 	}

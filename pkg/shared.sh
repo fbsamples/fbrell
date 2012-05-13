@@ -20,7 +20,7 @@ build() {
   go get -v
 
   msg "Getting npm dependencies"
-  (cd public && npm install)
+  (cd js && npm install)
 
   bindir=$pkgdir/usr/bin
   mkdir -p $bindir
@@ -40,6 +40,6 @@ build() {
   install -D $srcdir/../../rc $pkgdir/etc/rc.d/$pkgname
 
   msg "Creating static resources"
-  cd $gitabs/public
+  cd $gitabs/js
   ./node_modules/.bin/browserify -e rell.js > $pkgdir/usr/share/$pkgname/browserify.js
 }

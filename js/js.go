@@ -19,7 +19,7 @@ func init() {
 	pkgpath.DirVar(
 		&defaultScript.Dir,
 		"rell.browserify.dir",
-		"github.com/nshah/rell/public",
+		"github.com/nshah/rell/js",
 		"The browserify working directory.")
 	flag.StringVar(
 		&defaultScript.Override,
