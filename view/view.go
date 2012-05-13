@@ -6,6 +6,7 @@ import (
 	"github.com/nshah/go.h"
 	"github.com/nshah/go.h.js.ga"
 	"github.com/nshah/go.h.js.loader"
+	"log"
 	"net/http"
 )
 
@@ -79,7 +80,8 @@ func (p *Page) HTML() (h.HTML, error) {
 }
 
 // Send a 500 error response.
-func Error(w http.ResponseWriter, err error) {
+func Error(w http.ResponseWriter, r *http.Request, err error) {
+	log.Print(r.URL, err)
 	w.WriteHeader(500)
 	page := &Page{
 		Body: h.String(err.Error()),

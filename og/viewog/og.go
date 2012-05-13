@@ -18,13 +18,13 @@ import (
 func Values(w http.ResponseWriter, r *http.Request) {
 	context, err := context.FromRequest(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	values := r.URL.Query()
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) > 4 {
-		view.Error(w, fmt.Errorf("Invalid URL: %s", r.URL.Path))
+		view.Error(w, r, fmt.Errorf("Invalid URL: %s", r.URL.Path))
 		return
 	}
 	if len(parts) > 2 {
@@ -35,7 +35,7 @@ func Values(w http.ResponseWriter, r *http.Request) {
 	}
 	object, err := og.NewFromValues(context, values)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	h.Write(w, renderObject(context, object))
@@ -45,17 +45,17 @@ func Values(w http.ResponseWriter, r *http.Request) {
 func Base64(w http.ResponseWriter, r *http.Request) {
 	context, err := context.FromRequest(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {
-		view.Error(w, fmt.Errorf("Invalid URL: %s", r.URL.Path))
+		view.Error(w, r, fmt.Errorf("Invalid URL: %s", r.URL.Path))
 		return
 	}
 	object, err := og.NewFromBase64(context, parts[2])
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	h.Write(w, renderObject(context, object))
@@ -65,22 +65,22 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 func Redirect(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 5 {
-		view.Error(w, fmt.Errorf("Invalid URL: %s", r.URL.Path))
+		view.Error(w, r, fmt.Errorf("Invalid URL: %s", r.URL.Path))
 		return
 	}
 	status, err := strconv.Atoi(parts[2])
 	if err != nil || (status != 301 && status != 302) {
-		view.Error(w, fmt.Errorf("Invalid status: %s", parts[2]))
+		view.Error(w, r, fmt.Errorf("Invalid status: %s", parts[2]))
 		return
 	}
 	count, err := strconv.Atoi(parts[3])
 	if err != nil {
-		view.Error(w, fmt.Errorf("Invalid count: %s", parts[3]))
+		view.Error(w, r, fmt.Errorf("Invalid count: %s", parts[3]))
 		return
 	}
 	context, err := context.FromRequest(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	if count == 0 {

@@ -31,7 +31,7 @@ func parse(r *http.Request) (*context.Context, *examples.Example, error) {
 func List(w http.ResponseWriter, r *http.Request) {
 	context, err := context.FromRequest(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	h.Write(w, renderList(context, examples.GetDB(context.Version)))
@@ -41,7 +41,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" && r.URL.Path == "/saved/" {
 		hash, err := examples.Save([]byte(r.FormValue("code")))
 		if err != nil {
-			view.Error(w, err)
+			view.Error(w, r, err)
 			return
 		}
 		http.Redirect(w, r, "/saved/"+hash, 302)
@@ -49,7 +49,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 	} else {
 		context, example, err := parse(r)
 		if err != nil {
-			view.Error(w, err)
+			view.Error(w, r, err)
 			return
 		}
 		h.Write(w, renderExample(context, example))
@@ -59,11 +59,12 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 func Raw(w http.ResponseWriter, r *http.Request) {
 	_, example, err := parse(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	if !example.AutoRun {
-		view.Error(w, errors.New("Not allowed to view this example in raw mode."))
+		view.Error(
+			w, r, errors.New("Not allowed to view this example in raw mode."))
 		return
 	}
 	w.Write(example.Content)
@@ -72,12 +73,12 @@ func Raw(w http.ResponseWriter, r *http.Request) {
 func Simple(w http.ResponseWriter, r *http.Request) {
 	context, example, err := parse(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	if !example.AutoRun {
 		view.Error(
-			w, errors.New("Not allowed to view this example in simple mode."))
+			w, r, errors.New("Not allowed to view this example in simple mode."))
 		return
 	}
 	h.Write(w, &h.Document{
@@ -113,7 +114,7 @@ func SdkChannel(w http.ResponseWriter, r *http.Request) {
 	const maxAge = 31536000 // 1 year
 	context, err := context.FromRequest(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
@@ -123,7 +124,7 @@ func SdkChannel(w http.ResponseWriter, r *http.Request) {
 func Example(w http.ResponseWriter, r *http.Request) {
 	context, example, err := parse(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	h.Write(w, renderExample(context, example))

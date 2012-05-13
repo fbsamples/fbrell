@@ -12,7 +12,7 @@ import (
 func Info(w http.ResponseWriter, r *http.Request) {
 	context, err := context.FromRequest(r)
 	if err != nil {
-		view.Error(w, err)
+		view.Error(w, r, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
