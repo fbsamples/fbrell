@@ -70,12 +70,10 @@ func init() {
 // Create a context from a HTTP request.
 func FromRequest(r *http.Request) (*Context, error) {
 	context := DefaultContext()
-	err := schemaDecoder.Decode(context, r.URL.Query())
-	if err != nil {
-		return nil, fmt.Errorf("Failed to decode values with error %s", err)
-	}
+	_ = schemaDecoder.Decode(context, r.URL.Query())
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
+		var err error
 		context.SignedRequest, err = fbsr.Unmarshal(
 			[]byte(rawSr), []byte(defaultApp.Secret))
 		if err != nil {
