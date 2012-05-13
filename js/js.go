@@ -53,7 +53,5 @@ func (i *Init) Script() string {
 		log.Fatalf("Failed to json.Marshal example: %s", err)
 	}
 	return fmt.Sprintf(
-		"require('./rell').init(%s, %s)",
-		string(encodedContext),
-		string(encodedExample))
+		"require('./rell').init(%s, %s)", encodedContext, encodedExample)
 }

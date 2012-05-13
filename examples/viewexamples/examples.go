@@ -101,7 +101,7 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 					},
 					&h.Div{
 						ID:    "example",
-						Inner: h.Unsafe(string(example.Content)),
+						Inner: h.UnsafeBytes(example.Content),
 					},
 				},
 			},
