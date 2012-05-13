@@ -128,7 +128,7 @@ var Rell = {
       FB.Canvas.setAutoResize(true);
     }
 
-    if (Rell.config.status) {
+    if (!Rell.config.status) {
       Rell.autoRunCode();
     } else {
       FB.getLoginStatus(function() { Rell.autoRunCode(); });
