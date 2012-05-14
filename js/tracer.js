@@ -30,14 +30,14 @@ var Tracer = {
 
   instrument: function(prefix, obj, instanceMethod) {
     if (prefix == 'FB.CLASSES') {
-      return;
+      return
     }
 
     for (var name in obj) {
       if (obj.hasOwnProperty(name)) {
         var
           val = obj[name],
-          fullname = prefix + '.' + name;
+          fullname = prefix + '.' + name
         if (typeof val == 'function') {
           if (instanceMethod || !val.prototype.bind) {
             obj[name] = Tracer.wrap({
@@ -46,68 +46,68 @@ var Tracer = {
               name           : name,
               prefix         : prefix,
               scope          : obj
-            });
+            })
           } else {
-            Tracer.instrument(fullname, val.prototype, true);
+            Tracer.instrument(fullname, val.prototype, true)
           }
         } else if (typeof val == 'object') {
-          Tracer.instrument(fullname, val, (fullname in Tracer.mixins));
+          Tracer.instrument(fullname, val, (fullname in Tracer.mixins))
         }
       }
     }
   },
 
   wrap: function(conf) {
-    var name = conf.prefix + '.' + conf.name;
+    var name = conf.prefix + '.' + conf.name
 
     // things that are excluded do not get wrapped
     if (conf.func._tracerMark || name in Tracer.exclude) {
-      return conf.func;
+      return conf.func
     }
 
     var wrapped = function() {
-      Tracer.level++;
-      Tracer.lastLevel = Tracer.level;
+      Tracer.level++
+      Tracer.lastLevel = Tracer.level
       if (!Tracer.cache[Tracer.level]) {
-        Tracer.cache[Tracer.level] = [];
+        Tracer.cache[Tracer.level] = []
       }
 
       var
         args = Array.prototype.slice.apply(arguments),
         argsHTML = Log.dumpArray(args),
-        returnValue = conf.func.apply(conf.instanceMethod ? this : conf.scope, args);
+        returnValue = conf.func.apply(conf.instanceMethod ? this : conf.scope, args)
 
       if (returnValue) {
-        argsHTML += '<hr><h3>Return Value</h3>' + jsDump.parse(returnValue);
+        argsHTML += '<hr><h3>Return Value</h3>' + jsDump.parse(returnValue)
       } else {
-        argsHTML += '<hr><h3>No Return Value</h3>';
+        argsHTML += '<hr><h3>No Return Value</h3>'
       }
 
       if (Tracer.lastLevel == Tracer.level) {
-        Tracer.cache[Tracer.level].push(Log.genHTML(name, argsHTML));
+        Tracer.cache[Tracer.level].push(Log.genHTML(name, argsHTML))
       } else {
-        Tracer.lastLevel = Tracer.level;
-        var children = Tracer.cache[Tracer.level+1] || [];
-        Tracer.cache[Tracer.level+1] = [];
+        Tracer.lastLevel = Tracer.level
+        var children = Tracer.cache[Tracer.level+1] || []
+        Tracer.cache[Tracer.level+1] = []
         Tracer.cache[Tracer.level].push(
-          Log.genHTML(name, argsHTML + children.join('')));
+          Log.genHTML(name, argsHTML + children.join('')))
       }
 
       if (Tracer.level == 0 && Tracer.cache[0][0]) {
-        var entry = document.createElement('div');
-        entry.className = 'log-entry log-trace';
-        entry.innerHTML = Tracer.cache[0][0];
-        Log.root.insertBefore(entry, Log.root.firstChild);
-        Tracer.cache[0] = [];
+        var entry = document.createElement('div')
+        entry.className = 'log-entry log-trace'
+        entry.innerHTML = Tracer.cache[0][0]
+        Log.root.insertBefore(entry, Log.root.firstChild)
+        Tracer.cache[0] = []
       }
 
-      Tracer.level--;
+      Tracer.level--
 
-      return returnValue;
-    };
-    wrapped._tracerMark = true;
-    return wrapped;
+      return returnValue
+    }
+    wrapped._tracerMark = true
+    return wrapped
   }
-};
+}
 
 if (typeof module !== 'undefined') module.exports = Tracer
