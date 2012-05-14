@@ -161,7 +161,7 @@ func (c *Context) SdkURL() string {
 }
 
 // Get the URL for loading this application in a Page Tab on Facebook.
-func (c *Context) PageTabURL() string {
+func (c *Context) PageTabURL(name string) string {
 	values := url.Values{}
 	values.Set("sk", fmt.Sprintf("app_%d", c.AppID))
 	if c.Env != "" {

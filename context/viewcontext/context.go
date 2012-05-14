@@ -18,7 +18,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	info := map[string]interface{}{
 		"context":    context,
-		"pageTabURL": context.PageTabURL(),
+		"pageTabURL": context.PageTabURL("/"),
 		"canvasURL":  context.CanvasURL("/"),
 		"sdkURL":     context.SdkURL(),
 		"version":    "3.0.8",
