@@ -12,6 +12,7 @@ import (
 	"github.com/nshah/rell/og/viewog"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 var (
@@ -30,6 +31,7 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 	mux := http.NewServeMux()
+	staticFile(mux, "/favicon.ico")
 	mux.Handle(public,
 		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
 	mux.HandleFunc(browserify.Path, browserify.Handle)
@@ -49,4 +51,12 @@ func main() {
 		log.Fatalln("ListenAndServe: ", err)
 	}
 	log.Println("Exiting")
+}
+
+// binds a path to a single file
+func staticFile(mux *http.ServeMux, name string) {
+	abs := filepath.Join(*publicDir, name)
+	mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, abs)
+	})
 }
