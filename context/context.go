@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 )
 
@@ -23,9 +24,19 @@ const (
 	Mid = "mid"
 )
 
+type ViewMode string
+
+// View Modes.
+const (
+	Website = ViewMode("website")
+	Canvas  = ViewMode("canvas")
+	PageTab = ViewMode("page-tab")
+)
+
 type App struct {
-	ID     uint64
-	Secret string
+	ID        uint64
+	Secret    string
+	Namespace string
 }
 
 // The Context defined by the environment and as configured by the
@@ -43,6 +54,7 @@ type Context struct {
 	Host                 string              `schema:"-"`
 	Scheme               string              `schema:"-"`
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
+	ViewMode             ViewMode            `schema:"-"`
 }
 
 // Defaults for the context.
@@ -55,6 +67,7 @@ var defaultContext = &Context{
 	UseChannel:           true,
 	Host:                 "www.fbrell.com",
 	Scheme:               "http",
+	ViewMode:             Website,
 }
 
 var (
@@ -67,6 +80,11 @@ func init() {
 		&defaultApp.ID, "rell.client.id", 184484190795, "Default Client ID.")
 	flag.StringVar(
 		&defaultApp.Secret, "rell.client.secret", "", "Default Client Secret.")
+	flag.StringVar(
+		&defaultApp.Namespace,
+		"rell.client.namespace",
+		"",
+		"Default Client Namespace.")
 }
 
 // Create a context from a HTTP request.
@@ -83,6 +101,11 @@ func FromRequest(r *http.Request) (*Context, error) {
 		} else {
 			if context.SignedRequest != nil && context.SignedRequest.AppData != "" {
 				context.Env = context.SignedRequest.AppData
+			}
+			if context.SignedRequest.Page != nil {
+				context.ViewMode = PageTab
+			} else {
+				context.ViewMode = Canvas
 			}
 		}
 	}
@@ -155,12 +178,19 @@ func (c *Context) PageTabURL() string {
 }
 
 // Get the URL for loading this application in a Canvas page on Facebook.
-func (c *Context) CanvasURL() string {
+func (c *Context) CanvasURL(name string) string {
+	var base = "/" + defaultApp.Namespace + "/"
+	if name == "" {
+		name = base
+	} else {
+		name = path.Join(base, name)
+	}
+
 	url := fburl.URL{
 		Scheme:    c.Scheme,
 		SubDomain: fburl.DApps,
 		Env:       c.Env,
-		Path:      "/fbrelll/",
+		Path:      name,
 		Values:    c.Values(),
 	}
 	return url.String()
@@ -217,5 +247,6 @@ func (c *Context) MarshalJSON() ([]byte, error) {
 		"channel":              c.UseChannel,
 		"channelURL":           c.ChannelURL(),
 		"signedRequest":        c.SignedRequest,
+		"viewMode":             c.ViewMode,
 	})
 }

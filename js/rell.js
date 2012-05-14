@@ -47,6 +47,7 @@ var Rell = {
     $('rell-logout').onclick = Rell.logout
     $('rell-run-code').onclick = Rell.runCode
     $('rell-log-clear').onclick = Log.clear
+    $('rell-view-mode').onchange = Rell.changeViewMode
   },
 
   /**
@@ -185,7 +186,11 @@ var Rell = {
     } else {
       FB.Facebook.apiClient.revokeAuthorization(null, Log.debug.bind('revokeAuthorization callback'));
     }
-  }
+  },
+
+  changeViewMode: function(e) {
+    top.location = $('rell-view-mode').value
+  },
 };
 
 if (typeof module !== 'undefined') module.exports = Rell

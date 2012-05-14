@@ -12,7 +12,6 @@ import (
 	"github.com/nshah/rell/js"
 	"github.com/nshah/rell/view"
 	"net/http"
-	"path"
 )
 
 // Parse the Context and an Example & the Context.
@@ -188,6 +187,19 @@ func renderExample(context *context.Context, example *examples.Example) h.HTML {
 											Value: "Save Code",
 										},
 									},
+									&h.Select{
+										ID: "rell-view-mode",
+										Inner: &h.Frag{
+											&h.Option{
+												Inner: h.String("Website"),
+												Value: context.URL(example.URL).String(),
+											},
+											&h.Option{
+												Inner: h.String("Canvas"),
+												Value: context.CanvasURL(example.URL),
+											},
+										},
+									},
 								},
 							},
 						},
@@ -234,7 +246,7 @@ func renderCategory(context *context.Context, category *examples.Category) h.HTM
 	for _, example := range category.Example {
 		li.Append(&h.Li{
 			Inner: &h.A{
-				HREF:  context.URL(path.Join("/", category.Name, example.Name)).String(),
+				HREF:  context.URL(example.URL).String(),
 				Inner: h.String(example.Name),
 			},
 		})

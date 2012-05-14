@@ -19,7 +19,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 	info := map[string]interface{}{
 		"context":    context,
 		"pageTabURL": context.PageTabURL(),
-		"canvasURL":  context.CanvasURL(),
+		"canvasURL":  context.CanvasURL("/"),
 		"sdkURL":     context.SdkURL(),
 		"version":    "3.0.8",
 	}

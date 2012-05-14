@@ -11,6 +11,7 @@ import (
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 	"log"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -29,6 +30,7 @@ type Example struct {
 	Content []byte `json:"-"`
 	AutoRun bool   `json:"autoRun"`
 	Title   string `json:"-"`
+	URL     string `json:"-"`
 }
 
 type Category struct {
@@ -56,7 +58,7 @@ var (
 	auth       aws.Auth
 
 	// Stock response for the index page.
-	emptyExample = &Example{Title: "Welcome"}
+	emptyExample = &Example{Title: "Welcome", URL: "/"}
 )
 
 // We load up the examples into memory on server start.
@@ -97,10 +99,10 @@ func bucket() *s3.Bucket {
 }
 
 // Loads a specific examples directory.
-func loadDir(path string) (*DB, error) {
-	categories, err := ioutil.ReadDir(path)
+func loadDir(name string) (*DB, error) {
+	categories, err := ioutil.ReadDir(name)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read directory %s: %s", path, err)
+		return nil, fmt.Errorf("Failed to read directory %s: %s", name, err)
 	}
 	db := &DB{Category: make([]*Category, 0, len(categories))}
 	for _, categoryFileInfo := range categories {
@@ -115,7 +117,7 @@ func loadDir(path string) (*DB, error) {
 			Name:   categoryName,
 			Hidden: hidden[categoryName],
 		}
-		categoryDir := filepath.Join(path, categoryName)
+		categoryDir := filepath.Join(name, categoryName)
 		examples, err := ioutil.ReadDir(categoryDir)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read category %s: %s", categoryDir, err)
@@ -135,6 +137,7 @@ func loadDir(path string) (*DB, error) {
 				Content: content,
 				AutoRun: true,
 				Title:   categoryName + " · " + cleanName,
+				URL:     path.Join("/", categoryName, cleanName),
 			})
 		}
 		db.Category = append(db.Category, category)
@@ -166,7 +169,11 @@ func Load(version, path string) (*Example, error) {
 			log.Printf("Unknown S3 error: %s", err)
 			return nil, err
 		}
-		return &Example{Content: content, Title: "Stored Example"}, nil
+		return &Example{
+			Content: content,
+			Title:   "Stored Example",
+			URL:     path,
+		}, nil
 	}
 	category := GetDB(version).FindCategory(parts[1])
 	if category == nil {
