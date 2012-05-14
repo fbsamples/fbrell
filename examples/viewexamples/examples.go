@@ -129,11 +129,11 @@ func Example(w http.ResponseWriter, r *http.Request) {
 	h.Write(w, renderExample(context, example))
 }
 
-func renderExample(context *context.Context, example *examples.Example) h.HTML {
+func renderExample(c *context.Context, example *examples.Example) h.HTML {
 	return &view.Page{
 		Title:    example.Title,
 		Class:    "main",
-		Resource: []loader.Resource{&js.Init{Context: context, Example: example}},
+		Resource: []loader.Resource{&js.Init{Context: c, Example: example}},
 		Body: &h.Frag{
 			&h.Div{
 				ID: "interactive",
@@ -157,7 +157,7 @@ func renderExample(context *context.Context, example *examples.Example) h.HTML {
 						},
 					},
 					&h.Form{
-						Action: context.URL("/saved/").String(),
+						Action: c.URL("/saved/").String(),
 						Method: h.Post,
 						Target: "_top",
 						Inner: &h.Frag{
@@ -171,7 +171,7 @@ func renderExample(context *context.Context, example *examples.Example) h.HTML {
 								Inner: &h.Frag{
 									&h.Strong{
 										Inner: &h.A{
-											HREF:  context.URL("/examples/").String(),
+											HREF:  c.URL("/examples/").String(),
 											Inner: h.String("Examples"),
 										},
 									},
@@ -191,12 +191,14 @@ func renderExample(context *context.Context, example *examples.Example) h.HTML {
 										ID: "rell-view-mode",
 										Inner: &h.Frag{
 											&h.Option{
-												Inner: h.String("Website"),
-												Value: context.URL(example.URL).String(),
+												Inner: h.String(context.Website),
+												Selected: c.ViewMode == context.Website,
+												Value: c.URL(example.URL).String(),
 											},
 											&h.Option{
-												Inner: h.String("Canvas"),
-												Value: context.CanvasURL(example.URL),
+												Inner: h.String(context.Canvas),
+												Selected: c.ViewMode == context.Canvas,
+												Value: c.CanvasURL(example.URL),
 											},
 										},
 									},
