@@ -1,6 +1,7 @@
 package og
 
 import (
+	"github.com/nshah/rell/context"
 	"net/url"
 	"testing"
 )
@@ -16,7 +17,11 @@ Outer:
 				continue Outer
 			}
 		}
-		t.Fatalf(`Did not find expected pair "%s" = "%s"`, pair.Key, pair.Value)
+		t.Fatalf(
+			`Did not find expected pair "%s" = "%s" in\n%+v`,
+			pair.Key,
+			pair.Value,
+			actual)
 	}
 }
 
@@ -27,11 +32,11 @@ func TestParseBase64(t *testing.T) {
 		{"og:title", "song1"},
 		{"og:type", "song"},
 		{"og:url", "http://www.fbrell.com/rog/" + song1},
-		{"og:image", "http://www.fbrell.com/" + stockImages[8]},
+		{"og:image", "http://www.fbrell.com/public/images/" + stockImages[8]},
 		{"og:description", stockDescriptions[0]},
 	}}
 
-	object, err := NewFromBase64(song1)
+	object, err := NewFromBase64(context.Default(), song1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,11 +54,11 @@ func TestParseValues(t *testing.T) {
 		{"og:type", ogType},
 		{"og:title", ogTitle},
 		{"og:url", "http://www.fbrell.com/og/" + ogType + "/" + ogTitle},
-		{"og:image", "http://www.fbrell.com/" + stockImages[8]},
+		{"og:image", "http://www.fbrell.com/public/images/" + stockImages[8]},
 		{"og:description", stockDescriptions[6]},
 	}}
 
-	object, err := NewFromValues(values)
+	object, err := NewFromValues(context.Default(), values)
 	if err != nil {
 		t.Fatal(err)
 	}

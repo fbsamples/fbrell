@@ -53,6 +53,8 @@ var defaultContext = &Context{
 	Status:               true,
 	FrictionlessRequests: true,
 	UseChannel:           true,
+	Host:                 "www.fbrell.com",
+	Scheme:               "http",
 }
 
 var (
@@ -69,7 +71,7 @@ func init() {
 
 // Create a context from a HTTP request.
 func FromRequest(r *http.Request) (*Context, error) {
-	context := DefaultContext()
+	context := Default()
 	_ = schemaDecoder.Decode(context, r.URL.Query())
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
@@ -98,7 +100,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 }
 
 // Create a default context.
-func DefaultContext() *Context {
+func Default() *Context {
 	context := *defaultContext
 	context.AppID = defaultApp.ID
 	return &context
