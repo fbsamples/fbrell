@@ -185,14 +185,6 @@ var Rell = {
     } else {
       FB.Facebook.apiClient.revokeAuthorization(null, Log.debug.bind('revokeAuthorization callback'));
     }
-  },
-
-  addHiddenInput: function(form, name, value) {
-    var el = document.createElement('input');
-    el.type = 'hidden';
-    el.name = name;
-    el.value = value;
-    form.appendChild(el);
   }
 };
 
