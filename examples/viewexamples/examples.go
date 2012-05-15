@@ -191,16 +191,21 @@ func renderExample(c *context.Context, example *examples.Example) h.HTML {
 										ID: "rell-view-mode",
 										Inner: &h.Frag{
 											&h.Option{
-												Inner: h.String("Website"),
-												Value: c.URL(example.URL).String(),
+												Inner:    h.String("Website"),
+												Selected: c.ViewMode == context.Website,
+												Value:    c.URL(example.URL).String(),
 											},
 											&h.Option{
-												Inner: h.String("Canvas"),
-												Value: c.CanvasURL(example.URL),
+												ID:       "rell-view-mode-canvas",
+												Inner:    h.String("Canvas"),
+												Selected: c.ViewMode == context.Canvas,
+												Value:    c.CanvasURL(example.URL),
 											},
 											&h.Option{
-												Inner: h.String("Page Tab"),
-												Value: c.PageTabURL(example.URL),
+												ID:       "rell-view-mode-page-tab",
+												Inner:    h.String("Page Tab"),
+												Selected: c.ViewMode == context.PageTab,
+												Value:    c.PageTabURL(example.URL),
 											},
 										},
 									},

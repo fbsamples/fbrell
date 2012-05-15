@@ -48,6 +48,7 @@ var Rell = {
     $('rell-run-code').onclick = Rell.runCode
     $('rell-log-clear').onclick = Log.clear
     $('rell-view-mode').onchange = Rell.changeViewMode
+    Rell.setCurrentViewMode()
   },
 
   /**
@@ -191,6 +192,15 @@ var Rell = {
   changeViewMode: function(e) {
     top.location = $('rell-view-mode').value
   },
+
+  setCurrentViewMode: function() {
+    var select = $('rell-view-mode')
+    if (window.name.indexOf("canvas") > -1) {
+      select.value = $('rell-view-mode-canvas').value
+    } else if (window.name.indexOf("app_runner") > -1) {
+      select.value = $('rell-view-mode-page-tab').value
+    }
+  }
 }
 
 if (typeof module !== 'undefined') module.exports = Rell
