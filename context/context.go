@@ -54,7 +54,7 @@ type Context struct {
 	Host                 string              `schema:"-"`
 	Scheme               string              `schema:"-"`
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
-	ViewMode             string            `schema:"view-mode"`
+	ViewMode             string              `schema:"view-mode"`
 }
 
 // Defaults for the context.
@@ -240,7 +240,7 @@ func (c *Context) AbsoluteURL(path string) *url.URL {
 
 // This will return a view aware URL and will always be absolute.
 func (c *Context) ViewURL(path string) string {
-	switch (c.ViewMode) {
+	switch c.ViewMode {
 	case Canvas:
 		return c.CanvasURL(path)
 	case PageTab:
