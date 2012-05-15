@@ -6,10 +6,11 @@ package context
 import (
 	"code.google.com/p/gorilla/schema"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"github.com/nshah/go.fburl"
+	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.signedrequest/fbsr"
+	"github.com/nshah/rell/app"
 	"log"
 	"net/http"
 	"net/url"
@@ -32,12 +33,6 @@ const (
 	Canvas  = "canvas"
 	PageTab = "page-tab"
 )
-
-type App struct {
-	ID        uint64
-	Secret    string
-	Namespace string
-}
 
 // The Context defined by the environment and as configured by the
 // user via the URL.
@@ -72,20 +67,7 @@ var defaultContext = &Context{
 
 var (
 	schemaDecoder = schema.NewDecoder()
-	defaultApp    = &App{}
 )
-
-func init() {
-	flag.Uint64Var(
-		&defaultApp.ID, "rell.client.id", 184484190795, "Default Client ID.")
-	flag.StringVar(
-		&defaultApp.Secret, "rell.client.secret", "", "Default Client Secret.")
-	flag.StringVar(
-		&defaultApp.Namespace,
-		"rell.client.namespace",
-		"",
-		"Default Client Namespace.")
-}
 
 // Create a context from a HTTP request.
 func FromRequest(r *http.Request) (*Context, error) {
@@ -97,13 +79,10 @@ func FromRequest(r *http.Request) (*Context, error) {
 	if rawSr != "" {
 		var err error
 		context.SignedRequest, err = fbsr.Unmarshal(
-			[]byte(rawSr), []byte(defaultApp.Secret))
+			[]byte(rawSr), []byte(app.Secret))
 		if err != nil {
 			log.Printf("Ignoring error in parsing signed request: %s", err)
 		} else {
-			if context.SignedRequest != nil && context.SignedRequest.AppData != "" {
-				context.Env = context.SignedRequest.AppData
-			}
 			if context.SignedRequest.Page != nil {
 				context.ViewMode = PageTab
 			} else {
@@ -127,7 +106,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 // Create a default context.
 func Default() *Context {
 	context := *defaultContext
-	context.AppID = defaultApp.ID
+	context.AppID = app.ID
 	return &context
 }
 
@@ -166,10 +145,7 @@ func (c *Context) SdkURL() string {
 func (c *Context) PageTabURL(name string) string {
 	values := url.Values{}
 	values.Set("sk", fmt.Sprintf("app_%d", c.AppID))
-	ctxValues := c.Values()
-	if len(ctxValues) != 0 {
-		values.Set("app_data", c.Env)
-	}
+	values.Set("app_data", appdata.Encode(c.URL(name)))
 	url := fburl.URL{
 		Scheme:    c.Scheme,
 		SubDomain: fburl.DWww,
@@ -182,7 +158,7 @@ func (c *Context) PageTabURL(name string) string {
 
 // Get the URL for loading this application in a Canvas page on Facebook.
 func (c *Context) CanvasURL(name string) string {
-	var base = "/" + defaultApp.Namespace + "/"
+	var base = "/" + app.Namespace + "/"
 	if name == "" || name == "/" {
 		name = base
 	} else {
@@ -207,7 +183,7 @@ func (c *Context) ChannelURL() string {
 // Serialize the context back to URL values.
 func (c *Context) Values() url.Values {
 	values := url.Values{}
-	if c.AppID != defaultApp.ID {
+	if c.AppID != app.ID {
 		values.Set("appid", strconv.FormatUint(c.AppID, 10))
 	}
 	if c.Env != defaultContext.Env {

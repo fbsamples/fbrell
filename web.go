@@ -7,6 +7,8 @@ import (
 	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.httpstats"
+	"github.com/nshah/go.signedrequest/appdata"
+	"github.com/nshah/rell/app"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/og/viewog"
@@ -30,6 +32,7 @@ func main() {
 	const public = "/public/"
 	flag.Parse()
 	flagconfig.Parse()
+
 	mux := http.NewServeMux()
 	staticFile(mux, "/favicon.ico")
 	mux.Handle(public,
@@ -45,8 +48,13 @@ func main() {
 	mux.HandleFunc("/og/", viewog.Values)
 	mux.HandleFunc("/rog/", viewog.Base64)
 	mux.HandleFunc("/rog-redirect/", viewog.Redirect)
+
+	var handler http.Handler
+	handler = httpstats.NewHandler("web", mux)
+	handler = &appdata.Handler{Handler: handler, Secret: []byte(app.Secret)}
+
 	log.Println("Listening on ", *serverAddress)
-	err := http.ListenAndServe(*serverAddress, httpstats.NewHandler("web", mux))
+	err := http.ListenAndServe(*serverAddress, handler)
 	if err != nil {
 		log.Fatalln("ListenAndServe: ", err)
 	}
