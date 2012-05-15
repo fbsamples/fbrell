@@ -38,12 +38,17 @@ func List(w http.ResponseWriter, r *http.Request) {
 
 func Saved(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" && r.URL.Path == "/saved/" {
+		c, err := context.FromRequest(r)
+		if err != nil {
+			view.Error(w, r, err)
+			return
+		}
 		hash, err := examples.Save([]byte(r.FormValue("code")))
 		if err != nil {
 			view.Error(w, r, err)
 			return
 		}
-		http.Redirect(w, r, "/saved/"+hash, 302)
+		http.Redirect(w, r, c.AbsoluteURL("/saved/"+hash).String(), 302)
 		return
 	} else {
 		context, example, err := parse(r)
