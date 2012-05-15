@@ -17,6 +17,8 @@ import (
 	"strconv"
 )
 
+const defaultMaxMemory = 32 << 20 // 32 MB
+
 // The allowed SDK Versions.
 const (
 	Mu  = "mu"
@@ -24,13 +26,11 @@ const (
 	Mid = "mid"
 )
 
-type ViewMode string
-
 // View Modes.
 const (
-	Website = ViewMode("website")
-	Canvas  = ViewMode("canvas")
-	PageTab = ViewMode("page-tab")
+	Website = "website"
+	Canvas  = "canvas"
+	PageTab = "page-tab"
 )
 
 type App struct {
@@ -54,7 +54,7 @@ type Context struct {
 	Host                 string              `schema:"-"`
 	Scheme               string              `schema:"-"`
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
-	ViewMode             ViewMode            `schema:"-"`
+	ViewMode             string            `schema:"view-mode"`
 }
 
 // Defaults for the context.
@@ -89,8 +89,10 @@ func init() {
 
 // Create a context from a HTTP request.
 func FromRequest(r *http.Request) (*Context, error) {
+	r.ParseMultipartForm(defaultMaxMemory)
 	context := Default()
 	_ = schemaDecoder.Decode(context, r.URL.Query())
+	_ = schemaDecoder.Decode(context, r.Form)
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
 		var err error
@@ -234,6 +236,19 @@ func (c *Context) AbsoluteURL(path string) *url.URL {
 	u.Host = c.Host
 	u.Scheme = c.Scheme
 	return u
+}
+
+// This will return a view aware URL and will always be absolute.
+func (c *Context) ViewURL(path string) string {
+	switch (c.ViewMode) {
+	case Canvas:
+		return c.CanvasURL(path)
+	case PageTab:
+		return c.PageTabURL(path)
+	default:
+		return c.AbsoluteURL(path).String()
+	}
+	panic("not reached")
 }
 
 // JSON representation of Context.

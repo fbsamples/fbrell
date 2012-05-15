@@ -48,7 +48,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, err)
 			return
 		}
-		http.Redirect(w, r, c.AbsoluteURL("/saved/"+hash).String(), 302)
+		http.Redirect(w, r, c.ViewURL("/saved/"+hash), 302)
 		return
 	} else {
 		context, example, err := parse(r)
@@ -166,6 +166,7 @@ func renderExample(c *context.Context, example *examples.Example) *view.Page {
 						Method: h.Post,
 						Target: "_top",
 						Inner: &h.Frag{
+							h.HiddenInputs(c.Values()),
 							&h.Textarea{
 								ID:    "jscode",
 								Name:  "code",
