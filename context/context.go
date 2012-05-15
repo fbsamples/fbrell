@@ -164,7 +164,8 @@ func (c *Context) SdkURL() string {
 func (c *Context) PageTabURL(name string) string {
 	values := url.Values{}
 	values.Set("sk", fmt.Sprintf("app_%d", c.AppID))
-	if c.Env != "" {
+	ctxValues := c.Values()
+	if len(ctxValues) != 0 {
 		values.Set("app_data", c.Env)
 	}
 	url := fburl.URL{
@@ -180,7 +181,7 @@ func (c *Context) PageTabURL(name string) string {
 // Get the URL for loading this application in a Canvas page on Facebook.
 func (c *Context) CanvasURL(name string) string {
 	var base = "/" + defaultApp.Namespace + "/"
-	if name == "" {
+	if name == "" || name == "/" {
 		name = base
 	} else {
 		name = path.Join(base, name)

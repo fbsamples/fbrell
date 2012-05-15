@@ -38,7 +38,7 @@ func Values(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	h.Write(w, renderObject(context, object))
+	view.Write(w, r, renderObject(context, object))
 }
 
 // Handles /rog/* requests.
@@ -58,7 +58,7 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	h.Write(w, renderObject(context, object))
+	view.Write(w, r, renderObject(context, object))
 }
 
 // Handles /rog-redirect/ requests.

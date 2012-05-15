@@ -33,7 +33,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	h.Write(w, renderList(context, examples.GetDB(context.Version)))
+	view.Write(w, r, renderList(context, examples.GetDB(context.Version)))
 }
 
 func Saved(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +51,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, err)
 			return
 		}
-		h.Write(w, renderExample(context, example))
+		view.Write(w, r, renderExample(context, example))
 	}
 }
 
@@ -80,7 +80,7 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 			w, r, errors.New("Not allowed to view this example in simple mode."))
 		return
 	}
-	h.Write(w, &h.Document{
+	view.Write(w, r, &h.Document{
 		Inner: &h.Frag{
 			&h.Head{
 				Inner: &h.Frag{
@@ -117,7 +117,7 @@ func SdkChannel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
-	h.Write(w, &h.Script{Src: context.SdkURL()})
+	view.Write(w, r, &h.Script{Src: context.SdkURL()})
 }
 
 func Example(w http.ResponseWriter, r *http.Request) {
@@ -126,10 +126,10 @@ func Example(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	h.Write(w, renderExample(context, example))
+	view.Write(w, r, renderExample(context, example))
 }
 
-func renderExample(c *context.Context, example *examples.Example) h.HTML {
+func renderExample(c *context.Context, example *examples.Example) *view.Page {
 	return &view.Page{
 		Title:    example.Title,
 		Class:    "main",
@@ -188,24 +188,32 @@ func renderExample(c *context.Context, example *examples.Example) h.HTML {
 										},
 									},
 									&h.Select{
-										ID: "rell-view-mode",
+										ID:   "rell-view-mode",
+										Name: "view-mode",
 										Inner: &h.Frag{
 											&h.Option{
 												Inner:    h.String("Website"),
 												Selected: c.ViewMode == context.Website,
-												Value:    c.URL(example.URL).String(),
+												Value:    string(context.Website),
+												Data: map[string]interface{}{
+													"url": c.URL(example.URL).String(),
+												},
 											},
 											&h.Option{
-												ID:       "rell-view-mode-canvas",
 												Inner:    h.String("Canvas"),
 												Selected: c.ViewMode == context.Canvas,
-												Value:    c.CanvasURL(example.URL),
+												Value:    string(context.Canvas),
+												Data: map[string]interface{}{
+													"url": c.CanvasURL(example.URL),
+												},
 											},
 											&h.Option{
-												ID:       "rell-view-mode-page-tab",
 												Inner:    h.String("Page Tab"),
 												Selected: c.ViewMode == context.PageTab,
-												Value:    c.PageTabURL(example.URL),
+												Value:    string(context.PageTab),
+												Data: map[string]interface{}{
+													"url": c.PageTabURL(example.URL),
+												},
 											},
 										},
 									},

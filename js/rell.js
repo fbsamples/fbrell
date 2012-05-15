@@ -190,15 +190,16 @@ var Rell = {
   },
 
   changeViewMode: function(e) {
-    top.location = $('rell-view-mode').value
+    var select = $('rell-view-mode')
+    top.location = select[select.selectedIndex].getAttribute('data-url')
   },
 
   setCurrentViewMode: function() {
     var select = $('rell-view-mode')
-    if (window.name.indexOf("canvas") > -1) {
-      select.value = $('rell-view-mode-canvas').value
-    } else if (window.name.indexOf("app_runner") > -1) {
-      select.value = $('rell-view-mode-page-tab').value
+    if (window.name.indexOf('canvas') > -1) {
+      select.value = 'canvas' // context.ViewMode
+    } else if (window.name.indexOf('app_runner') > -1) {
+      select.value = 'page-tab' // context.ViewMode
     }
   }
 }
