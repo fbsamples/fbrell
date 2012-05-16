@@ -78,7 +78,6 @@ func FromRequest(r *http.Request) (*Context, error) {
 	_ = schemaDecoder.Decode(context, r.Form)
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
-		var err error
 		context.SignedRequest, err = fbsr.Unmarshal(
 			[]byte(rawSr), []byte(app.Secret))
 		if err != nil {
@@ -88,6 +87,16 @@ func FromRequest(r *http.Request) (*Context, error) {
 				context.ViewMode = PageTab
 			} else {
 				context.ViewMode = Canvas
+			}
+		}
+	} else {
+		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", context.AppID))
+		if cookie != nil {
+			context.SignedRequest, err = fbsr.Unmarshal(
+				[]byte(cookie.Value), []byte(app.Secret))
+			if err != nil {
+				log.Printf(
+					"Ignoring error in parsing signed request from cookie: %s", err)
 			}
 		}
 	}
