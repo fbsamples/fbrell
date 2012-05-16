@@ -145,12 +145,22 @@ func renderMetaTable(o *og.Object) h.HTML {
 
 // Render a document for the Object.
 func renderObject(context *context.Context, o *og.Object) h.HTML {
+	var title, header h.HTML
+	if o.Title() != "" {
+		title = &h.Title{h.String(o.Title())}
+		header = &h.H1{
+			Inner: &h.A{
+				HREF:  o.URL(),
+				Inner: h.String(o.Title()),
+			},
+		}
+	}
 	return &h.Document{
 		Inner: &h.Frag{
 			&h.Head{
 				Inner: &h.Frag{
 					&h.Meta{Charset: "utf-8"},
-					&h.Title{h.String(o.Title())},
+					title,
 					view.DefaultStyle,
 					renderMeta(o),
 				},
@@ -172,12 +182,7 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 					&h.Div{
 						Class: "bd",
 						Inner: &h.Frag{
-							&h.H1{
-								Inner: &h.A{
-									HREF:  o.URL(),
-									Inner: h.String(o.Title()),
-								},
-							},
+							header,
 							renderMetaTable(o),
 							&h.A{
 								HREF: o.ImageURL(),
