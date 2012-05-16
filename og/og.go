@@ -25,8 +25,9 @@ type Pair struct {
 
 // An ordered list of Pairs representing a raw Object.
 type Object struct {
-	Pairs   []Pair
-	context *context.Context
+	Pairs        []Pair
+	context      *context.Context
+	skipGenerate []string
 }
 
 // Padding is wasteful, but go wants it.
@@ -88,18 +89,19 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		}
 		key := fmt.Sprint(row[0])
 		val := ""
-		if row[1] != nil {
-			switch t := row[1].(type) {
-			default:
-				val = fmt.Sprint(t)
-			case float64:
-				val = fmt.Sprint(uint64(t))
-			}
+		switch t := row[1].(type) {
+		case nil:
+			object.skipGenerate = append(object.skipGenerate, key)
+			continue
+		case float64:
+			val = fmt.Sprint(uint64(t))
+		default:
+			val = fmt.Sprint(t)
 		}
 		object.AddPair(key, val)
 	}
 
-	if object.URL() == "" {
+	if object.shouldGenerate("og:url") {
 		url := context.AbsoluteURL("/rog/" + b64).String()
 		object.AddPair("og:url", url)
 	}
@@ -119,7 +121,7 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 		}
 	}
 
-	if object.URL() == "" {
+	if object.shouldGenerate("og:url") {
 		copiedValues := copyValues(values)
 		copiedValues.Del("og:type")
 		copiedValues.Del("og:title")
@@ -132,7 +134,7 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 		object.AddPair("og:url", url.String())
 	}
 
-	if object.AppID() == "" {
+	if object.shouldGenerate("fb:app_id") {
 		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
 	}
 
@@ -140,14 +142,26 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 	return object, nil
 }
 
+func (o *Object) shouldGenerate(key string) bool {
+	if len(o.GetAll(key)) > 0 {
+		return false
+	}
+	for _, skipKey := range o.skipGenerate {
+		if key == skipKey {
+			return false
+		}
+	}
+	return true
+}
+
 func (o *Object) generateDefaults() {
 	url := o.URL()
-	if o.ImageURL() == "" {
+	if o.shouldGenerate("og:image") {
 		img := o.context.AbsoluteURL(
 			"/public/images/" + hashedPick(url, stockImages))
 		o.AddPair("og:image", img.String())
 	}
-	if o.Description() == "" {
+	if o.shouldGenerate("og:description") {
 		o.AddPair("og:description", hashedPick(url, stockDescriptions))
 	}
 }
