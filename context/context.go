@@ -65,13 +65,14 @@ var defaultContext = &Context{
 	ViewMode:             Website,
 }
 
-var (
-	schemaDecoder = schema.NewDecoder()
-)
+var schemaDecoder = schema.NewDecoder()
 
 // Create a context from a HTTP request.
 func FromRequest(r *http.Request) (*Context, error) {
-	r.ParseMultipartForm(defaultMaxMemory)
+	err := r.ParseMultipartForm(defaultMaxMemory)
+	if err != nil {
+		return nil, err
+	}
 	context := Default()
 	_ = schemaDecoder.Decode(context, r.URL.Query())
 	_ = schemaDecoder.Decode(context, r.Form)
