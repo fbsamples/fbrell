@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/nshah/go.flag.pkgpath"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
@@ -53,9 +54,11 @@ var (
 	mu  *DB
 
 	// For stored examples.
-	bucketMemo *s3.Bucket
-	bucketName string
-	auth       aws.Auth
+	bucketMemo  *s3.Bucket
+	bucketName  string
+	auth        aws.Auth
+	cacheServer string
+	cacheMemo   *memcache.Client
 
 	// Stock response for the index page.
 	emptyExample = &Example{Title: "Welcome", URL: "/"}
@@ -88,6 +91,11 @@ func init() {
 		"rell.examples.new",
 		"github.com/nshah/rell/examples/db/mu",
 		"The directory containing examples for the new SDK.")
+	flag.StringVar(
+		&cacheServer,
+		"rell.memcache",
+		"127.0.0.1:11211",
+		"Memcache server for caching purposes.")
 }
 
 // Get's the shared S3 bucket instance.
@@ -96,6 +104,14 @@ func bucket() *s3.Bucket {
 		bucketMemo = s3.New(auth, aws.USEast).Bucket(bucketName)
 	}
 	return bucketMemo
+}
+
+// Get the shared Memcache client instance.
+func cache() *memcache.Client {
+	if cacheMemo == nil {
+		cacheMemo = memcache.New(cacheServer)
+	}
+	return cacheMemo
 }
 
 // Loads a specific examples directory.
@@ -160,13 +176,8 @@ func Load(version, path string) (*Example, error) {
 	}
 
 	if parts[1] == "saved" {
-		content, err := bucket().Get("/" + parts[2])
+		content, err := cachedGet(parts[2])
 		if err != nil {
-			s3Err, ok := err.(*s3.Error)
-			if ok && s3Err.StatusCode == 404 {
-				return nil, errors.New("Could not find saved example.")
-			}
-			log.Printf("Unknown S3 error: %s", err)
 			return nil, err
 		}
 		return &Example{
@@ -237,7 +248,49 @@ func Save(content []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Error comupting md5 sum: %s", err)
 	}
-	hash := fmt.Sprintf("%x", h.Sum(nil))
-	err = bucket().Put(hash, content, "text/plain", s3.Private)
-	return hash, err
+	key := fmt.Sprintf("%x", h.Sum(nil))
+	_, err = cachedGet(key)
+	if err != nil {
+		// we don't have this stored
+		err = bucket().Put(key, content, "text/plain", s3.Private)
+		if err != nil {
+			log.Printf("Error in bucket.Put: %s", err)
+		}
+		err = cache().Set(&memcache.Item{Key: makeCacheKey(key), Value: content})
+		if err != nil {
+			log.Printf("Error in cache.Set: %s", err)
+		}
+	}
+	return key, err
+}
+
+func makeCacheKey(key string) string {
+	return bucketName + ":" + key
+}
+
+// Check cache and then S3 for a stored example.
+func cachedGet(key string) (content []byte, err error) {
+	cacheKey := makeCacheKey(key)
+	item, err := cache().Get(cacheKey)
+	if err != nil {
+		if err != memcache.ErrCacheMiss {
+			log.Printf("Error in cache.Get: %s", err)
+		}
+	} else {
+		return item.Value, nil
+	}
+	content, err = bucket().Get("/" + key)
+	if err != nil {
+		s3Err, ok := err.(*s3.Error)
+		if ok && s3Err.StatusCode == 404 {
+			return nil, errors.New("Could not find saved example.")
+		}
+		log.Printf("Unknown S3 error: %s", err)
+		return nil, err
+	}
+	err = cache().Set(&memcache.Item{Key: cacheKey, Value: content})
+	if err != nil {
+		log.Printf("Error in cache.Set: %s", err)
+	}
+	return content, nil
 }
