@@ -76,7 +76,8 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 	var strSlices [][]interface{}
 	err = json.Unmarshal(jsonBytes, &strSlices)
 	if err != nil {
-		return nil, fmt.Errorf("Failed json unmarshal: %s", err)
+		return nil, fmt.Errorf(
+			"Failed json unmarshal string %s with error %s", string(jsonBytes), err)
 	}
 
 	object := &Object{context: context}
@@ -253,17 +254,19 @@ func (o *Object) AddPair(key, value string) {
 // Pick an string from the given choices based on a consistent hash of
 // the given URL. This allows for "persistant defaults" for fields.
 func hashedPick(rawurl string, choices []string) string {
+	var key string
 	url, err := url.Parse(rawurl)
 	if err != nil {
 		log.Printf("Failed to parse URL %s in hashed pick: %s", url, err)
-	}
-
-	key := url.Path
-	// TODO figure out if fixing this will break things before removing it
-	if url.RawQuery == "" {
-		key += "undefined"
+		key = ""
 	} else {
-		key += url.RawQuery
+		key = url.Path
+		// TODO figure out if fixing this will break things before removing it
+		if url.RawQuery == "" {
+			key += "undefined"
+		} else {
+			key += url.RawQuery
+		}
 	}
 	md5 := md5.New()
 	io.WriteString(md5, key)
