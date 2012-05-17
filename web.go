@@ -4,11 +4,11 @@ package main
 import (
 	"flag"
 	"github.com/nshah/go.browserify"
+	"github.com/nshah/go.fbapp"
 	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.httpstats"
 	"github.com/nshah/go.signedrequest/appdata"
-	"github.com/nshah/rell/app"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/og/viewog"
@@ -51,7 +51,10 @@ func main() {
 
 	var handler http.Handler
 	handler = httpstats.NewHandler("web", mux)
-	handler = &appdata.Handler{Handler: handler, Secret: []byte(app.Secret)}
+	handler = &appdata.Handler{
+		Handler: handler,
+		Secret:  fbapp.Default.SecretByte(),
+	}
 
 	log.Println("Listening on ", *serverAddress)
 	err := http.ListenAndServe(*serverAddress, handler)

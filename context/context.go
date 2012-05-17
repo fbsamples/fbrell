@@ -7,10 +7,10 @@ import (
 	"code.google.com/p/gorilla/schema"
 	"encoding/json"
 	"fmt"
+	"github.com/nshah/go.fbapp"
 	"github.com/nshah/go.fburl"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.signedrequest/fbsr"
-	"github.com/nshah/rell/app"
 	"log"
 	"net/http"
 	"net/url"
@@ -79,7 +79,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
 		context.SignedRequest, err = fbsr.Unmarshal(
-			[]byte(rawSr), []byte(app.Secret))
+			[]byte(rawSr), fbapp.Default.SecretByte())
 		if err != nil {
 			log.Printf("Ignoring error in parsing signed request: %s", err)
 		} else {
@@ -93,7 +93,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", context.AppID))
 		if cookie != nil {
 			context.SignedRequest, err = fbsr.Unmarshal(
-				[]byte(cookie.Value), []byte(app.Secret))
+				[]byte(cookie.Value), fbapp.Default.SecretByte())
 			if err != nil {
 				log.Printf(
 					"Ignoring error in parsing signed request from cookie: %s", err)
@@ -116,7 +116,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 // Create a default context.
 func Default() *Context {
 	context := *defaultContext
-	context.AppID = app.ID
+	context.AppID = fbapp.Default.ID()
 	return &context
 }
 
@@ -168,7 +168,7 @@ func (c *Context) PageTabURL(name string) string {
 
 // Get the URL for loading this application in a Canvas page on Facebook.
 func (c *Context) CanvasURL(name string) string {
-	var base = "/" + app.Namespace + "/"
+	var base = "/" + fbapp.Default.Namespace() + "/"
 	if name == "" || name == "/" {
 		name = base
 	} else {
@@ -193,7 +193,7 @@ func (c *Context) ChannelURL() string {
 // Serialize the context back to URL values.
 func (c *Context) Values() url.Values {
 	values := url.Values{}
-	if c.AppID != app.ID {
+	if c.AppID != fbapp.Default.ID() {
 		values.Set("appid", strconv.FormatUint(c.AppID, 10))
 	}
 	if c.Env != defaultContext.Env {
