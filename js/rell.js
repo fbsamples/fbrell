@@ -197,9 +197,11 @@ var Rell = {
   setCurrentViewMode: function() {
     var select = $('rell-view-mode')
     if (window.name.indexOf('canvas') > -1) {
-      select.value = 'canvas' // context.ViewMode
+      select.value = 'canvas' // context.Canvas
     } else if (window.name.indexOf('app_runner') > -1) {
-      select.value = 'page-tab' // context.ViewMode
+      select.value = 'page-tab' // context.PageTab
+    } else if (self === top) {
+      select.value = 'website' // context.Website
     }
   }
 }
