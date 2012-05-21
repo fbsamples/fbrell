@@ -8,7 +8,7 @@ DAEMON_COMMAND=/usr/bin/$PKGNAME
 DAEMON_OUT=/var/log/$PKGNAME.out
 DAEMON_ERR=/var/log/$PKGNAME.err
 DAEMON_PID=/run/$PKGNAME.pid
-DAEMON_PID=/run/lock/$PKGNAME.lock
+DAEMON_LOCK=/run/lock/$PKGNAME.lock
 CONF_FILE=/etc/conf.d/$PKGNAME
 PID=$(pidof -o %PPID $DAEMON_COMMAND)
 
@@ -33,7 +33,7 @@ start)
     -o $DAEMON_OUT \
     -u $PKGNAME \
     -p $DAEMON_PID \
-    -l $DAEMON_PID \
+    -l $DAEMON_LOCK \
     \
     $DAEMON_COMMAND -c $CONF_FILE
   if [[ $? -ne 0 ]]; then
