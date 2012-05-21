@@ -11,6 +11,7 @@ import (
 	"github.com/nshah/go.fburl"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.signedrequest/fbsr"
+	"github.com/nshah/rell/context/empcheck"
 	"log"
 	"net/http"
 	"net/url"
@@ -50,6 +51,7 @@ type Context struct {
 	Scheme               string              `schema:"-"`
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
 	ViewMode             string              `schema:"view-mode"`
+	IsEmployee           bool                `schema:"-"`
 }
 
 // Defaults for the context.
@@ -110,14 +112,23 @@ func FromRequest(r *http.Request) (*Context, error) {
 	} else {
 		context.Scheme = "http"
 	}
+	if context.SignedRequest != nil && context.SignedRequest.UserID != 0 {
+		context.IsEmployee = empcheck.IsEmployee(context.SignedRequest.UserID)
+	}
 	return context, nil
+}
+
+// Provides a duplicate copy.
+func (c *Context) Copy() *Context {
+	context := *c
+	return &context
 }
 
 // Create a default context.
 func Default() *Context {
-	context := *defaultContext
+	context := defaultContext.Copy()
 	context.AppID = fbapp.Default.ID()
-	return &context
+	return context
 }
 
 // Get the URL for the JS SDK.
@@ -239,7 +250,7 @@ func (c *Context) ViewURL(path string) string {
 
 // JSON representation of Context.
 func (c *Context) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
+	data := map[string]interface{}{
 		"appID":                strconv.FormatUint(c.AppID, 10),
 		"level":                c.Level,
 		"trace":                c.Trace,
@@ -250,5 +261,9 @@ func (c *Context) MarshalJSON() ([]byte, error) {
 		"channelURL":           c.ChannelURL(),
 		"signedRequest":        c.SignedRequest,
 		"viewMode":             c.ViewMode,
-	})
+	}
+	if c.IsEmployee {
+		data["isEmployee"] = true
+	}
+	return json.Marshal(data)
 }

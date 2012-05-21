@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/nshah/go.flag.pkgpath"
+	"github.com/nshah/rell/cache"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -54,11 +55,9 @@ var (
 	mu  *DB
 
 	// For stored examples.
-	bucketMemo  *s3.Bucket
-	bucketName  string
-	auth        aws.Auth
-	cacheServer string
-	cacheMemo   *memcache.Client
+	bucketMemo *s3.Bucket
+	bucketName string
+	auth       aws.Auth
 
 	// Stock response for the index page.
 	emptyExample = &Example{Title: "Welcome", URL: "/"}
@@ -91,11 +90,6 @@ func init() {
 		"rell.examples.new",
 		"github.com/nshah/rell/examples/db/mu",
 		"The directory containing examples for the new SDK.")
-	flag.StringVar(
-		&cacheServer,
-		"rell.memcache",
-		"127.0.0.1:11211",
-		"Memcache server for caching purposes.")
 }
 
 // Get's the shared S3 bucket instance.
@@ -104,14 +98,6 @@ func bucket() *s3.Bucket {
 		bucketMemo = s3.New(auth, aws.USEast).Bucket(bucketName)
 	}
 	return bucketMemo
-}
-
-// Get the shared Memcache client instance.
-func cache() *memcache.Client {
-	if cacheMemo == nil {
-		cacheMemo = memcache.New(cacheServer)
-	}
-	return cacheMemo
 }
 
 // Loads a specific examples directory.
@@ -256,7 +242,8 @@ func Save(content []byte) (string, error) {
 		if err != nil {
 			log.Printf("Error in bucket.Put: %s", err)
 		}
-		err = cache().Set(&memcache.Item{Key: makeCacheKey(key), Value: content})
+		err = cache.Client().Set(
+			&memcache.Item{Key: makeCacheKey(key), Value: content})
 		if err != nil {
 			log.Printf("Error in cache.Set: %s", err)
 		}
@@ -271,7 +258,7 @@ func makeCacheKey(key string) string {
 // Check cache and then S3 for a stored example.
 func cachedGet(key string) (content []byte, err error) {
 	cacheKey := makeCacheKey(key)
-	item, err := cache().Get(cacheKey)
+	item, err := cache.Client().Get(cacheKey)
 	if err != nil {
 		if err != memcache.ErrCacheMiss {
 			log.Printf("Error in cache.Get: %s", err)
@@ -288,7 +275,7 @@ func cachedGet(key string) (content []byte, err error) {
 		log.Printf("Unknown S3 error: %s", err)
 		return nil, err
 	}
-	err = cache().Set(&memcache.Item{Key: cacheKey, Value: content})
+	err = cache.Client().Set(&memcache.Item{Key: cacheKey, Value: content})
 	if err != nil {
 		log.Printf("Error in cache.Set: %s", err)
 	}
