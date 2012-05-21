@@ -1,12 +1,17 @@
 package context_test
 
 import (
+	"github.com/nshah/go.fbapp"
 	"github.com/nshah/go.subset"
 	"github.com/nshah/rell/context"
 	"net/http"
 	"net/url"
 	"testing"
 )
+
+func init() {
+	fbapp.Default = fbapp.New(184484190795, "", "fbrelll")
+}
 
 func fromValues(t *testing.T, values url.Values) *context.Context {
 	req, err := http.NewRequest(
@@ -71,11 +76,12 @@ func TestComplex(t *testing.T) {
 func TestPageTabURLBeta(t *testing.T) {
 	t.Parallel()
 	expected := "http://www.beta.facebook.com/pages/" +
-		"Rell-Page-for-Tabs/141929622497380?sk=app_184484190795&app_data=beta"
+		"Rell-Page-for-Tabs/141929622497380?sk=app_184484190795" +
+		"&app_data=Lz9zZXJ2ZXI9YmV0YQ%3D%3D"
 	values := url.Values{}
 	values.Add("server", "beta")
 	context := fromValues(t, values)
-	actual := context.PageTabURL()
+	actual := context.PageTabURL("/")
 	if actual != expected {
 		t.Fatalf("Did not find expected URL %s instead found %s", expected, actual)
 	}
@@ -84,11 +90,11 @@ func TestPageTabURLBeta(t *testing.T) {
 func TestPageTabURL(t *testing.T) {
 	t.Parallel()
 	expected := "http://www.facebook.com/pages/Rell-Page-for-Tabs" +
-		"/141929622497380?sk=app_184484190795"
+		"/141929622497380?sk=app_184484190795&app_data=Lw%3D%3D"
 	context := fromValues(t, url.Values{})
-	if context.PageTabURL() != expected {
+	if context.PageTabURL("/") != expected {
 		t.Fatalf("Did not find expected URL %s instead found %s",
-			expected, context.PageTabURL())
+			expected, context.PageTabURL("/"))
 	}
 }
 
@@ -98,9 +104,9 @@ func TestCanvasURLBeta(t *testing.T) {
 	values := url.Values{}
 	values.Add("server", "beta")
 	context := fromValues(t, values)
-	if context.CanvasURL() != expected {
+	if context.CanvasURL("/") != expected {
 		t.Fatalf("Did not find expected URL %s instead found %s",
-			expected, context.CanvasURL())
+			expected, context.CanvasURL("/"))
 	}
 }
 
@@ -108,8 +114,8 @@ func TestCanvasURL(t *testing.T) {
 	t.Parallel()
 	expected := "http://apps.facebook.com/fbrelll/"
 	context := fromValues(t, url.Values{})
-	if context.CanvasURL() != expected {
+	if context.CanvasURL("/") != expected {
 		t.Fatalf("Did not find expected URL %s instead found %s",
-			expected, context.CanvasURL())
+			expected, context.CanvasURL("/"))
 	}
 }
