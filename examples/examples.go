@@ -297,7 +297,8 @@ func cachedGet(key string) ([]byte, error) {
 				return nil, r.Error
 			}
 			go func() {
-				err := cache.Client().Set(&memcache.Item{Key: cacheKey, Value: r.Content})
+				err := cache.Client().Set(
+					&memcache.Item{Key: cacheKey, Value: r.Content})
 				if err != nil {
 					log.Printf("Error in cache.Set: %s", err)
 				}
