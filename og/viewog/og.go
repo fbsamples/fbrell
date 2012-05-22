@@ -188,6 +188,7 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 								HREF: o.ImageURL(),
 								Inner: &h.Img{
 									Src: o.ImageURL(),
+									Alt: o.Title(),
 								},
 							},
 							&h.A{
