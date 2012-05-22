@@ -30,37 +30,11 @@ var (
 )
 
 func main() {
-	const public = "/public/"
 	flag.Parse()
 	flagconfig.Parse()
 
-	static.SetDir(*publicDir)
-	mux := http.NewServeMux()
-	staticFile(mux, "/favicon.ico")
-	mux.Handle(public,
-		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
-	mux.HandleFunc(browserify.Path, browserify.Handle)
-	mux.HandleFunc(static.Path, static.Handle)
-	mux.HandleFunc("/info/", viewcontext.Info)
-	mux.HandleFunc("/examples/", viewexamples.List)
-	mux.HandleFunc("/saved/", viewexamples.Saved)
-	mux.HandleFunc("/raw/", viewexamples.Raw)
-	mux.HandleFunc("/simple/", viewexamples.Simple)
-	mux.HandleFunc("/channel/", viewexamples.SdkChannel)
-	mux.HandleFunc("/", viewexamples.Example)
-	mux.HandleFunc("/og/", viewog.Values)
-	mux.HandleFunc("/rog/", viewog.Base64)
-	mux.HandleFunc("/rog-redirect/", viewog.Redirect)
-
-	var handler http.Handler
-	handler = httpstats.NewHandler("web", mux)
-	handler = &appdata.Handler{
-		Handler: handler,
-		Secret:  fbapp.Default.SecretByte(),
-	}
-
 	log.Println("Listening on ", *serverAddress)
-	err := http.ListenAndServe(*serverAddress, handler)
+	err := http.ListenAndServe(*serverAddress, mainHandler())
 	if err != nil {
 		log.Fatalln("ListenAndServe: ", err)
 	}
@@ -73,4 +47,35 @@ func staticFile(mux *http.ServeMux, name string) {
 	mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, abs)
 	})
+}
+
+func mainHandler() (handler http.Handler) {
+	const public = "/public/"
+	mux := http.NewServeMux()
+
+	static.SetDir(*publicDir)
+	mux.HandleFunc(static.Path, static.Handle)
+
+	staticFile(mux, "/favicon.ico")
+	mux.Handle(public,
+		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
+
+	mux.HandleFunc(browserify.Path, browserify.Handle)
+	mux.HandleFunc("/info/", viewcontext.Info)
+	mux.HandleFunc("/examples/", viewexamples.List)
+	mux.HandleFunc("/saved/", viewexamples.Saved)
+	mux.HandleFunc("/raw/", viewexamples.Raw)
+	mux.HandleFunc("/simple/", viewexamples.Simple)
+	mux.HandleFunc("/channel/", viewexamples.SdkChannel)
+	mux.HandleFunc("/", viewexamples.Example)
+	mux.HandleFunc("/og/", viewog.Values)
+	mux.HandleFunc("/rog/", viewog.Base64)
+	mux.HandleFunc("/rog-redirect/", viewog.Redirect)
+
+	handler = httpstats.NewHandler("web", mux)
+	handler = &appdata.Handler{
+		Handler: handler,
+		Secret:  fbapp.Default.SecretByte(),
+	}
+	return handler
 }
