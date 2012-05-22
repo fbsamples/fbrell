@@ -36,7 +36,7 @@ var DefaultMeta = h.Compile(&h.Frag{
 })
 
 // The default stylesheet.
-var DefaultStyle = &static.LinkStyle{HREF:  "rell.css"}
+var DefaultStyle = &static.LinkStyle{HREF: "rell.css"}
 
 // The default Google Analytics setup.
 var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
