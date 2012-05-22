@@ -4,6 +4,7 @@ package viewexamples
 import (
 	"errors"
 	"fmt"
+	"github.com/nshah/go.fburl"
 	"github.com/nshah/go.h"
 	"github.com/nshah/go.h.js.fb"
 	"github.com/nshah/go.h.js.loader"
@@ -14,7 +15,17 @@ import (
 	"net/http"
 )
 
-// Parse the Context and an Example & the Context.
+var envOptions = map[string]string{
+	"Production with CDN":    "",
+	"Production without CDN": fburl.Production,
+	"Beta":                   fburl.Beta,
+	"Latest":                 "latest",
+	"Dev":                    "dev",
+	"Intern":                 "intern",
+	"In Your":                "inyour",
+}
+
+// Parse the Context and an Example.
 func parse(r *http.Request) (*context.Context, *examples.Example, error) {
 	context, err := context.FromRequest(r)
 	if err != nil {
@@ -143,6 +154,7 @@ func renderExample(c *context.Context, example *examples.Example) *view.Page {
 			&h.Div{
 				ID: "interactive",
 				Inner: &h.Frag{
+					renderEnvSelector(c, example),
 					&h.Div{
 						Class: "controls",
 						Inner: &h.Frag{
@@ -264,12 +276,12 @@ func renderList(context *context.Context, db *examples.DB) *view.Page {
 	}
 }
 
-func renderCategory(context *context.Context, category *examples.Category) h.HTML {
+func renderCategory(c *context.Context, category *examples.Category) h.HTML {
 	li := &h.Frag{}
 	for _, example := range category.Example {
 		li.Append(&h.Li{
 			Inner: &h.A{
-				HREF:  context.URL(example.URL).String(),
+				HREF:  c.URL(example.URL).String(),
 				Inner: h.String(example.Name),
 			},
 		})
@@ -277,5 +289,29 @@ func renderCategory(context *context.Context, category *examples.Category) h.HTM
 	return &h.Frag{
 		&h.H2{Inner: h.String(category.Name)},
 		&h.Ul{Inner: li},
+	}
+}
+
+func renderEnvSelector(c *context.Context, example *examples.Example) h.HTML {
+	if !c.IsEmployee {
+		return nil
+	}
+	frag := &h.Frag{}
+	for title, value := range envOptions {
+		ctxCopy := c.Copy()
+		ctxCopy.Env = value
+		frag.Append(&h.Option{
+			Inner:    h.String(title),
+			Selected: c.Env == value,
+			Value:    value,
+			Data: map[string]interface{}{
+				"url": ctxCopy.ViewURL(example.URL),
+			},
+		})
+	}
+	return &h.Select{
+		ID:    "rell-env",
+		Name:  "env",
+		Inner: frag,
 	}
 }

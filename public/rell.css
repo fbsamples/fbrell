@@ -96,6 +96,10 @@ h2 {
   padding: 2px 6px 3px;
 }
 
+#rell-env {
+  float: right;
+  margin-top: 0.75em;
+}
 #rell-view-mode {
   float: right;
   margin-top: 0.5em;

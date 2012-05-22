@@ -47,7 +47,9 @@ var Rell = {
     $('rell-logout').onclick = Rell.logout
     $('rell-run-code').onclick = Rell.runCode
     $('rell-log-clear').onclick = Log.clear
-    $('rell-view-mode').onchange = Rell.changeViewMode
+    $('rell-view-mode').onchange = Rell.onURLSelectorChange
+    if (config.isEmployee)
+      $('rell-env').onchange = Rell.onURLSelectorChange
     Rell.setCurrentViewMode()
   },
 
@@ -189,9 +191,8 @@ var Rell = {
     }
   },
 
-  changeViewMode: function(e) {
-    var select = $('rell-view-mode')
-    top.location = select[select.selectedIndex].getAttribute('data-url')
+  onURLSelectorChange: function(e) {
+    top.location = this[this.selectedIndex].getAttribute('data-url')
   },
 
   setCurrentViewMode: function() {
