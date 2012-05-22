@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // Some categories are hidden from the listing.
@@ -302,6 +303,8 @@ func cachedGet(key string) ([]byte, error) {
 				}
 			}()
 			return r.Content, nil
+		case <-time.After(30 * time.Second):
+			return nil, errors.New("Failed to retrieve example.")
 		}
 	}
 	panic("Not reached")
