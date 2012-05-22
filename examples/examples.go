@@ -295,10 +295,12 @@ func cachedGet(key string) ([]byte, error) {
 				log.Printf("Unknown S3 error: %s", r.Error)
 				return nil, r.Error
 			}
-			err := cache.Client().Set(&memcache.Item{Key: cacheKey, Value: r.Content})
-			if err != nil {
-				log.Printf("Error in cache.Set: %s", err)
-			}
+			go func() {
+				err := cache.Client().Set(&memcache.Item{Key: cacheKey, Value: r.Content})
+				if err != nil {
+					log.Printf("Error in cache.Set: %s", err)
+				}
+			}()
 			return r.Content, nil
 		}
 	}
