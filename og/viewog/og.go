@@ -197,8 +197,8 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 								Inner: h.String("Lint this."),
 							},
 							&h.Iframe{
-								Class:             "like",
-								Src:               o.LikeURL(),
+								Class: "like",
+								Src:   o.LikeURL(),
 							},
 						},
 					},
