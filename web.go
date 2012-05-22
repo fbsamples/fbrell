@@ -9,6 +9,7 @@ import (
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.httpstats"
 	"github.com/nshah/go.signedrequest/appdata"
+	"github.com/nshah/go.static"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/og/viewog"
@@ -33,11 +34,13 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 
+	static.SetDir(*publicDir)
 	mux := http.NewServeMux()
 	staticFile(mux, "/favicon.ico")
 	mux.Handle(public,
 		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
 	mux.HandleFunc(browserify.Path, browserify.Handle)
+	mux.HandleFunc(static.Path, static.Handle)
 	mux.HandleFunc("/info/", viewcontext.Info)
 	mux.HandleFunc("/examples/", viewexamples.List)
 	mux.HandleFunc("/saved/", viewexamples.Saved)

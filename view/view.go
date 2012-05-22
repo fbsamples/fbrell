@@ -6,6 +6,7 @@ import (
 	"github.com/nshah/go.h"
 	"github.com/nshah/go.h.js.ga"
 	"github.com/nshah/go.h.js.loader"
+	"github.com/nshah/go.static"
 	"log"
 	"net/http"
 )
@@ -35,7 +36,7 @@ var DefaultMeta = h.Compile(&h.Frag{
 })
 
 // The default stylesheet.
-var DefaultStyle = h.Compile(&h.LinkStyle{HREF: "/public/rell.css"})
+var DefaultStyle = &static.LinkStyle{HREF:  "rell.css"}
 
 // The default Google Analytics setup.
 var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
