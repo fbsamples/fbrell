@@ -199,9 +199,6 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 							&h.Iframe{
 								Class:             "like",
 								Src:               o.LikeURL(),
-								Scrolling:         false,
-								FrameBorder:       0,
-								AllowTransparency: true,
 							},
 						},
 					},
