@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"github.com/nshah/go.basicssl"
 	"github.com/nshah/go.browserify"
 	"github.com/nshah/go.fbapp"
 	"github.com/nshah/go.flag.pkgpath"
@@ -10,6 +11,7 @@ import (
 	"github.com/nshah/go.httpstats"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.static"
+	"github.com/nshah/go.viewvar"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/og/viewog"
@@ -17,8 +19,11 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"path/filepath"
 )
+
+const adminPath = "/admin/"
 
 var (
 	serverAddress = flag.String(
@@ -67,9 +72,22 @@ func staticFile(mux *http.ServeMux, name string) {
 	})
 }
 
+func adminHandler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc(adminPath+"debug/pprof/", pprof.Index)
+	mux.HandleFunc(adminPath+"debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc(adminPath+"debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc(adminPath+"debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc(adminPath+"vars/", viewvar.Json)
+	return basicssl.Handler(mux)
+}
+
 func mainHandler() (handler http.Handler) {
 	const public = "/public/"
+
 	mux := http.NewServeMux()
+
+	mux.Handle(adminPath, adminHandler())
 
 	static.SetDir(*publicDir)
 	mux.HandleFunc(static.Path, static.Handle)
