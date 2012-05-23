@@ -88,7 +88,7 @@ func Error(w http.ResponseWriter, r *http.Request, err error) {
 		Body: h.String(err.Error()),
 	}
 	_, secondErr := h.Write(w, page)
-	if err != nil {
+	if secondErr != nil {
 		log.Printf(
 			`Failed to write error response!
 URL: %s
@@ -105,7 +105,7 @@ func NotFound(w http.ResponseWriter, r *http.Request, err error) {
 		Body: h.String(err.Error()),
 	}
 	_, secondErr := h.Write(w, page)
-	if err != nil {
+	if secondErr != nil {
 		log.Printf(
 			`Failed to write not found response!
 URL: %s
