@@ -30,7 +30,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		"pageTabURL": context.PageTabURL("/"),
 		"canvasURL":  context.CanvasURL("/"),
 		"sdkURL":     context.SdkURL(),
-		"version":    "3.0.8",
+		"version":    "3.0.9",
 	}
 	out, err := json.MarshalIndent(info, "", "  ")
 	if err != nil {
