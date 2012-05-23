@@ -56,11 +56,15 @@ stop)
 	;;
 
 restart)
-	if [[ -z $PID ]] && kill -s SIGUSR2 "$PID" &>/dev/null; then
-    stat_done
-  else
-    $0 hard-restart
-  fi
+	if [[ ! -z "$PID" ]]; then
+	  stat_busy "Reloading $PKGNAME"
+	  kill -s SIGUSR2 "$PID" &>/dev/null
+	  if [[ $? -eq 0 ]]; then
+	    stat_done
+	    exit
+	  fi
+	fi
+	$0 hard-restart
   ;;
 
 hard-restart)
