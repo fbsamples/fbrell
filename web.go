@@ -94,6 +94,7 @@ func mainHandler() (handler http.Handler) {
 
 	staticFile(mux, "/favicon.ico")
 	staticFile(mux, "/f8.jpg")
+	staticFile(mux, "/robots.txt")
 	mux.Handle(public,
 		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
 
