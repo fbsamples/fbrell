@@ -56,12 +56,20 @@ stop)
 	;;
 
 restart)
+	if [[ ! -z $PID ]] && kill -S SIGUSR2 "$PID" &>/dev/null; then
+    stat_done
+  else
+    $0 hard-restart
+  fi
+  ;;
+
+hard-restart)
 	$0 stop
 	$0 start
 	;;
 
 *)
-	echo "Usage: $0 {start|stop|restart}" >&2
+	echo "Usage: $0 {start|stop|restart|hard-restart}" >&2
 	exit 1
 
 esac

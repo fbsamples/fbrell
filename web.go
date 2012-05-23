@@ -13,7 +13,9 @@ import (
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/og/viewog"
+	"github.com/rcrowley/goagain"
 	"log"
+	"net"
 	"net/http"
 	"path/filepath"
 )
@@ -33,12 +35,28 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 
-	log.Println("Listening on ", *serverAddress)
-	err := http.ListenAndServe(*serverAddress, mainHandler())
+	l, ppid, err := goagain.GetEnvs()
 	if err != nil {
-		log.Fatalln("ListenAndServe: ", err)
+		addr, err := net.ResolveTCPAddr("tcp", *serverAddress)
+		if err != nil {
+			log.Fatal(err)
+		}
+		l, err = net.ListenTCP("tcp", addr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		go serve(l)
+	} else {
+		log.Printf("Graceful handoff.")
+		go serve(l)
+		if err := goagain.KillParent(ppid); nil != err {
+			log.Fatalf("Failed to kill parent: %s", err)
+		}
 	}
-	log.Println("Exiting")
+	if err := goagain.AwaitSignals(l); nil != err {
+		log.Fatal(err)
+	}
+	log.Print("Exiting.")
 }
 
 // binds a path to a single file
@@ -78,4 +96,12 @@ func mainHandler() (handler http.Handler) {
 		Secret:  fbapp.Default.SecretByte(),
 	}
 	return handler
+}
+
+func serve(l *net.TCPListener) {
+	log.Println("Serving ", l.Addr())
+	err := http.Serve(l, mainHandler())
+	if err != nil {
+		log.Fatalln("serve: ", err)
+	}
 }
