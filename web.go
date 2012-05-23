@@ -93,10 +93,12 @@ func mainHandler() (handler http.Handler) {
 	mux.HandleFunc(static.Path, static.Handle)
 
 	staticFile(mux, "/favicon.ico")
+	staticFile(mux, "/f8.jpg")
 	mux.Handle(public,
 		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
 
 	mux.HandleFunc(browserify.Path, browserify.Handle)
+	mux.HandleFunc("/not_a_real_webpage", http.NotFound)
 	mux.HandleFunc("/info/", viewcontext.Info)
 	mux.HandleFunc("/examples/", viewexamples.List)
 	mux.HandleFunc("/saved/", viewexamples.Saved)
