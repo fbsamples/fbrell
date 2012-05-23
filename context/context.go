@@ -83,7 +83,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 		context.SignedRequest, err = fbsr.Unmarshal(
 			[]byte(rawSr), fbapp.Default.SecretByte())
 		if err != nil {
-			log.Printf("Ignoring error in parsing signed request: %s", err)
+			log.Printf("Ignoring error in parsing signed request %s: %s", rawSr, err)
 		} else {
 			if context.SignedRequest.Page != nil {
 				context.ViewMode = PageTab
