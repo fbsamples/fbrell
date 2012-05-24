@@ -3,6 +3,7 @@ package viewog
 
 import (
 	"fmt"
+	"github.com/nshah/go.errcode"
 	"github.com/nshah/go.h"
 	"github.com/nshah/go.h.js.fb"
 	"github.com/nshah/go.h.js.loader"
@@ -24,7 +25,8 @@ func Values(w http.ResponseWriter, r *http.Request) {
 	values := r.URL.Query()
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) > 4 {
-		view.Error(w, r, fmt.Errorf("Invalid URL: %s", r.URL.Path))
+		view.Error(w, r, errcode.New(
+			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
 		return
 	}
 	if len(parts) > 2 {
@@ -50,7 +52,8 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 	}
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {
-		view.Error(w, r, fmt.Errorf("Invalid URL: %s", r.URL.Path))
+		view.Error(w, r, errcode.New(
+			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
 		return
 	}
 	object, err := og.NewFromBase64(context, parts[2])

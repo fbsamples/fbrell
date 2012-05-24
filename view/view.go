@@ -80,41 +80,6 @@ func (p *Page) HTML() (h.HTML, error) {
 	}, nil
 }
 
-// Send a 500 error response.
-func Error(w http.ResponseWriter, r *http.Request, err error) {
-	log.Print(r.URL, err)
-	w.WriteHeader(500)
-	page := &Page{
-		Body: h.String(err.Error()),
-	}
-	_, secondErr := h.Write(w, page)
-	if secondErr != nil {
-		log.Printf(
-			`Failed to write error response!
-URL: %s
-Original Error: %s
-Second Error: %s`,
-			r.URL, err, secondErr)
-	}
-}
-
-// Send a 404 response.
-func NotFound(w http.ResponseWriter, r *http.Request, err error) {
-	w.WriteHeader(404)
-	page := &Page{
-		Body: h.String(err.Error()),
-	}
-	_, secondErr := h.Write(w, page)
-	if secondErr != nil {
-		log.Printf(
-			`Failed to write not found response!
-URL: %s
-Original Error: %s
-Second Error: %s`,
-			r.URL, err, secondErr)
-	}
-}
-
 // Writes a HTML response and writes errors on failure.
 func Write(w http.ResponseWriter, r *http.Request, html h.HTML) {
 	_, err := h.Write(w, html)

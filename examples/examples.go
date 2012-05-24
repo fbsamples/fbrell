@@ -3,16 +3,17 @@ package examples
 
 import (
 	"crypto/md5"
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/nshah/go.errcode"
 	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/rell/cache"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
 	"log"
+	"net/http"
 	"path"
 	"path/filepath"
 	"strings"
@@ -155,11 +156,11 @@ func Load(version, path string) (*Example, error) {
 		return emptyExample, nil
 	} else if len(parts) == 4 {
 		if parts[1] != "raw" && parts[1] != "simple" {
-			return nil, fmt.Errorf("Invalid URL: %s", path)
+			return nil, errcode.New(http.StatusNotFound, "Invalid URL: %s", path)
 		}
 		parts = []string{"", parts[2], parts[3]}
 	} else if len(parts) != 3 {
-		return nil, fmt.Errorf("Invalid URL: %s", path)
+		return nil, errcode.New(http.StatusNotFound, "Invalid URL: %s", path)
 	}
 
 	if parts[1] == "saved" {
@@ -175,11 +176,11 @@ func Load(version, path string) (*Example, error) {
 	}
 	category := GetDB(version).FindCategory(parts[1])
 	if category == nil {
-		return nil, fmt.Errorf("Could not find category: %s", parts[1])
+		return nil, errcode.New(http.StatusNotFound, "Could not find category: %s", parts[1])
 	}
 	example := category.FindExample(parts[2])
 	if example == nil {
-		return nil, fmt.Errorf("Could not find example: %s", parts[2])
+		return nil, errcode.New(http.StatusNotFound, "Could not find example: %s", parts[2])
 	}
 	return example, nil
 }
@@ -228,7 +229,9 @@ func (c *Category) FindExample(name string) *Example {
 // Save an Example.
 func Save(content []byte) (string, error) {
 	if len(content) > 10240 {
-		return "", errors.New("Maximum allowed size is 10 kilobytes.")
+		return "", errcode.New(
+			http.StatusRequestEntityTooLarge,
+			"Maximum allowed size is 10 kilobytes.")
 	}
 	h := md5.New()
 	_, err := h.Write(content)
@@ -290,8 +293,9 @@ func cachedGet(key string) ([]byte, error) {
 		case r := <-s3Response:
 			if r.Error != nil {
 				s3Err, ok := r.Error.(*s3.Error)
-				if ok && s3Err.StatusCode == 404 {
-					return nil, errors.New("Could not find saved example.")
+				if ok && s3Err.StatusCode == http.StatusNotFound {
+					return nil, errcode.New(
+						http.StatusNotFound, "Could not find saved example.")
 				}
 				log.Printf("Unknown S3 error: %s", r.Error)
 				return nil, r.Error
@@ -305,7 +309,8 @@ func cachedGet(key string) ([]byte, error) {
 			}()
 			return r.Content, nil
 		case <-time.After(30 * time.Second):
-			return nil, errors.New("Failed to retrieve example.")
+			return nil, errcode.New(
+				http.StatusRequestTimeout, "Failed to retrieve example.")
 		}
 	}
 	panic("Not reached")
