@@ -24,10 +24,12 @@ type errorCodeHandler struct {
 // HTML or Plain Text.
 // TODO(naitik): Extend for JSON.
 func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Print("Error: ", r.URL, err)
 	code := err.err.Code()
 	if code == 0 {
-		code = 500
+		code = http.StatusInternalServerError
+	}
+	if code != http.StatusNotFound {
+		log.Print("Error: ", r.URL, err)
 	}
 	w.WriteHeader(code)
 	if usePlainText(r) {
