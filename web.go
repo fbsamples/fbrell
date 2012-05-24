@@ -14,6 +14,7 @@ import (
 	"github.com/nshah/go.viewvar"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
+	"github.com/nshah/rell/oauth"
 	"github.com/nshah/rell/og/viewog"
 	"github.com/rcrowley/goagain"
 	"log"
@@ -110,6 +111,7 @@ func mainHandler() (handler http.Handler) {
 	mux.HandleFunc("/og/", viewog.Values)
 	mux.HandleFunc("/rog/", viewog.Base64)
 	mux.HandleFunc("/rog-redirect/", viewog.Redirect)
+	mux.HandleFunc(oauth.Path, oauth.Handle)
 
 	handler = httpstats.NewHandler("web", mux)
 	handler = &appdata.Handler{
