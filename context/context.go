@@ -11,6 +11,7 @@ import (
 	"github.com/nshah/go.fburl"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.signedrequest/fbsr"
+	"github.com/nshah/go.trustforward"
 	"github.com/nshah/rell/context/empcheck"
 	"log"
 	"net/http"
@@ -102,16 +103,8 @@ func FromRequest(r *http.Request) (*Context, error) {
 			}
 		}
 	}
-	if fwdHost := r.Header.Get("x-forwarded-host"); fwdHost != "" {
-		context.Host = fwdHost
-	} else {
-		context.Host = r.Host
-	}
-	if r.Header.Get("x-forwarded-proto") == "https" {
-		context.Scheme = "https"
-	} else {
-		context.Scheme = "http"
-	}
+	context.Host = trustforward.Host(r)
+	context.Scheme = trustforward.Scheme(r)
 	if context.SignedRequest != nil && context.SignedRequest.UserID != 0 {
 		context.IsEmployee = empcheck.IsEmployee(context.SignedRequest.UserID)
 	}
