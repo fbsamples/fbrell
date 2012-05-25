@@ -20,6 +20,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"path/filepath"
 )
 
@@ -74,6 +75,10 @@ func staticFile(mux *http.ServeMux, name string) {
 
 func adminHandler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc(adminPath+"debug/pprof/", pprof.Index)
+	mux.HandleFunc(adminPath+"debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc(adminPath+"debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc(adminPath+"debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc(adminPath+"vars/", viewvar.Json)
 	return basicssl.Handler(mux)
 }
