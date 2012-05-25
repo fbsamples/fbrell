@@ -3,6 +3,7 @@ package examples
 
 import (
 	"crypto/md5"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
@@ -259,55 +260,63 @@ func makeCacheKey(key string) string {
 	return bucketName + ":" + key
 }
 
+var errIgnore = errors.New("")
+
+func cacheOnlyGet(cacheKey string) ([]byte, error) {
+	item, err := cache.Client().Get(cacheKey)
+	if err != nil {
+		if err != memcache.ErrCacheMiss {
+			log.Printf("Error in cache.Get: %s", err)
+		}
+		return nil, errIgnore
+	}
+	return item.Value, nil
+}
+
+func s3OnlyGet(key, cacheKey string) ([]byte, error) {
+	content, err := bucket().Get("/" + key)
+	if err != nil {
+		s3Err, ok := err.(*s3.Error)
+		if ok && s3Err.StatusCode == http.StatusNotFound {
+			return nil, errcode.New(
+				http.StatusNotFound, "Could not find saved example.")
+		}
+		log.Printf("Unknown S3 error: %s", err)
+		return nil, err
+	}
+	go func() {
+		err := cache.Client().Set(
+			&memcache.Item{Key: cacheKey, Value: content})
+		if err != nil {
+			log.Printf("Error in cache.Set: %s", err)
+		}
+	}()
+	return content, nil
+}
+
 // Check cache and then S3 for a stored example.
 func cachedGet(key string) ([]byte, error) {
 	cacheKey := makeCacheKey(key)
-	type cacheResponseType struct {
-		Item  *memcache.Item
+	type content struct {
+		Data  []byte
 		Error error
 	}
-	type s3ResponseType struct {
-		Content []byte
-		Error   error
-	}
-	cacheResponse := make(chan cacheResponseType)
-	s3Response := make(chan s3ResponseType)
+	response := make(chan content, 2)
 	go func() {
-		item, err := cache.Client().Get(cacheKey)
-		cacheResponse <- cacheResponseType{item, err}
+		data, err := cacheOnlyGet(cacheKey)
+		response <- content{data, err}
 	}()
 	go func() {
-		content, err := bucket().Get("/" + key)
-		s3Response <- s3ResponseType{content, err}
+		data, err := s3OnlyGet(key, cacheKey)
+		response <- content{data, err}
 	}()
 	for {
 		select {
-		case r := <-cacheResponse:
-			if r.Error != nil {
-				if r.Error != memcache.ErrCacheMiss {
-					log.Printf("Error in cache.Get: %s", r.Error)
-				}
-			} else {
-				return r.Item.Value, nil
+		case r := <-response:
+			if r.Error == errIgnore {
+				continue
 			}
-		case r := <-s3Response:
-			if r.Error != nil {
-				s3Err, ok := r.Error.(*s3.Error)
-				if ok && s3Err.StatusCode == http.StatusNotFound {
-					return nil, errcode.New(
-						http.StatusNotFound, "Could not find saved example.")
-				}
-				log.Printf("Unknown S3 error: %s", r.Error)
-				return nil, r.Error
-			}
-			go func() {
-				err := cache.Client().Set(
-					&memcache.Item{Key: cacheKey, Value: r.Content})
-				if err != nil {
-					log.Printf("Error in cache.Set: %s", err)
-				}
-			}()
-			return r.Content, nil
+			return r.Data, r.Error
 		case <-time.After(30 * time.Second):
 			return nil, errcode.New(
 				http.StatusRequestTimeout, "Failed to retrieve example.")
