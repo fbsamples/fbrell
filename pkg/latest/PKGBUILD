@@ -8,5 +8,6 @@ license=('Apache')
 depends=('daemonize')
 makedepends=('git' 'nodejs')
 install=rell-latest.install
+options=(!strip)
 
 source $(dirname $(dirname $srcdir))/shared.sh
