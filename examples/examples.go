@@ -304,15 +304,11 @@ func cachedGet(key string) ([]byte, error) {
 	response := make(chan content, 2)
 	go func() {
 		data, err := cacheOnlyGet(cacheKey)
-		log.Printf("cacheOnlyGet: %s %s", data == nil, err)
 		response <- content{data, err}
-		log.Printf("cacheOnlyGet goroutine done")
 	}()
 	go func() {
 		data, err := s3OnlyGet(key, cacheKey)
-		log.Printf("s3OnlyGet: %s %s", data == nil, err)
 		response <- content{data, err}
-		log.Printf("s3OnlyGet goroutine done")
 	}()
 	for {
 		select {
