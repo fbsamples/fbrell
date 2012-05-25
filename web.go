@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/nshah/go.browserify"
 	"github.com/nshah/go.fbapp"
+	"github.com/nshah/go.finmonitor"
 	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.httpstats"
@@ -43,6 +44,7 @@ var (
 func main() {
 	flag.Parse()
 	flagconfig.Parse()
+	finMonitor := finmonitor.New(mainHandler())
 
 	l, ppid, err := goagain.GetEnvs()
 	if err != nil {
@@ -54,10 +56,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		go serve(l)
+		go serve(l, finMonitor)
 	} else {
 		log.Printf("Graceful handoff.")
-		go serve(l)
+		go serve(l, finMonitor)
 		if err := goagain.KillParent(ppid); nil != err {
 			log.Fatalf("Failed to kill parent: %s", err)
 		}
@@ -65,6 +67,8 @@ func main() {
 	if err := goagain.AwaitSignals(l); nil != err {
 		log.Fatal(err)
 	}
+	finMonitor.Notify <- true
+	<-finMonitor.Done
 	log.Print("Exiting.")
 }
 
@@ -124,9 +128,9 @@ func mainHandler() (handler http.Handler) {
 	return handler
 }
 
-func serve(l *net.TCPListener) {
+func serve(l *net.TCPListener, handler http.Handler) {
 	log.Println("Serving ", l.Addr())
-	err := http.Serve(l, mainHandler())
+	err := http.Serve(l, handler)
 	if err != nil {
 		log.Fatalln("serve: ", err)
 	}
