@@ -3,7 +3,6 @@ package main
 
 import (
 	"flag"
-	"github.com/nshah/go.basicssl"
 	"github.com/nshah/go.browserify"
 	"github.com/nshah/go.fbapp"
 	"github.com/nshah/go.flag.pkgpath"
@@ -35,6 +34,10 @@ var (
 		"rell.public",
 		"github.com/nshah/rell/public",
 		"The directory to serve static files from.")
+	adminToken = flag.String(
+		"rell.admin.token",
+		"",
+		"Admin token.")
 )
 
 func main() {
@@ -75,12 +78,12 @@ func staticFile(mux *http.ServeMux, name string) {
 
 func adminHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc(adminPath+"debug/pprof/", pprof.Index)
-	mux.HandleFunc(adminPath+"debug/pprof/cmdline", pprof.Cmdline)
-	mux.HandleFunc(adminPath+"debug/pprof/profile", pprof.Profile)
-	mux.HandleFunc(adminPath+"debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc(adminPath+"vars/", viewvar.Json)
-	return basicssl.Handler(mux)
+	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/", pprof.Index)
+	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc(adminPath+*adminToken+"/vars/", viewvar.Json)
+	return mux
 }
 
 func mainHandler() (handler http.Handler) {
