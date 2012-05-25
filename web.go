@@ -9,6 +9,7 @@ import (
 	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.httpstats"
+	"github.com/nshah/go.pidfile"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.static"
 	"github.com/nshah/go.viewvar"
@@ -44,6 +45,7 @@ var (
 func main() {
 	flag.Parse()
 	flagconfig.Parse()
+	pidfile.Write()
 	finMonitor := finmonitor.New(mainHandler())
 
 	l, ppid, err := goagain.GetEnvs()
