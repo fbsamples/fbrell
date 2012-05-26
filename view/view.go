@@ -85,7 +85,7 @@ func Write(w http.ResponseWriter, r *http.Request, html h.HTML) {
 	if r.Method != "HEAD" {
 		_, err := h.Write(w, html)
 		if err != nil {
-			log.Printf("Error writing HTML.\nURL: %s\nError: %s", r.URL, err)
+			log.Printf("Error writing HTML for URL: %s: %s", r.URL, err)
 			h.Write(w, h.String("FATAL ERROR"))
 		}
 	}
