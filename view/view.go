@@ -82,9 +82,11 @@ func (p *Page) HTML() (h.HTML, error) {
 
 // Writes a HTML response and writes errors on failure.
 func Write(w http.ResponseWriter, r *http.Request, html h.HTML) {
-	_, err := h.Write(w, html)
-	if err != nil {
-		log.Printf("Error writing HTML.\nURL: %s\nError: %s", r.URL, err)
-		h.Write(w, h.String("FATAL ERROR"))
+	if r.Method != "HEAD" {
+		_, err := h.Write(w, html)
+		if err != nil {
+			log.Printf("Error writing HTML.\nURL: %s\nError: %s", r.URL, err)
+			h.Write(w, h.String("FATAL ERROR"))
+		}
 	}
 }
