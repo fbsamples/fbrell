@@ -22,6 +22,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/pprof"
+	"os"
 	"path/filepath"
 )
 
@@ -58,9 +59,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("Serving %s with pid %d.", l.Addr(), os.Getpid())
 		go serve(l, finMonitor)
 	} else {
-		log.Printf("Graceful handoff.")
+		log.Printf(
+			"Graceful handoff of %s with new pid %d and old pid %d.",
+			l.Addr(), os.Getpid(), os.Getppid())
 		go serve(l, finMonitor)
 		if err := goagain.KillParent(ppid); nil != err {
 			log.Fatalf("Failed to kill parent: %s", err)
@@ -71,7 +75,7 @@ func main() {
 	}
 	finMonitor.Notify <- true
 	<-finMonitor.Done
-	log.Print("Exiting.")
+	log.Printf("Exiting pid %d.", os.Getpid())
 }
 
 // binds a path to a single file
@@ -131,7 +135,6 @@ func mainHandler() (handler http.Handler) {
 }
 
 func serve(l *net.TCPListener, handler http.Handler) {
-	log.Println("Serving ", l.Addr())
 	err := http.Serve(l, handler)
 	if err != nil {
 		log.Fatalln("serve: ", err)
