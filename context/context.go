@@ -13,7 +13,6 @@ import (
 	"github.com/nshah/go.signedrequest/fbsr"
 	"github.com/nshah/go.trustforward"
 	"github.com/nshah/rell/context/empcheck"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -83,9 +82,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 	if rawSr != "" {
 		context.SignedRequest, err = fbsr.Unmarshal(
 			[]byte(rawSr), fbapp.Default.SecretByte())
-		if err != nil {
-			log.Printf("Ignoring error in parsing signed request %s: %s", rawSr, err)
-		} else {
+		if err == nil {
 			if context.SignedRequest.Page != nil {
 				context.ViewMode = PageTab
 			} else {
@@ -97,10 +94,6 @@ func FromRequest(r *http.Request) (*Context, error) {
 		if cookie != nil {
 			context.SignedRequest, err = fbsr.Unmarshal(
 				[]byte(cookie.Value), fbapp.Default.SecretByte())
-			if err != nil {
-				log.Printf(
-					"Ignoring error in parsing signed request from cookie: %s", err)
-			}
 		}
 	}
 	context.Host = trustforward.Host(r)
