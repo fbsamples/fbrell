@@ -16,7 +16,7 @@ case $1 in
 start)
 	stat_busy "Starting $PKGNAME Daemon"
 
-  if [[ ! -z $PID ]]; then
+  if ps -p $PID > /dev/null; then
 		stat_fail
 		exit 1
   fi
