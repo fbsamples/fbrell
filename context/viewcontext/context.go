@@ -16,7 +16,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	info := map[string]interface{}{
 		"request": map[string]interface{}{
 			"method": r.Method,
