@@ -13,68 +13,67 @@ CONF_FILE=/etc/conf.d/$PKGNAME
 PID=$(test -f $DAEMON_PID && cat $DAEMON_PID)
 
 case $1 in
-start)
-	stat_busy "Starting $PKGNAME Daemon"
+  start)
+    stat_busy "Starting $PKGNAME Daemon"
 
-  if [[ ! -z $PID ]] && ps -p $PID > /dev/null; then
-		stat_fail
-		exit 1
-  fi
+    if [[ ! -z $PID ]] && ps -p $PID > /dev/null; then
+      stat_fail
+      exit 1
+    fi
 
-  touch $DAEMON_OUT
-  touch $DAEMON_ERR
-  touch $DAEMON_PID
-  chown $PKGNAME:$PKGNAME $DAEMON_OUT
-  chown $PKGNAME:$PKGNAME $DAEMON_ERR
-  chown $PKGNAME:$PKGNAME $DAEMON_PID
+    touch $DAEMON_OUT
+    touch $DAEMON_ERR
+    touch $DAEMON_PID
+    chown $PKGNAME:$PKGNAME $DAEMON_OUT
+    chown $PKGNAME:$PKGNAME $DAEMON_ERR
+    chown $PKGNAME:$PKGNAME $DAEMON_PID
 
-  daemonize \
-    -a \
-    -c / \
-    -e $DAEMON_ERR \
-    -o $DAEMON_OUT \
-    -u $PKGNAME \
-    -l $DAEMON_LOCK \
-    \
-    $DAEMON_COMMAND -c $CONF_FILE
-  if [[ $? -ne 0 ]]; then
-		stat_fail
-		exit 1
-  fi
-	add_daemon $PKGNAME
-	stat_done
-	;;
+    daemonize \
+      -a \
+      -c / \
+      -e $DAEMON_ERR \
+      -o $DAEMON_OUT \
+      -u $PKGNAME \
+      -l $DAEMON_LOCK \
+      \
+      $DAEMON_COMMAND -c $CONF_FILE
+    if [[ $? -ne 0 ]]; then
+      stat_fail
+      exit 1
+    fi
+    add_daemon $PKGNAME
+    stat_done
+    ;;
 
-stop)
-	stat_busy "Stopping $PKGNAME Daemon"
-	if [[ ! -z $PID ]] && kill $PID &>/dev/null; then
-		rm_daemon $PKGNAME
-		stat_done
-	else
-		stat_fail
-		exit 1
-	fi
-	;;
+  stop)
+    stat_busy "Stopping $PKGNAME Daemon"
+    if [[ ! -z $PID ]] && kill $PID &>/dev/null; then
+      rm_daemon $PKGNAME
+      stat_done
+    else
+      stat_fail
+      exit 1
+    fi
+    ;;
 
-restart)
-	if [[ ! -z $PID ]]; then
-	  stat_busy "Reloading $PKGNAME"
-	  kill -s SIGUSR2 $PID &>/dev/null
-	  if [[ $? -eq 0 ]]; then
-	    stat_done
-	    exit
-	  fi
-	fi
-	$0 hard-restart
-  ;;
+  restart)
+    if [[ ! -z $PID ]]; then
+      stat_busy "Reloading $PKGNAME"
+      kill -s SIGUSR2 $PID &>/dev/null
+      if [[ $? -eq 0 ]]; then
+        stat_done
+        exit
+      fi
+    fi
+    $0 hard-restart
+    ;;
 
-hard-restart)
-	$0 stop
-	$0 start
-	;;
+  hard-restart)
+    $0 stop
+    $0 start
+    ;;
 
-*)
-	echo "Usage: $0 {start|stop|restart|hard-restart}" >&2
-	exit 1
-
+  *)
+    echo "Usage: $0 {start|stop|restart|hard-restart}" >&2
+    exit 1
 esac
