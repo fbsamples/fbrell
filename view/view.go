@@ -7,6 +7,7 @@ import (
 	"github.com/nshah/go.h.js.ga"
 	"github.com/nshah/go.h.js.loader"
 	"github.com/nshah/go.static"
+	"github.com/nshah/rell/context"
 	"log"
 	"net/http"
 )
@@ -43,11 +44,22 @@ var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
 
 // A minimal standard page with no visible body.
 type Page struct {
+	Context  *context.Context
 	Class    string
 	Head     h.HTML
 	Body     h.HTML
 	Title    string
 	Resource []loader.Resource
+}
+
+func (p *Page) viewport() h.HTML {
+	if p.Context != nil {
+		viewportContent := p.Context.Viewport()
+		if viewportContent != "" {
+			return &h.Meta{Name: "viewport", Content: viewportContent}
+		}
+	}
+	return nil
 }
 
 func (p *Page) HTML() (h.HTML, error) {
@@ -57,6 +69,7 @@ func (p *Page) HTML() (h.HTML, error) {
 			&h.Head{
 				Inner: &h.Frag{
 					&h.Meta{Charset: "utf-8"},
+					p.viewport(),
 					&h.Title{
 						h.String(p.Title),
 						h.Unsafe(" &mdash; Facebook Read Eval Log Loop"),

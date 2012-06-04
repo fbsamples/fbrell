@@ -28,11 +28,15 @@ const (
 	Mid = "mid"
 )
 
-// View Modes.
 const (
+	// View Modes.
 	Website = "website"
 	Canvas  = "canvas"
 	PageTab = "page-tab"
+
+	// View Port
+	ViewportModeMobile = "mobile"
+	ViewportModeAuto   = ""
 )
 
 // The Context defined by the environment and as configured by the
@@ -51,6 +55,7 @@ type Context struct {
 	Scheme               string              `schema:"-"`
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
 	ViewMode             string              `schema:"view-mode"`
+	ViewportMode         string              `schema:"viewport-mode"`
 	IsEmployee           bool                `schema:"-"`
 }
 
@@ -65,6 +70,7 @@ var defaultContext = &Context{
 	Host:                 "www.fbrell.com",
 	Scheme:               "http",
 	ViewMode:             Website,
+	ViewportMode:         ViewportModeAuto,
 }
 
 var schemaDecoder = schema.NewDecoder()
@@ -232,6 +238,14 @@ func (c *Context) ViewURL(path string) string {
 		return c.AbsoluteURL(path).String()
 	}
 	panic("not reached")
+}
+
+// Context aware viewport for a customized mobile experience.
+func (c *Context) Viewport() string {
+	if c.ViewportMode == ViewportModeMobile {
+		return "initial-scale=1.0,maximum-scale=1.0"
+	}
+	return ""
 }
 
 // JSON representation of Context.

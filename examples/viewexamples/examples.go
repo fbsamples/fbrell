@@ -147,6 +147,7 @@ func Example(w http.ResponseWriter, r *http.Request) {
 
 func renderExample(c *context.Context, example *examples.Example) *view.Page {
 	return &view.Page{
+		Context:  c,
 		Title:    example.Title,
 		Class:    "main",
 		Resource: []loader.Resource{&js.Init{Context: c, Example: example}},
@@ -267,8 +268,9 @@ func renderList(context *context.Context, db *examples.DB) *view.Page {
 		}
 	}
 	return &view.Page{
-		Title: "Examples",
-		Class: "examples",
+		Context: context,
+		Title:   "Examples",
+		Class:   "examples",
 		Body: &h.Frag{
 			&h.H1{Inner: h.String("Examples")},
 			categories,
