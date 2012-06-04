@@ -5,15 +5,14 @@ import (
 	"flag"
 	"github.com/nshah/go.browserify"
 	"github.com/nshah/go.fbapp"
-	"github.com/nshah/go.finmonitor"
 	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/go.flagconfig"
+	"github.com/nshah/go.grace/gracehttp"
 	"github.com/nshah/go.httpstats"
 	"github.com/nshah/go.pidfile"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.static"
 	"github.com/nshah/go.viewvar"
-	"github.com/nshah/goagain"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/oauth"
@@ -22,7 +21,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/pprof"
-	"os"
 	"path/filepath"
 )
 
@@ -47,35 +45,9 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 	pidfile.Write()
-	finMonitor := finmonitor.New(mainHandler())
-
-	l, ppid, err := goagain.GetEnvs()
-	if err != nil {
-		addr, err := net.ResolveTCPAddr("tcp", *serverAddress)
-		if err != nil {
-			log.Fatal(err)
-		}
-		l, err = net.ListenTCP("tcp", addr)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Serving %s with pid %d.", l.Addr(), os.Getpid())
-		go serve(l, finMonitor)
-	} else {
-		log.Printf(
-			"Graceful handoff of %s with new pid %d and old pid %d.",
-			l.Addr(), os.Getpid(), os.Getppid())
-		go serve(l, finMonitor)
-		if err := goagain.KillParent(ppid); nil != err {
-			log.Fatalf("Failed to kill parent: %s", err)
-		}
-	}
-	if err := goagain.AwaitSignals(l); nil != err {
-		log.Fatal(err)
-	}
-	finMonitor.Notify <- true
-	<-finMonitor.Done
-	log.Printf("Exiting pid %d.", os.Getpid())
+	gracehttp.Serve(
+		gracehttp.Handler{*serverAddress, mainHandler()},
+	)
 }
 
 // binds a path to a single file
