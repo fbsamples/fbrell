@@ -208,6 +208,9 @@ func (c *Context) Values() url.Values {
 	if c.Version != defaultContext.Version {
 		values.Set("version", c.Version)
 	}
+	if c.ViewportMode != defaultContext.ViewportMode {
+		values.Set("viewport-mode", c.ViewportMode)
+	}
 	return values
 }
 
