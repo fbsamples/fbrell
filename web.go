@@ -8,6 +8,7 @@ import (
 	"github.com/nshah/go.flag.pkgpath"
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.grace/gracehttp"
+	"github.com/nshah/go.httpdev"
 	"github.com/nshah/go.httpstats"
 	"github.com/nshah/go.pidfile"
 	"github.com/nshah/go.signedrequest/appdata"
@@ -92,6 +93,7 @@ func mainHandler() (handler http.Handler) {
 	mux.HandleFunc("/rog/", viewog.Base64)
 	mux.HandleFunc("/rog-redirect/", viewog.Redirect)
 	mux.HandleFunc(oauth.Path, oauth.Handle)
+	mux.HandleFunc("/sleep/", httpdev.Sleep)
 
 	handler = httpstats.NewHandler("web", mux)
 	handler = &appdata.Handler{
