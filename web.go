@@ -24,21 +24,19 @@ import (
 	"path/filepath"
 )
 
-const adminPath = "/admin/"
-
 var (
-	serverAddress = flag.String(
+	mainAddress = flag.String(
 		"rell.address",
 		":43600",
 		"Server address to bind to.")
+	adminAddress = flag.String(
+		"rell.admin.address",
+		":43601",
+		"Admin http server address.")
 	publicDir = pkgpath.Dir(
 		"rell.public",
 		"github.com/nshah/rell/public",
 		"The directory to serve static files from.")
-	adminToken = flag.String(
-		"rell.admin.token",
-		"",
-		"Admin token.")
 )
 
 func main() {
@@ -46,7 +44,8 @@ func main() {
 	flagconfig.Parse()
 	pidfile.Write()
 	gracehttp.Serve(
-		gracehttp.Handler{*serverAddress, mainHandler()},
+		gracehttp.Handler{*mainAddress, mainHandler()},
+		gracehttp.Handler{*adminAddress, adminHandler()},
 	)
 }
 
@@ -60,11 +59,11 @@ func staticFile(mux *http.ServeMux, name string) {
 
 func adminHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/", pprof.Index)
-	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/cmdline", pprof.Cmdline)
-	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/profile", pprof.Profile)
-	mux.HandleFunc(adminPath+*adminToken+"/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc(adminPath+*adminToken+"/vars/", viewvar.Json)
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/vars/", viewvar.Json)
 	return mux
 }
 
@@ -72,8 +71,6 @@ func mainHandler() (handler http.Handler) {
 	const public = "/public/"
 
 	mux := http.NewServeMux()
-
-	mux.Handle(adminPath, adminHandler())
 
 	static.SetDir(*publicDir)
 	mux.HandleFunc(static.Path, static.Handle)
