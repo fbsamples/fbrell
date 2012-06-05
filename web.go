@@ -18,6 +18,7 @@ import (
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/oauth"
 	"github.com/nshah/rell/og/viewog"
+	"log"
 	"net/http"
 	"net/http/pprof"
 	"path/filepath"
@@ -42,10 +43,13 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 	pidfile.Write()
-	gracehttp.Serve(
+	err := gracehttp.Serve(
 		gracehttp.Handler{*mainAddress, mainHandler()},
 		gracehttp.Handler{*adminAddress, adminHandler()},
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // binds a path to a single file
