@@ -17,8 +17,6 @@ import (
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/oauth"
 	"github.com/nshah/rell/og/viewog"
-	"log"
-	"net"
 	"net/http"
 	"net/http/pprof"
 	"path/filepath"
@@ -101,11 +99,4 @@ func mainHandler() (handler http.Handler) {
 		Secret:  fbapp.Default.SecretByte(),
 	}
 	return handler
-}
-
-func serve(l *net.TCPListener, handler http.Handler) {
-	err := http.Serve(l, handler)
-	if err != nil {
-		log.Fatalln("serve: ", err)
-	}
 }
