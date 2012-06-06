@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"path/filepath"
+	"runtime"
 )
 
 var (
@@ -37,9 +38,14 @@ var (
 		"rell.public",
 		"github.com/nshah/rell/public",
 		"The directory to serve static files from.")
+	goMaxProcs = flag.Int(
+		"rell.gomaxprocs",
+		runtime.NumCPU(),
+		"Maximum processes to use.")
 )
 
 func main() {
+	runtime.GOMAXPROCS(*goMaxProcs)
 	flag.Parse()
 	flagconfig.Parse()
 	pidfile.Write()
