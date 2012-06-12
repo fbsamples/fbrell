@@ -1,6 +1,12 @@
 var jsDump = require('jsDump')
   , Delegator = require('delegator')
 
+function safe(str) {
+  var div = document.createElement('div')
+  div.innerText = str
+  return div.innerHTML.replace(/"/g, '&quot;').replace(/'/, '&#039;')
+}
+
 var Log = {
   levels: ['error', 'info', 'debug'],
   root: null,
@@ -27,7 +33,7 @@ var Log = {
       if (bd) {
         bd += '<hr>'
       }
-      bd += jsDump.parse(args[i])
+      bd += '<pre>' + safe(jsDump.parse(args[i])) + '</pre>'
     }
 
     return bd
@@ -74,7 +80,6 @@ var Log = {
   },
 
   init: function(root, levelName) {
-    jsDump.HTML = true
     Log.level = Log.getLevel(levelName)
     Log.root = root
     root.style.height = (
