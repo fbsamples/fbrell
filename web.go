@@ -9,7 +9,7 @@ import (
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.grace/gracehttp"
 	"github.com/nshah/go.httpdev"
-	"github.com/nshah/go.httpstats"
+	"github.com/nshah/rell/stats"
 	"github.com/nshah/go.pidfile"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.static"
@@ -105,7 +105,7 @@ func mainHandler() (handler http.Handler) {
 	mux.HandleFunc(oauth.Path, oauth.Handle)
 	mux.HandleFunc("/sleep/", httpdev.Sleep)
 
-	handler = httpstats.NewHandler("web", mux)
+	handler = stats.NewHandler("web", mux)
 	handler = &appdata.Handler{
 		Handler: handler,
 		Secret:  fbapp.Default.SecretByte(),
