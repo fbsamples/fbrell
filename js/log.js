@@ -3,7 +3,11 @@ var jsDump = require('jsDump')
 
 function safe(str) {
   var div = document.createElement('div')
-  div.innerText = str
+  if ('innerText' in div) {
+    div.innerText = str
+  } else {
+    div.textContent = str
+  }
   return div.innerHTML.replace(/"/g, '&quot;').replace(/'/, '&#039;')
 }
 
