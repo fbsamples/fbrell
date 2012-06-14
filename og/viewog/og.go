@@ -9,6 +9,7 @@ import (
 	"github.com/nshah/go.h.js.loader"
 	"github.com/nshah/rell/context"
 	"github.com/nshah/rell/og"
+	"github.com/nshah/rell/stats"
 	"github.com/nshah/rell/view"
 	"net/http"
 	"strconv"
@@ -40,6 +41,7 @@ func Values(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
+	stats.Inc("viewed og")
 	view.Write(w, r, renderObject(context, object))
 }
 
@@ -61,6 +63,7 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
+	stats.Inc("viewed rog")
 	view.Write(w, r, renderObject(context, object))
 }
 
@@ -86,6 +89,7 @@ func Redirect(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
+	stats.Inc("rog-redirect request")
 	if count == 0 {
 		http.Redirect(
 			w, r, context.AbsoluteURL("/rog/"+parts[4]).String(), status)

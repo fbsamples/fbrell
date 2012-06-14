@@ -11,6 +11,7 @@ import (
 	"github.com/nshah/rell/context"
 	"github.com/nshah/rell/examples"
 	"github.com/nshah/rell/js"
+	"github.com/nshah/rell/stats"
 	"github.com/nshah/rell/view"
 	"net/http"
 )
@@ -44,6 +45,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
+	stats.Inc("viewed examples listing")
 	view.Write(w, r, renderList(context, examples.GetDB(context.Version)))
 }
 
@@ -59,6 +61,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, err)
 			return
 		}
+		stats.Inc("saved example")
 		http.Redirect(w, r, c.ViewURL("/saved/"+hash), 302)
 		return
 	} else {
@@ -67,6 +70,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, err)
 			return
 		}
+		stats.Inc("viewed saved example")
 		view.Write(w, r, renderExample(context, example))
 	}
 }
@@ -82,6 +86,7 @@ func Raw(w http.ResponseWriter, r *http.Request) {
 			w, r, errors.New("Not allowed to view this example in raw mode."))
 		return
 	}
+	stats.Inc("viewed example in raw mode")
 	w.Write(example.Content)
 }
 
@@ -96,6 +101,7 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 			w, r, errors.New("Not allowed to view this example in simple mode."))
 		return
 	}
+	stats.Inc("viewed example in simple mode")
 	view.Write(w, r, &h.Document{
 		Inner: &h.Frag{
 			&h.Head{
@@ -132,6 +138,7 @@ func SdkChannel(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
+	stats.Inc("viewed channel")
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
 	view.Write(w, r, &h.Script{Src: context.SdkURL()})
 }
@@ -142,6 +149,7 @@ func Example(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
+	stats.Inc("viewed stock example")
 	view.Write(w, r, renderExample(context, example))
 }
 
