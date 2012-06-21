@@ -2,10 +2,9 @@ package empcheck
 
 import (
 	"fmt"
-	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/nshah/go.fbapi"
 	"github.com/nshah/go.fbapp"
-	"github.com/nshah/rell/cache"
+	"github.com/nshah/rell/redis"
 	"log"
 )
 
@@ -28,19 +27,18 @@ type user struct {
 // Check if the user is a Facebook Employee. This only available by
 // special permission granted to an application by Facebook.
 func IsEmployee(id uint64) bool {
+	var err error
 	key := fmt.Sprintf("is_employee:%d", id)
-	item, err := cache.Client().Get(key)
+	item, err := redis.Client().Get(key)
 	if err != nil {
-		if err != memcache.ErrCacheMiss {
-			log.Printf("Unknown cache error: %s", err)
-		}
-	} else {
-		if item.Value[0] == yes {
+		log.Printf("Error in redis.Get error: %s", err)
+	} else if item != nil {
+		if item[0] == yes {
 			return true
-		} else if item.Value[0] == no {
+		} else if item[0] == no {
 			return false
 		} else {
-			log.Printf("Unknown cache key/value: %s=%s", key, item.Value)
+			log.Printf("Unknown redis key/value for EmpCheck: %s=%s", key, item)
 		}
 	}
 
@@ -54,7 +52,7 @@ func IsEmployee(id uint64) bool {
 	if user.IsEmployee {
 		value = yesSlice
 	}
-	err = cache.Client().Set(&memcache.Item{Key: key, Value: value})
+	err = redis.Client().Set(key, value)
 	if err != nil {
 		log.Printf("Error in cache.Set: %s", err)
 	}

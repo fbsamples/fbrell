@@ -6,10 +6,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/nshah/go.errcode"
 	"github.com/nshah/go.flag.pkgpath"
-	"github.com/nshah/rell/cache"
+	"github.com/nshah/rell/redis"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -247,8 +246,7 @@ func Save(content []byte) (string, error) {
 		if err != nil {
 			log.Printf("Error in bucket.Put: %s", err)
 		}
-		err = cache.Client().Set(
-			&memcache.Item{Key: makeCacheKey(key), Value: content})
+		err = redis.Client().Set(makeCacheKey(key), content)
 		if err != nil {
 			log.Printf("Error in cache.Set: %s", err)
 		}
@@ -263,14 +261,12 @@ func makeCacheKey(key string) string {
 var errIgnore = errors.New("")
 
 func cacheOnlyGet(cacheKey string) ([]byte, error) {
-	item, err := cache.Client().Get(cacheKey)
+	item, err := redis.Client().Get(cacheKey)
 	if err != nil {
-		if err != memcache.ErrCacheMiss {
-			log.Printf("Error in cache.Get: %s", err)
-		}
+		log.Printf("Error in redis.Get: %s", err)
 		return nil, errIgnore
 	}
-	return item.Value, nil
+	return item, nil
 }
 
 func s3OnlyGet(key, cacheKey string) ([]byte, error) {
@@ -285,8 +281,7 @@ func s3OnlyGet(key, cacheKey string) ([]byte, error) {
 		return nil, err
 	}
 	go func() {
-		err := cache.Client().Set(
-			&memcache.Item{Key: cacheKey, Value: content})
+		err := redis.Client().Set(cacheKey, content)
 		if err != nil {
 			log.Printf("Error in cache.Set: %s", err)
 		}
