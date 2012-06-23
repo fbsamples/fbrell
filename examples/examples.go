@@ -262,8 +262,10 @@ var errIgnore = errors.New("")
 
 func cacheOnlyGet(cacheKey string) ([]byte, error) {
 	item, err := redis.Client().Get(cacheKey)
-	if err != nil {
-		log.Printf("Error in redis.Get: %s", err)
+	if item == nil {
+		if err != nil {
+			log.Printf("Error in redis.Get: %s", err)
+		}
 		return nil, errIgnore
 	}
 	return item, nil
