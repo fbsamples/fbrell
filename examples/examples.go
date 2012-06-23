@@ -239,7 +239,7 @@ func Save(content []byte) (string, error) {
 		return "", fmt.Errorf("Error comupting md5 sum: %s", err)
 	}
 	key := fmt.Sprintf("%x", h.Sum(nil))
-	item, err = cachedGet(key)
+	item, err := cachedGet(key)
 	if item == nil {
 		// we don't have this stored
 		err = bucket().Put(key, content, "text/plain", s3.Private)
