@@ -32,7 +32,7 @@ func IsEmployee(id uint64) bool {
 	item, err := redis.Client().Get(key)
 	if err != nil {
 		log.Printf("Error in redis.Get error: %s", err)
-	} else if item != nil {
+	} else if item != nil && len(item) > 0 {
 		if item[0] == yes {
 			return true
 		} else if item[0] == no {
