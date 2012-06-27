@@ -8,10 +8,10 @@ import (
 	"github.com/nshah/go.h"
 	"github.com/nshah/go.h.js.fb"
 	"github.com/nshah/go.h.js.loader"
+	"github.com/nshah/go.stats"
 	"github.com/nshah/rell/context"
 	"github.com/nshah/rell/examples"
 	"github.com/nshah/rell/js"
-	"github.com/nshah/rell/stats"
 	"github.com/nshah/rell/view"
 	"net/http"
 )

@@ -9,15 +9,17 @@ import (
 	"github.com/nshah/go.flagconfig"
 	"github.com/nshah/go.grace/gracehttp"
 	"github.com/nshah/go.httpdev"
+	"github.com/nshah/go.httpstats"
 	"github.com/nshah/go.pidfile"
 	"github.com/nshah/go.signedrequest/appdata"
 	"github.com/nshah/go.static"
+	"github.com/nshah/go.stats"
+	"github.com/nshah/go.stats/stathatbackend"
 	"github.com/nshah/go.viewvar"
 	"github.com/nshah/rell/context/viewcontext"
 	"github.com/nshah/rell/examples/viewexamples"
 	"github.com/nshah/rell/oauth"
 	"github.com/nshah/rell/og/viewog"
-	"github.com/nshah/rell/stats"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -42,6 +44,7 @@ var (
 		"rell.gomaxprocs",
 		runtime.NumCPU(),
 		"Maximum processes to use.")
+	ezkey = flag.String("rell.stats.key", "", "The stathat ezkey.")
 )
 
 func main() {
@@ -49,6 +52,7 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 	pidfile.Write()
+	stats.SetBackend(stathatbackend.EZKey(*ezkey))
 	err := gracehttp.Serve(
 		gracehttp.Handler{*mainAddress, mainHandler()},
 		gracehttp.Handler{*adminAddress, adminHandler()},
@@ -105,7 +109,7 @@ func mainHandler() (handler http.Handler) {
 	mux.HandleFunc(oauth.Path, oauth.Handle)
 	mux.HandleFunc("/sleep/", httpdev.Sleep)
 
-	handler = stats.NewHandler("web", mux)
+	handler = httpstats.NewHandler("web", mux)
 	handler = &appdata.Handler{
 		Handler: handler,
 		Secret:  fbapp.Default.SecretByte(),
