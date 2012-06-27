@@ -307,15 +307,31 @@ func renderEnvSelector(c *context.Context, example *examples.Example) h.HTML {
 		return nil
 	}
 	frag := &h.Frag{}
+	foundSelected := false
+	selected := false
 	for title, value := range envOptions {
+		selected = c.Env == value
+		if selected {
+			foundSelected = true
+		}
 		ctxCopy := c.Copy()
 		ctxCopy.Env = value
 		frag.Append(&h.Option{
 			Inner:    h.String(title),
-			Selected: c.Env == value,
+			Selected: selected,
 			Value:    value,
 			Data: map[string]interface{}{
 				"url": ctxCopy.ViewURL(example.URL),
+			},
+		})
+	}
+	if !foundSelected {
+		frag.Append(&h.Option{
+			Inner:    h.String(c.Env),
+			Selected: true,
+			Value:    c.Env,
+			Data: map[string]interface{}{
+				"url": c.ViewURL(example.URL),
 			},
 		})
 	}
