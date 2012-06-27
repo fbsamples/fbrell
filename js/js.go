@@ -13,7 +13,7 @@ import (
 )
 
 // The default script. The working directory is set in init().
-var defaultScript = &browserify.Script{Entry: "rell.js"}
+var defaultScript = &browserify.Script{Entry: "rell.js", Exports: "require"}
 
 func init() {
 	pkgpath.DirVar(

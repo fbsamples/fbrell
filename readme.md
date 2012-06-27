@@ -12,9 +12,9 @@ Development Environment
 
 You'll need these to make modifications to rell:
 
-- [Node](http://nodejs.org/) tested with version 0.6.17.
-- [Go](http://golang.org/) tested with version 1.0.1.
-- [Git](http://gitscm.com/) tested with version 1.7.10.
+- [Node](http://nodejs.org/) tested with version 0.8.x.
+- [Go](http://golang.org/) tested with version 1.0.x.
+- [Git](http://gitscm.com/) tested with version 1.7.x.
 
 Install the main command which will automatically pull dependencies:
 
