@@ -41,5 +41,5 @@ build() {
 
   msg "Creating static resources"
   cd $gitabs/js
-  ./node_modules/.bin/browserify -e rell.js > $pkgdir/usr/share/$pkgname/browserify.js
+  ./node_modules/.bin/browserify -e rell.js --exports require > $pkgdir/usr/share/$pkgname/browserify.js
 }
