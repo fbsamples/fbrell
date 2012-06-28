@@ -9,6 +9,7 @@ import (
 	"github.com/nshah/go.h.js.fb"
 	"github.com/nshah/go.h.js.loader"
 	"github.com/nshah/go.stats"
+	"github.com/nshah/go.xsrf"
 	"github.com/nshah/rell/context"
 	"github.com/nshah/rell/examples"
 	"github.com/nshah/rell/js"
@@ -16,15 +17,23 @@ import (
 	"net/http"
 )
 
-var envOptions = map[string]string{
-	"Production with CDN":    "",
-	"Production without CDN": fburl.Production,
-	"Beta":                   fburl.Beta,
-	"Latest":                 "latest",
-	"Dev":                    "dev",
-	"Intern":                 "intern",
-	"In Your":                "inyour",
-}
+const (
+	savedPath = "/saved/"
+	paramName = "-xsrf-token-"
+)
+
+var (
+	envOptions = map[string]string{
+		"Production with CDN":    "",
+		"Production without CDN": fburl.Production,
+		"Beta":                   fburl.Beta,
+		"Latest":                 "latest",
+		"Dev":                    "dev",
+		"Intern":                 "intern",
+		"In Your":                "inyour",
+	}
+	errTokenMismatch = errors.New("Token mismatch.")
+)
 
 // Parse the Context and an Example.
 func parse(r *http.Request) (*context.Context, *examples.Example, error) {
@@ -50,10 +59,15 @@ func List(w http.ResponseWriter, r *http.Request) {
 }
 
 func Saved(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" && r.URL.Path == "/saved/" {
+	if r.Method == "POST" && r.URL.Path == savedPath {
 		c, err := context.FromRequest(r)
 		if err != nil {
 			view.Error(w, r, err)
+			return
+		}
+		if !xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
+			stats.Inc(savedPath + " xsrf failure")
+			view.Error(w, r, errTokenMismatch)
 			return
 		}
 		hash, err := examples.Save([]byte(r.FormValue("code")))
@@ -62,7 +76,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		stats.Inc("saved example")
-		http.Redirect(w, r, c.ViewURL("/saved/"+hash), 302)
+		http.Redirect(w, r, c.ViewURL(savedPath+hash), 302)
 		return
 	} else {
 		context, example, err := parse(r)
@@ -71,7 +85,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		stats.Inc("viewed saved example")
-		view.Write(w, r, renderExample(context, example))
+		view.Write(w, r, renderExample(w, r, context, example))
 	}
 }
 
@@ -150,10 +164,12 @@ func Example(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stats.Inc("viewed stock example")
-	view.Write(w, r, renderExample(context, example))
+	view.Write(w, r, renderExample(w, r, context, example))
 }
 
-func renderExample(c *context.Context, example *examples.Example) *view.Page {
+func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, example *examples.Example) *view.Page {
+	hiddenInputs := c.Values()
+	hiddenInputs.Set(paramName, xsrf.Token(w, r, savedPath))
 	return &view.Page{
 		Context:  c,
 		Title:    example.Title,
@@ -183,11 +199,11 @@ func renderExample(c *context.Context, example *examples.Example) *view.Page {
 						},
 					},
 					&h.Form{
-						Action: c.URL("/saved/").String(),
+						Action: c.URL(savedPath).String(),
 						Method: h.Post,
 						Target: "_top",
 						Inner: &h.Frag{
-							h.HiddenInputs(c.Values()),
+							h.HiddenInputs(hiddenInputs),
 							&h.Textarea{
 								ID:    "jscode",
 								Name:  "code",
