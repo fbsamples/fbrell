@@ -129,7 +129,7 @@ var Rell = {
 
     FB.init(options)
     if (top != self) {
-      FB.Canvas.setAutoResize(true)
+      FB.Canvas.setAutoGrow(true)
     }
 
     if (!Rell.config.status) {
