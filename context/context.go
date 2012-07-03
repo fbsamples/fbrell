@@ -55,6 +55,7 @@ type Context struct {
 	Scheme               string              `schema:"-"`
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
 	ViewMode             string              `schema:"view-mode"`
+	Module               string              `schema:"module"`
 	ViewportMode         string              `schema:"viewport-mode"`
 	IsEmployee           bool                `schema:"-"`
 }
@@ -71,6 +72,7 @@ var defaultContext = &Context{
 	Scheme:               "http",
 	ViewMode:             Website,
 	ViewportMode:         ViewportModeAuto,
+	Module:               "all",
 }
 
 var schemaDecoder = schema.NewDecoder()
@@ -132,7 +134,7 @@ func (c *Context) SdkURL() string {
 		} else {
 			server = fburl.Hostname("static", c.Env) + "/assets.php"
 		}
-		return fmt.Sprintf("%s://%s/%s/all.js", c.Scheme, server, c.Locale)
+		return fmt.Sprintf("%s://%s/%s/%s.js", c.Scheme, server, c.Locale, c.Module)
 	} else {
 		if c.Env == "" {
 			if c.Scheme == "https" {
@@ -210,6 +212,9 @@ func (c *Context) Values() url.Values {
 	}
 	if c.ViewportMode != defaultContext.ViewportMode {
 		values.Set("viewport-mode", c.ViewportMode)
+	}
+	if c.Module != defaultContext.Module {
+		values.Set("module", c.Module)
 	}
 	return values
 }
