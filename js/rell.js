@@ -73,9 +73,9 @@ var Rell = {
       FB.FBDebug.isEnabled = true
       FB.FBDebug.logLevel = 6
 
-      var xd_receiver = '/xd_receiver.html'
+      var xd_receiver = '/public/xd_receiver.html'
       if (document.location.protocol == 'https:') {
-        xd_receiver = '/xd_receiver_ssl.html'
+        xd_receiver = '/public/xd_receiver_ssl.html'
       }
       FB.Facebook.init(Rell.config.appID, xd_receiver)
       // sigh
