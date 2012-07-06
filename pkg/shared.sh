@@ -26,7 +26,7 @@ build() {
   mkdir -p $bindir
   binfile=$bindir/$pkgname
   msg "Building"
-  $GO_LDFLAGS="-X github.com/nshah/rell/context/viewcontext.version $pkgver"
+  GO_LDFLAGS="-X github.com/nshah/rell/context/viewcontext.version $pkgver"
   go build -o -ldflags $GO_LDFLAGS $binfile $goimport
 
   msg "Copying resources"
