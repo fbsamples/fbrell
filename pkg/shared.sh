@@ -27,7 +27,7 @@ build() {
   binfile=$bindir/$pkgname
   msg "Building"
   GO_LDFLAGS="-X github.com/nshah/rell/context/viewcontext.version $pkgver"
-  go build -o -ldflags $GO_LDFLAGS $binfile $goimport
+  go build -ldflags="$GO_LDFLAGS" -o=$binfile $goimport
 
   msg "Copying resources"
   install -d $gitabs/public $pkgdir/usr/share/$pkgname/public
