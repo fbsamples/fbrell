@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+var version string
+
 // Handler for /info/ to see a JSON view of some server context.
 func Info(w http.ResponseWriter, r *http.Request) {
 	context, err := context.FromRequest(r)
@@ -30,7 +32,9 @@ func Info(w http.ResponseWriter, r *http.Request) {
 		"pageTabURL": context.PageTabURL("/"),
 		"canvasURL":  context.CanvasURL("/"),
 		"sdkURL":     context.SdkURL(),
-		"version":    "3.1.0",
+	}
+	if version != "" {
+		info["version"] = version
 	}
 	out, err := json.MarshalIndent(info, "", "  ")
 	if err != nil {
