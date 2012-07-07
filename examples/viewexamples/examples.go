@@ -183,7 +183,7 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 					&h.Div{
 						Class: "controls",
 						Inner: &h.Frag{
-							&h.A{ID: "rell-login", Inner: &h.Span{Inner: h.String("Login")}},
+							&h.A{ID: "rell-login", Inner: &h.Span{Inner: h.String("Log In")}},
 							&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
 							&h.Span{ID: "auth-status", Inner: h.String("waiting")},
 							&h.Span{Class: "bar", Inner: h.String("|")},
