@@ -3,11 +3,11 @@
 package view
 
 import (
-	"github.com/nshah/go.h"
-	"github.com/nshah/go.h.js.ga"
-	"github.com/nshah/go.h.js.loader"
-	"github.com/nshah/go.static"
-	"github.com/nshah/rell/context"
+	"github.com/daaku/go.h"
+	"github.com/daaku/go.h.js.ga"
+	"github.com/daaku/go.h.js.loader"
+	"github.com/daaku/go.static"
+	"github.com/daaku/rell/context"
 	"log"
 	"net/http"
 )

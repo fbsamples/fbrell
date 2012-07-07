@@ -1,9 +1,9 @@
 package context_test
 
 import (
-	"github.com/nshah/go.fbapp"
-	"github.com/nshah/go.subset"
-	"github.com/nshah/rell/context"
+	"github.com/daaku/go.fbapp"
+	"github.com/daaku/go.subset"
+	"github.com/daaku/rell/context"
 	"net/http"
 	"net/url"
 	"testing"

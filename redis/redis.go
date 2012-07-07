@@ -3,7 +3,7 @@ package redis
 
 import (
 	"flag"
-	"github.com/nshah/Go-Redis"
+	"github.com/daaku/Go-Redis"
 	"log"
 )
 

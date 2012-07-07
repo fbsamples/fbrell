@@ -5,7 +5,7 @@ build() {
 
   export GOPATH=${srcdir}
   cd ${GOPATH}
-  goimport=github.com/nshah/rell
+  goimport=github.com/daaku/rell
   gitabs=${GOPATH}/src/$goimport
 
   if [ ! -e ${gitabs} ]; then
@@ -26,7 +26,7 @@ build() {
   mkdir -p $bindir
   binfile=$bindir/$pkgname
   msg "Building"
-  GO_LDFLAGS="-X github.com/nshah/rell/context/viewcontext.version $pkgver"
+  GO_LDFLAGS="-X github.com/daaku/rell/context/viewcontext.version $pkgver"
   go build -ldflags="$GO_LDFLAGS" -o=$binfile $goimport
 
   msg "Copying resources"

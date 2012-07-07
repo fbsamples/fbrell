@@ -1,8 +1,8 @@
 package view
 
 import (
-	"github.com/nshah/go.errcode"
-	"github.com/nshah/go.h"
+	"github.com/daaku/go.errcode"
+	"github.com/daaku/go.h"
 	"io"
 	"log"
 	"net/http"

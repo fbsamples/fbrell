@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/nshah/go.browserify"
-	"github.com/nshah/go.flag.pkgpath"
-	"github.com/nshah/rell/context"
-	"github.com/nshah/rell/examples"
+	"github.com/daaku/go.browserify"
+	"github.com/daaku/go.flag.pkgpath"
+	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/examples"
 	"log"
 )
 
@@ -19,7 +19,7 @@ func init() {
 	pkgpath.DirVar(
 		&defaultScript.Dir,
 		"rell.browserify.dir",
-		"github.com/nshah/rell/js",
+		"github.com/daaku/rell/js",
 		"The browserify working directory.")
 	flag.StringVar(
 		&defaultScript.Override,

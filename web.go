@@ -3,23 +3,23 @@ package main
 
 import (
 	"flag"
-	"github.com/nshah/go.browserify"
-	"github.com/nshah/go.fbapp"
-	"github.com/nshah/go.flag.pkgpath"
-	"github.com/nshah/go.flagconfig"
-	"github.com/nshah/go.grace/gracehttp"
-	"github.com/nshah/go.httpdev"
-	"github.com/nshah/go.httpstats"
-	"github.com/nshah/go.pidfile"
-	"github.com/nshah/go.signedrequest/appdata"
-	"github.com/nshah/go.static"
-	"github.com/nshah/go.stats"
-	"github.com/nshah/go.stats/stathatbackend"
-	"github.com/nshah/go.viewvar"
-	"github.com/nshah/rell/context/viewcontext"
-	"github.com/nshah/rell/examples/viewexamples"
-	"github.com/nshah/rell/oauth"
-	"github.com/nshah/rell/og/viewog"
+	"github.com/daaku/go.browserify"
+	"github.com/daaku/go.fbapp"
+	"github.com/daaku/go.flag.pkgpath"
+	"github.com/daaku/go.flagconfig"
+	"github.com/daaku/go.grace/gracehttp"
+	"github.com/daaku/go.httpdev"
+	"github.com/daaku/go.httpstats"
+	"github.com/daaku/go.pidfile"
+	"github.com/daaku/go.signedrequest/appdata"
+	"github.com/daaku/go.static"
+	"github.com/daaku/go.stats"
+	"github.com/daaku/go.stats/stathatbackend"
+	"github.com/daaku/go.viewvar"
+	"github.com/daaku/rell/context/viewcontext"
+	"github.com/daaku/rell/examples/viewexamples"
+	"github.com/daaku/rell/oauth"
+	"github.com/daaku/rell/og/viewog"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -38,7 +38,7 @@ var (
 		"Admin http server address.")
 	publicDir = pkgpath.Dir(
 		"rell.public",
-		"github.com/nshah/rell/public",
+		"github.com/daaku/rell/public",
 		"The directory to serve static files from.")
 	goMaxProcs = flag.Int(
 		"rell.gomaxprocs",

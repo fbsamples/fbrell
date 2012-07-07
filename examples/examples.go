@@ -6,9 +6,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/nshah/go.errcode"
-	"github.com/nshah/go.flag.pkgpath"
-	"github.com/nshah/rell/redis"
+	"github.com/daaku/go.errcode"
+	"github.com/daaku/go.flag.pkgpath"
+	"github.com/daaku/rell/redis"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -85,12 +85,12 @@ func init() {
 	pkgpath.DirVar(
 		&oldExamplesDir,
 		"rell.examples.old",
-		"github.com/nshah/rell/examples/db/old",
+		"github.com/daaku/rell/examples/db/old",
 		"The directory containing examples for the old SDK.")
 	pkgpath.DirVar(
 		&newExamplesDir,
 		"rell.examples.new",
-		"github.com/nshah/rell/examples/db/mu",
+		"github.com/daaku/rell/examples/db/mu",
 		"The directory containing examples for the new SDK.")
 }
 

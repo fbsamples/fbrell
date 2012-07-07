@@ -3,12 +3,12 @@ package oauth
 
 import (
 	"errors"
-	"github.com/nshah/go.browserid"
-	"github.com/nshah/go.fbapi"
-	"github.com/nshah/go.fbapp"
-	"github.com/nshah/go.fburl"
-	"github.com/nshah/rell/context"
-	"github.com/nshah/rell/view"
+	"github.com/daaku/go.browserid"
+	"github.com/daaku/go.fbapi"
+	"github.com/daaku/go.fbapp"
+	"github.com/daaku/go.fburl"
+	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/view"
 	"net/http"
 	"net/url"
 	"strconv"

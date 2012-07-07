@@ -3,8 +3,8 @@ package viewcontext
 
 import (
 	"encoding/json"
-	"github.com/nshah/rell/context"
-	"github.com/nshah/rell/view"
+	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/view"
 	"log"
 	"net/http"
 )

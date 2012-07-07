@@ -1,7 +1,7 @@
 package og
 
 import (
-	"github.com/nshah/rell/context"
+	"github.com/daaku/rell/context"
 	"net/url"
 	"testing"
 )

@@ -2,9 +2,9 @@ package empcheck
 
 import (
 	"fmt"
-	"github.com/nshah/go.fbapi"
-	"github.com/nshah/go.fbapp"
-	"github.com/nshah/rell/redis"
+	"github.com/daaku/go.fbapi"
+	"github.com/daaku/go.fbapp"
+	"github.com/daaku/rell/redis"
 	"log"
 )
 
