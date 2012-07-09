@@ -2,6 +2,7 @@
 package viewexamples
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/daaku/go.fburl"
@@ -48,6 +49,15 @@ func parse(r *http.Request) (*context.Context, *examples.Example, error) {
 	return context, example, nil
 }
 
+// Renders the example content including support for context sensitive
+// text substitution.
+func content(c *context.Context, e *examples.Example) []byte {
+	www := fburl.URL{
+		Env: c.Env,
+	}
+	return bytes.Replace(e.Content, []byte("{{www-server}}"), []byte(www.String()), -1)
+}
+
 func List(w http.ResponseWriter, r *http.Request) {
 	context, err := context.FromRequest(r)
 	if err != nil {
@@ -90,7 +100,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 }
 
 func Raw(w http.ResponseWriter, r *http.Request) {
-	_, example, err := parse(r)
+	context, example, err := parse(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
@@ -101,7 +111,7 @@ func Raw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stats.Inc("viewed example in raw mode")
-	w.Write(example.Content)
+	w.Write(content(context, example))
 }
 
 func Simple(w http.ResponseWriter, r *http.Request) {
@@ -137,7 +147,7 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 					},
 					&h.Div{
 						ID:    "example",
-						Inner: h.UnsafeBytes(example.Content),
+						Inner: h.UnsafeBytes(content(context, example)),
 					},
 				},
 			},
@@ -207,7 +217,7 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 							&h.Textarea{
 								ID:    "jscode",
 								Name:  "code",
-								Inner: h.String(example.Content),
+								Inner: h.String(content(c, example)),
 							},
 							&h.Div{
 								Class: "controls",
