@@ -42,6 +42,14 @@ func humanJSON(v interface{}, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func headerMap(h http.Header) map[string]string {
+	r := make(map[string]string)
+	for name, value := range h {
+		r[name] = value[0]
+	}
+	return r
+}
+
 // Handler for /info/ to see a JSON view of some server context.
 func Info(w http.ResponseWriter, r *http.Request) {
 	context, err := context.FromRequest(r)
@@ -57,6 +65,7 @@ func Info(w http.ResponseWriter, r *http.Request) {
 				"path":  r.URL.Path,
 				"query": r.URL.RawQuery,
 			},
+			"headers": headerMap(r.Header),
 		},
 		"context":    context,
 		"pageTabURL": context.PageTabURL("/"),
