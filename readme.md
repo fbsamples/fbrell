@@ -19,6 +19,6 @@ You'll need these to make modifications to rell:
 Install the main command which will automatically pull dependencies:
 
 ```sh
-go install -u https://github.com/daaku/rell
+go get -u github.com/daaku/rell
 rell -h
 ```
