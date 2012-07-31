@@ -58,6 +58,7 @@ type Context struct {
 	Module               string              `schema:"module"`
 	ViewportMode         string              `schema:"viewport-mode"`
 	IsEmployee           bool                `schema:"-"`
+	Init                 bool                `schema:"init"`
 }
 
 // Defaults for the context.
@@ -73,6 +74,7 @@ var defaultContext = &Context{
 	ViewMode:             Website,
 	ViewportMode:         ViewportModeAuto,
 	Module:               "all",
+	Init:                 true,
 }
 
 var schemaDecoder = schema.NewDecoder()
@@ -269,6 +271,7 @@ func (c *Context) MarshalJSON() ([]byte, error) {
 		"channelURL":           c.ChannelURL(),
 		"signedRequest":        c.SignedRequest,
 		"viewMode":             c.ViewMode,
+		"init":                 c.Init,
 	}
 	if c.IsEmployee {
 		data["isEmployee"] = true

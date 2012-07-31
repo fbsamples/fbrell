@@ -116,6 +116,10 @@ var Rell = {
       Tracer.instrument('FB', FB)
     }
 
+    if (!Rell.config.init) {
+      return;
+    }
+
     var options = {
       appId : Rell.config.appID,
       cookie: true,
