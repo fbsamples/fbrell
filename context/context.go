@@ -218,6 +218,9 @@ func (c *Context) Values() url.Values {
 	if c.Module != defaultContext.Module {
 		values.Set("module", c.Module)
 	}
+	if c.Init != defaultContext.Init {
+		values.Set("init", strconv.FormatBool(c.Init))
+	}
 	return values
 }
 
