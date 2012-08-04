@@ -3,22 +3,17 @@ package examples
 
 import (
 	"crypto/md5"
-	"errors"
-	"flag"
 	"fmt"
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.flag.pkgpath"
 	"github.com/daaku/rell/redis"
 	"github.com/simonz05/godis"
 	"io/ioutil"
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/s3"
 	"log"
 	"net/http"
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 // Some categories are hidden from the listing.
@@ -50,58 +45,22 @@ type DB struct {
 
 var (
 	// Directory for disk backed DBs.
-	oldExamplesDir string
-	newExamplesDir string
+	oldExamplesDir = pkgpath.Dir(
+		"rell.examples.old",
+		"github.com/daaku/rell/examples/db/old",
+		"The directory containing examples for the old SDK.")
+	newExamplesDir = pkgpath.Dir(
+		"rell.examples.new",
+		"github.com/daaku/rell/examples/db/mu",
+		"The directory containing examples for the new SDK.")
 
 	// We have two disk backed DBs.
 	old *DB
 	mu  *DB
 
-	// For stored examples.
-	bucketMemo *s3.Bucket
-	bucketName string
-	auth       aws.Auth
-
 	// Stock response for the index page.
 	emptyExample = &Example{Title: "Welcome", URL: "/"}
 )
-
-// We load up the examples into memory on server start.
-func init() {
-	flag.StringVar(
-		&bucketName,
-		"rell.amazon.bucket",
-		"fbrell_examples",
-		"The Amazon bucket to store examples.")
-	flag.StringVar(
-		&auth.AccessKey,
-		"rell.amazon.key",
-		"",
-		"The Amazon API key to access the bucket.")
-	flag.StringVar(
-		&auth.SecretKey,
-		"rell.amazon.secret",
-		"",
-		"The Amazon API secret to access the bucket.")
-	pkgpath.DirVar(
-		&oldExamplesDir,
-		"rell.examples.old",
-		"github.com/daaku/rell/examples/db/old",
-		"The directory containing examples for the old SDK.")
-	pkgpath.DirVar(
-		&newExamplesDir,
-		"rell.examples.new",
-		"github.com/daaku/rell/examples/db/mu",
-		"The directory containing examples for the new SDK.")
-}
-
-// Get's the shared S3 bucket instance.
-func Bucket() *s3.Bucket {
-	if bucketMemo == nil {
-		bucketMemo = s3.New(auth, aws.USEast).Bucket(bucketName)
-	}
-	return bucketMemo
-}
 
 // Loads a specific examples directory.
 func loadDir(name string) (*DB, error) {
@@ -165,12 +124,16 @@ func Load(version, path string) (*Example, error) {
 	}
 
 	if parts[1] == "saved" {
-		content, err := cachedGet(parts[2])
+		item, err := redis.Client().Get(makeKey(parts[2]))
 		if err != nil {
+			if err == godis.ErrKeyNotFound {
+				return nil, errcode.New(
+					http.StatusNotFound, "Example not found: %s", path)
+			}
 			return nil, err
 		}
 		return &Example{
-			Content: content,
+			Content: item.Bytes(),
 			Title:   "Stored Example",
 			URL:     path,
 		}, nil
@@ -191,7 +154,7 @@ func GetDB(version string) *DB {
 	var err error
 	if version == "mu" {
 		if mu == nil {
-			mu, err = loadDir(newExamplesDir)
+			mu, err = loadDir(*newExamplesDir)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -199,7 +162,7 @@ func GetDB(version string) *DB {
 		return mu
 	}
 	if old == nil {
-		old, err = loadDir(oldExamplesDir)
+		old, err = loadDir(*oldExamplesDir)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -239,86 +202,14 @@ func Save(content []byte) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Error comupting md5 sum: %s", err)
 	}
-	key := fmt.Sprintf("%x", h.Sum(nil))
-	item, err := cachedGet(key)
-	if item == nil {
-		// we don't have this stored
-		err = Bucket().Put(key, content, "text/plain", s3.Private)
-		if err != nil {
-			log.Printf("Error in bucket.Put: %s", err)
-		}
-		err = redis.Client().Set(makeCacheKey(key), content)
-		if err != nil {
-			log.Printf("Error in cache.Set: %s", err)
-		}
-	}
-	return key, err
-}
-
-func makeCacheKey(key string) string {
-	return bucketName + ":" + key
-}
-
-var errIgnore = errors.New("")
-
-func cacheOnlyGet(cacheKey string) ([]byte, error) {
-	item, err := redis.Client().Get(cacheKey)
+	id := fmt.Sprintf("%x", h.Sum(nil))
+	err = redis.Client().Set(makeKey(id), content)
 	if err != nil {
-		if err == redis.ErrKeyNotFound {
-			return nil, errIgnore
-		}
-		return nil, err
+		log.Printf("Error in cache.Set: %s", err)
 	}
-	return item.Bytes(), nil
+	return id, err
 }
 
-func s3OnlyGet(key, cacheKey string) ([]byte, error) {
-	content, err := Bucket().Get("/" + key)
-	if err != nil {
-		s3Err, ok := err.(*s3.Error)
-		if ok && s3Err.StatusCode == http.StatusNotFound {
-			return nil, errcode.New(
-				http.StatusNotFound, "Could not find saved example.")
-		}
-		log.Printf("Unknown S3 error: %s", err)
-		return nil, err
-	}
-	go func() {
-		err := redis.Client().Set(cacheKey, content)
-		if err != nil {
-			log.Printf("Error in cache.Set: %s", err)
-		}
-	}()
-	return content, nil
-}
-
-// Check cache and then S3 for a stored example.
-func cachedGet(key string) ([]byte, error) {
-	cacheKey := makeCacheKey(key)
-	type content struct {
-		Data  []byte
-		Error error
-	}
-	response := make(chan content, 2)
-	go func() {
-		data, err := cacheOnlyGet(cacheKey)
-		response <- content{data, err}
-	}()
-	go func() {
-		data, err := s3OnlyGet(key, cacheKey)
-		response <- content{data, err}
-	}()
-	for {
-		select {
-		case r := <-response:
-			if r.Error == godis.ErrKeyNotFound {
-				continue
-			}
-			return r.Data, r.Error
-		case <-time.After(30 * time.Second):
-			return nil, errcode.New(
-				http.StatusRequestTimeout, "Failed to retrieve example.")
-		}
-	}
-	panic("Not reached")
+func makeKey(id string) string {
+	return "fbrell_examples:" + id
 }
