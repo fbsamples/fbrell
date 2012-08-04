@@ -9,6 +9,7 @@ import (
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.flag.pkgpath"
 	"github.com/daaku/rell/redis"
+	"github.com/simonz05/godis"
 	"io/ioutil"
 	"launchpad.net/goamz/aws"
 	"launchpad.net/goamz/s3"
@@ -95,7 +96,7 @@ func init() {
 }
 
 // Get's the shared S3 bucket instance.
-func bucket() *s3.Bucket {
+func Bucket() *s3.Bucket {
 	if bucketMemo == nil {
 		bucketMemo = s3.New(auth, aws.USEast).Bucket(bucketName)
 	}
@@ -242,7 +243,7 @@ func Save(content []byte) (string, error) {
 	item, err := cachedGet(key)
 	if item == nil {
 		// we don't have this stored
-		err = bucket().Put(key, content, "text/plain", s3.Private)
+		err = Bucket().Put(key, content, "text/plain", s3.Private)
 		if err != nil {
 			log.Printf("Error in bucket.Put: %s", err)
 		}
@@ -262,17 +263,17 @@ var errIgnore = errors.New("")
 
 func cacheOnlyGet(cacheKey string) ([]byte, error) {
 	item, err := redis.Client().Get(cacheKey)
-	if item == nil {
-		if err != nil {
-			log.Printf("Error in redis.Get: %s", err)
+	if err != nil {
+		if err == redis.ErrKeyNotFound {
+			return nil, errIgnore
 		}
-		return nil, errIgnore
+		return nil, err
 	}
-	return item, nil
+	return item.Bytes(), nil
 }
 
 func s3OnlyGet(key, cacheKey string) ([]byte, error) {
-	content, err := bucket().Get("/" + key)
+	content, err := Bucket().Get("/" + key)
 	if err != nil {
 		s3Err, ok := err.(*s3.Error)
 		if ok && s3Err.StatusCode == http.StatusNotFound {
@@ -310,7 +311,7 @@ func cachedGet(key string) ([]byte, error) {
 	for {
 		select {
 		case r := <-response:
-			if r.Error == errIgnore {
+			if r.Error == godis.ErrKeyNotFound {
 				continue
 			}
 			return r.Data, r.Error

@@ -3,27 +3,20 @@ package redis
 
 import (
 	"flag"
-	"github.com/daaku/Go-Redis"
-	"log"
+	"fmt"
+	"github.com/simonz05/godis"
 )
 
 var (
-	redisHost = flag.String(
-		"rell.redis.host", redis.DefaultRedisHost, "Redist host.")
-	redisPort = flag.Int(
-		"rell.redis.port", redis.DefaultRedisPort, "Redist port.")
-	redisMemo redis.Client
+	redisHost = flag.String("rell.redis.host", "127.0.0.1", "Redist host.")
+	redisPort = flag.Int("rell.redis.port", 6379, "Redist port.")
+	redisMemo *godis.Client
 )
 
 // Get the shared Memcache client instance.
-func Client() redis.Client {
+func Client() *godis.Client {
 	if redisMemo == nil {
-		spec := redis.DefaultSpec().Host(*redisHost).Port(*redisPort)
-		var err error
-		redisMemo, err = redis.NewSynchClientWithSpec(spec)
-		if err != nil {
-			log.Fatalf("Failed to create redis client: %s", err)
-		}
+		redisMemo = godis.New(fmt.Sprintf("tcp:%s:%d", *redisHost, *redisPort), 0, "")
 	}
 	return redisMemo
 }
