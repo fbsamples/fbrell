@@ -194,7 +194,7 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 						Class: "span8",
 						Inner: &h.Frag{
 							&h.Div{
-								Class: "row-fluid",
+								Class: "row-fluid form-inline",
 								Inner: &h.Frag{
 									&h.Div{
 										Class: "span6",
