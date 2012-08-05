@@ -38,3 +38,20 @@ a {
 #jsroot h1, #jsroot h2, #jsroot h3, #jsroot h4 {
   margin-top: 1em;
 }
+
+
+/**
+ * Like Button
+ */
+.like {
+  border: none;
+  overflow: hidden;
+  width: 450px;
+  height: 80px;
+  margin: 1em 0;
+  display: block;
+}
+
+.og-info td {
+  word-break: break-all;
+}

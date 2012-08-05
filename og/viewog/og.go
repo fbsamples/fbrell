@@ -135,7 +135,7 @@ func renderMetaTable(o *og.Object) h.HTML {
 	}
 
 	return &h.Table{
-		Class: "info",
+		Class: "table table-bordered table-striped og-info",
 		Inner: &h.Frag{
 			&h.Thead{
 				Inner: &h.Tr{
@@ -173,7 +173,7 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 				},
 			},
 			&h.Body{
-				Class: "narrow",
+				Class: "container",
 				Inner: &h.Frag{
 					&h.Div{ID: "fb-root"},
 					&loader.HTML{
@@ -187,25 +187,39 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 						},
 					},
 					&h.Div{
-						Class: "bd",
+						Class: "row",
 						Inner: &h.Frag{
-							header,
-							renderMetaTable(o),
-							&h.A{
-								HREF: o.ImageURL(),
-								Inner: &h.Img{
-									Src: o.ImageURL(),
-									Alt: o.Title(),
+							&h.Div{
+								Class: "span8",
+								Inner: header,
+							},
+							&h.Div{
+								Class: "span4",
+								Inner: &h.A{
+									Class: "lint-this btn btn-primary pull-right",
+									HREF:  o.LintURL(),
+									Inner: h.String("Lint this."),
 								},
 							},
-							&h.A{
-								Class: "lint-this",
-								HREF:  o.LintURL(),
-								Inner: h.String("Lint this."),
-							},
-							&h.Iframe{
-								Class: "like",
-								Src:   o.LikeURL(),
+						},
+					},
+					&h.Div{
+						Class: "row",
+						Inner: &h.Div{
+							Class: "span12",
+							Inner: &h.Frag{
+								renderMetaTable(o),
+								&h.Iframe{
+									Class: "like",
+									Src:   o.LikeURL(),
+								},
+								&h.A{
+									HREF: o.ImageURL(),
+									Inner: &h.Img{
+										Src: o.ImageURL(),
+										Alt: o.Title(),
+									},
+								},
 							},
 						},
 					},
