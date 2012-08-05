@@ -30,3 +30,11 @@ a {
 #log-container:hover #rell-log-clear {
   display: block;
 }
+
+#jsroot h1:first-child, #jsroot h2:first-child, #jsroot h3:first-child, #jsroot h4:first-child {
+  margin-top: auto;
+}
+
+#jsroot h1, #jsroot h2, #jsroot h3, #jsroot h4 {
+  margin-top: 1em;
+}

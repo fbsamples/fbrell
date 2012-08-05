@@ -17,7 +17,7 @@ function showAccountInfo() {
       document.getElementById('account-info').innerHTML = (
         '<img src="' + response[0].pic_square + '"> ' +
         response[0].name +
-        ' <button onclick="FB.logout()">Logout</button>'
+        ' <button class="btn" onclick="FB.logout()">Logout</button>'
       );
     }
   );
