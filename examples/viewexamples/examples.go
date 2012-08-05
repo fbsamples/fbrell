@@ -185,109 +185,160 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 		Title:    example.Title,
 		Class:    "main",
 		Resource: []loader.Resource{&js.Init{Context: c, Example: example}},
-		Body: &h.Frag{
-			&h.Div{
-				ID: "interactive",
+		Body: &h.Div{
+			Class: "container-fluid",
+			Inner: &h.Div{
+				Class: "row-fluid",
 				Inner: &h.Frag{
-					renderEnvSelector(c, example),
 					&h.Div{
-						Class: "controls",
+						Class: "span8",
 						Inner: &h.Frag{
-							&h.A{ID: "rell-login", Inner: &h.Span{Inner: h.String("Log In")}},
-							&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
-							&h.Span{ID: "auth-status", Inner: h.String("waiting")},
-							&h.Span{Class: "bar", Inner: h.String("|")},
-							&h.A{
-								ID:    "rell-disconnect",
-								Inner: h.String("Disconnect"),
-							},
-							&h.Span{Class: "bar", Inner: h.String("|")},
-							&h.A{
-								ID:    "rell-logout",
-								Inner: h.String("Logout"),
-							},
-						},
-					},
-					&h.Form{
-						Action: c.URL(savedPath).String(),
-						Method: h.Post,
-						Target: "_top",
-						Inner: &h.Frag{
-							h.HiddenInputs(hiddenInputs),
-							&h.Textarea{
-								ID:    "jscode",
-								Name:  "code",
-								Inner: h.String(content(c, example)),
-							},
 							&h.Div{
-								Class: "controls",
+								Class: "row-fluid",
 								Inner: &h.Frag{
-									&h.Strong{
-										Inner: &h.A{
-											HREF:  c.URL("/examples/").String(),
-											Inner: h.String("Examples"),
-										},
-									},
-									&h.A{
-										ID:    "rell-run-code",
-										Class: "fb-blue",
-										Inner: &h.Span{Inner: h.String("Run Code")},
-									},
-									&h.Label{
-										Class: "fb-gray save-code",
-										Inner: &h.Input{
-											Type:  "submit",
-											Value: "Save Code",
-										},
-									},
-									&h.Select{
-										ID:   "rell-view-mode",
-										Name: "view-mode",
+									&h.Div{
+										Class: "span6",
 										Inner: &h.Frag{
-											&h.Option{
-												Inner:    h.String("Website"),
-												Selected: c.ViewMode == context.Website,
-												Value:    string(context.Website),
-												Data: map[string]interface{}{
-													"url": c.URL(example.URL).String(),
+											&h.A{
+												ID:    "rell-login",
+												Class: "btn btn-primary",
+												Inner: &h.Frag{
+													&h.I{
+														Class: "icon-user icon-white",
+													},
+													h.String(" Log In"),
 												},
 											},
-											&h.Option{
-												Inner:    h.String("Canvas"),
-												Selected: c.ViewMode == context.Canvas,
-												Value:    string(context.Canvas),
-												Data: map[string]interface{}{
-													"url": c.CanvasURL(example.URL),
+											h.String(" "),
+											&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
+											h.String(" "),
+											&h.Span{ID: "auth-status", Inner: h.String("waiting")},
+											h.String(" "),
+											&h.Span{Class: "bar", Inner: h.String("|")},
+											h.String(" "),
+											&h.A{
+												ID:    "rell-disconnect",
+												Inner: h.String("Disconnect"),
+											},
+											h.String(" "),
+											&h.Span{Class: "bar", Inner: h.String("|")},
+											h.String(" "),
+											&h.A{
+												ID:    "rell-logout",
+												Inner: h.String("Logout"),
+											},
+										},
+									},
+									&h.Div{
+										Class: "span6",
+										Inner: &h.Div{
+											Class: "pull-right",
+											Inner: renderEnvSelector(c, example),
+										},
+									},
+								},
+							},
+							&h.Form{
+								Action: c.URL(savedPath).String(),
+								Class:  "row-fluid",
+								Method: h.Post,
+								Target: "_top",
+								Inner: &h.Frag{
+									h.HiddenInputs(hiddenInputs),
+									&h.Textarea{
+										ID:    "jscode",
+										Name:  "code",
+										Inner: h.String(content(c, example)),
+									},
+									&h.Div{
+										Class: "row-fluid",
+										Inner: &h.Frag{
+											&h.Strong{
+												Class: "span4",
+												Inner: &h.A{
+													HREF:  c.URL("/examples/").String(),
+													Inner: h.String("Examples"),
 												},
 											},
-											&h.Option{
-												Inner:    h.String("Page Tab"),
-												Selected: c.ViewMode == context.PageTab,
-												Value:    string(context.PageTab),
-												Data: map[string]interface{}{
-													"url": c.PageTabURL(example.URL),
+											&h.Div{
+												Class: "span8",
+												Inner: &h.Div{
+													Class: "pull-right form-inline",
+													Inner: &h.Frag{
+														&h.Select{
+															ID:   "rell-view-mode",
+															Name: "view-mode",
+															Inner: &h.Frag{
+																&h.Option{
+																	Inner:    h.String("Website"),
+																	Selected: c.ViewMode == context.Website,
+																	Value:    string(context.Website),
+																	Data: map[string]interface{}{
+																		"url": c.URL(example.URL).String(),
+																	},
+																},
+																&h.Option{
+																	Inner:    h.String("Canvas"),
+																	Selected: c.ViewMode == context.Canvas,
+																	Value:    string(context.Canvas),
+																	Data: map[string]interface{}{
+																		"url": c.CanvasURL(example.URL),
+																	},
+																},
+																&h.Option{
+																	Inner:    h.String("Page Tab"),
+																	Selected: c.ViewMode == context.PageTab,
+																	Value:    string(context.PageTab),
+																	Data: map[string]interface{}{
+																		"url": c.PageTabURL(example.URL),
+																	},
+																},
+															},
+														},
+														h.String(" "),
+														&h.Button{
+															Class: "btn",
+															Type:  "submit",
+															Inner: &h.Frag{
+																&h.I{
+																	Class: "icon-edit",
+																},
+																h.String(" Save Code"),
+															},
+														},
+														h.String(" "),
+														&h.A{
+															ID:    "rell-run-code",
+															Class: "btn btn-primary",
+															Inner: &h.Frag{
+																&h.I{
+																	Class: "icon-play icon-white",
+																},
+																h.String(" Run Code"),
+															},
+														},
+													},
 												},
 											},
 										},
 									},
 								},
 							},
+							&h.Div{ID: "jsroot"},
 						},
 					},
-					&h.Div{ID: "jsroot"},
-				},
-			},
-			&h.Div{
-				ID: "log-container",
-				Inner: &h.Frag{
 					&h.Div{
-						Class: "controls",
-						Inner: &h.Button{
-							ID:    "rell-log-clear",
-							Inner: h.String("Clear"),
+						Class: "span4",
+						ID:    "log-container",
+						Inner: &h.Frag{
+							&h.Button{
+								ID:    "rell-log-clear",
+								Class: "btn",
+								Inner: h.String("Clear"),
+							},
+							&h.Div{ID: "log"},
 						},
 					},
-					&h.Div{ID: "log"},
 				},
 			},
 		},

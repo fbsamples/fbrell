@@ -86,10 +86,6 @@ var Log = {
   init: function(root, levelName) {
     Log.level = Log.getLevel(levelName)
     Log.root = root
-    root.style.height = (
-      (window.innerHeight || document.documentElement.clientHeight)
-      + 'px'
-    )
     for (var i=0, l=Log.levels.length; i<l; i++) {
       var name = Log.levels[i]
       Log[name] = Log.impl(i)

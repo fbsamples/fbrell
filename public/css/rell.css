@@ -1,0 +1,32 @@
+body {
+  padding-top: 10px;
+}
+
+a {
+  cursor: pointer;
+}
+
+#auth-status {
+  text-transform: capitalize;
+}
+
+#jscode {
+  width: 99%;
+  height: 390px;
+}
+
+#rell-log-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: none;
+  margin: 0.5em 2.5em;
+}
+
+#log-container:hover .toggle {
+  cursor: pointer;
+}
+
+#log-container:hover #rell-log-clear {
+  display: block;
+}
