@@ -16,6 +16,7 @@ import (
 	"github.com/daaku/rell/js"
 	"github.com/daaku/rell/view"
 	"net/http"
+	"strconv"
 )
 
 const (
@@ -228,6 +229,7 @@ func (p *page) HTML() (h.HTML, error) {
 							&h.Div{
 								Class: "span4",
 								Inner: &h.Frag{
+									&contextEditor{Context: p.Context, Example: p.Example},
 									&logContainer{},
 								},
 							},
@@ -401,6 +403,41 @@ func (e *logContainer) HTML() (h.HTML, error) {
 				Inner: h.String("Clear"),
 			},
 			&h.Div{ID: "log"},
+		},
+	}, nil
+}
+
+type contextEditor struct {
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (e *contextEditor) HTML() (h.HTML, error) {
+	if !e.Context.IsEmployee {
+		return nil, nil
+	}
+	return &h.Div{
+		Class: "well form-horizontal",
+		Inner: &h.Frag{
+			&h.Div{
+				Class: "control-group",
+				Inner: &h.Frag{
+					&h.Label{
+						Class: "control-label",
+						For:   "appid",
+						Inner: h.String("Application ID"),
+					},
+					&h.Div{
+						Class: "controls",
+						Inner: &h.Input{
+							Type:  "text",
+							ID:    "appid",
+							Name:  "appid",
+							Value: strconv.FormatUint(e.Context.AppID, 10),
+						},
+					},
+				},
+			},
 		},
 	}, nil
 }
