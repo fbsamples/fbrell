@@ -203,9 +203,7 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 												ID:    "rell-login",
 												Class: "btn btn-primary",
 												Inner: &h.Frag{
-													&h.I{
-														Class: "icon-user icon-white",
-													},
+													&h.I{Class: "icon-user icon-white"},
 													h.String(" Log In"),
 												},
 											},
@@ -300,9 +298,7 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 															Class: "btn",
 															Type:  "submit",
 															Inner: &h.Frag{
-																&h.I{
-																	Class: "icon-edit",
-																},
+																&h.I{Class: "icon-edit"},
 																h.String(" Save Code"),
 															},
 														},
@@ -311,9 +307,7 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 															ID:    "rell-run-code",
 															Class: "btn btn-primary",
 															Inner: &h.Frag{
-																&h.I{
-																	Class: "icon-play icon-white",
-																},
+																&h.I{Class: "icon-play icon-white"},
 																h.String(" Run Code"),
 															},
 														},
