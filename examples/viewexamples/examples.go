@@ -356,9 +356,18 @@ func renderList(context *context.Context, db *examples.DB) *view.Page {
 		Context: context,
 		Title:   "Examples",
 		Class:   "examples",
-		Body: &h.Frag{
-			&h.H1{Inner: h.String("Examples")},
-			categories,
+		Body: &h.Div{
+			Class: "container",
+			Inner: &h.Div{
+				Class: "row",
+				Inner: &h.Div{
+					Class: "span12",
+					Inner: &h.Frag{
+						&h.H1{Inner: h.String("Examples")},
+						categories,
+					},
+				},
+			},
 		},
 	}
 }
