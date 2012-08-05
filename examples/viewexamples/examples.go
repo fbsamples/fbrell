@@ -454,7 +454,10 @@ func (l *examplesList) HTML() (h.HTML, error) {
 	categories := &h.Frag{}
 	for _, category := range l.DB.Category {
 		if !category.Hidden {
-			categories.Append(renderCategory(l.Context, category))
+			categories.Append(&exampleCategory{
+				Context:  l.Context,
+				Category: category,
+			})
 		}
 	}
 	return &view.Page{
@@ -477,20 +480,25 @@ func (l *examplesList) HTML() (h.HTML, error) {
 	}, nil
 }
 
-func renderCategory(c *context.Context, category *examples.Category) h.HTML {
+type exampleCategory struct {
+	Context  *context.Context
+	Category *examples.Category
+}
+
+func (c *exampleCategory) HTML() (h.HTML, error) {
 	li := &h.Frag{}
-	for _, example := range category.Example {
+	for _, example := range c.Category.Example {
 		li.Append(&h.Li{
 			Inner: &h.A{
-				HREF:  c.URL(example.URL).String(),
+				HREF:  c.Context.URL(example.URL).String(),
 				Inner: h.String(example.Name),
 			},
 		})
 	}
 	return &h.Frag{
-		&h.H2{Inner: h.String(category.Name)},
+		&h.H2{Inner: h.String(c.Category.Name)},
 		&h.Ul{Inner: li},
-	}
+	}, nil
 }
 
 func renderEnvSelector(c *context.Context, example *examples.Example) h.HTML {
