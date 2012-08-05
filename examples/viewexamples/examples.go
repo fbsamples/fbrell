@@ -66,7 +66,10 @@ func List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stats.Inc("viewed examples listing")
-	view.Write(w, r, renderList(context, examples.GetDB(context.Version)))
+	view.Write(w, r, &examplesList{
+		Context: context,
+		DB:      examples.GetDB(context.Version),
+	})
 }
 
 func Saved(w http.ResponseWriter, r *http.Request) {
@@ -442,15 +445,20 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 	}, nil
 }
 
-func renderList(context *context.Context, db *examples.DB) *view.Page {
+type examplesList struct {
+	Context *context.Context
+	DB      *examples.DB
+}
+
+func (l *examplesList) HTML() (h.HTML, error) {
 	categories := &h.Frag{}
-	for _, category := range db.Category {
+	for _, category := range l.DB.Category {
 		if !category.Hidden {
-			categories.Append(renderCategory(context, category))
+			categories.Append(renderCategory(l.Context, category))
 		}
 	}
 	return &view.Page{
-		Context: context,
+		Context: l.Context,
 		Title:   "Examples",
 		Class:   "examples",
 		Body: &h.Div{
@@ -466,7 +474,7 @@ func renderList(context *context.Context, db *examples.DB) *view.Page {
 				},
 			},
 		},
-	}
+	}, nil
 }
 
 func renderCategory(c *context.Context, category *examples.Category) h.HTML {
