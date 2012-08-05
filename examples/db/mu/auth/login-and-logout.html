@@ -1,4 +1,4 @@
-<button id="fb-auth">Login</button>
+<button class="btn btn-success" id="fb-auth">Login</button>
 
 <script>
 function updateButton(response) {
@@ -7,6 +7,7 @@ function updateButton(response) {
 
   if (response.status === 'connected') {
     button.innerHTML = 'Logout';
+    button.className = 'btn btn-danger';
     button.onclick = function() {
       FB.logout(function(response) {
         Log.info('FB.logout callback', response);
@@ -14,6 +15,7 @@ function updateButton(response) {
     };
   } else {
     button.innerHTML = 'Login';
+    button.className = 'btn btn-success';
     button.onclick = function() {
       FB.login(function(response) {
         Log.info('FB.login callback', response);
