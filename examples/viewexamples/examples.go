@@ -95,7 +95,12 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		stats.Inc("viewed saved example")
-		view.Write(w, r, renderExample(w, r, context, example))
+		view.Write(w, r, &page{
+			Writer:  w,
+			Request: r,
+			Context: context,
+			Example: example,
+		})
 	}
 }
 
@@ -174,21 +179,36 @@ func Example(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stats.Inc("viewed stock example")
-	view.Write(w, r, renderExample(w, r, context, example))
+	view.Write(w, r, &page{
+		Writer:  w,
+		Request: r,
+		Context: context,
+		Example: example,
+	})
 }
 
-func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, example *examples.Example) *view.Page {
-	hiddenInputs := c.Values()
-	hiddenInputs.Set(paramName, xsrf.Token(w, r, savedPath))
+type page struct {
+	Writer  http.ResponseWriter
+	Request *http.Request
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (p *page) HTML() (h.HTML, error) {
+	hiddenInputs := p.Context.Values()
+	hiddenInputs.Set(paramName, xsrf.Token(p.Writer, p.Request, savedPath))
 	return &view.Page{
-		Context:  c,
-		Title:    example.Title,
-		Class:    "main",
-		Resource: []loader.Resource{&js.Init{Context: c, Example: example}},
+		Context: p.Context,
+		Title:   p.Example.Title,
+		Class:   "main",
+		Resource: []loader.Resource{&js.Init{
+			Context: p.Context,
+			Example: p.Example,
+		}},
 		Body: &h.Div{
 			Class: "container-fluid",
 			Inner: &h.Form{
-				Action: c.URL(savedPath).String(),
+				Action: p.Context.URL(savedPath).String(),
 				Method: h.Post,
 				Target: "_top",
 				Inner: &h.Frag{
@@ -199,140 +219,16 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 							&h.Div{
 								Class: "span8",
 								Inner: &h.Frag{
-									&h.Div{
-										Class: "row-fluid form-inline",
-										Inner: &h.Frag{
-											&h.Div{
-												Class: "span6",
-												Inner: &h.Frag{
-													&h.A{
-														ID:    "rell-login",
-														Class: "btn btn-primary",
-														Inner: &h.Frag{
-															&h.I{Class: "icon-user icon-white"},
-															h.String(" Log In"),
-														},
-													},
-													h.String(" "),
-													&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
-													h.String(" "),
-													&h.Span{ID: "auth-status", Inner: h.String("waiting")},
-													h.String(" "),
-													&h.Span{Class: "bar", Inner: h.String("|")},
-													h.String(" "),
-													&h.A{
-														ID:    "rell-disconnect",
-														Inner: h.String("Disconnect"),
-													},
-													h.String(" "),
-													&h.Span{Class: "bar", Inner: h.String("|")},
-													h.String(" "),
-													&h.A{
-														ID:    "rell-logout",
-														Inner: h.String("Logout"),
-													},
-												},
-											},
-											&h.Div{
-												Class: "span6",
-												Inner: &h.Div{
-													Class: "pull-right",
-													Inner: renderEnvSelector(c, example),
-												},
-											},
-										},
-									},
-									&h.Div{
-										Class: "row-fluid",
-										Inner: &h.Frag{
-											&h.Textarea{
-												ID:    "jscode",
-												Name:  "code",
-												Inner: h.String(content(c, example)),
-											},
-											&h.Div{
-												Class: "row-fluid",
-												Inner: &h.Frag{
-													&h.Strong{
-														Class: "span4",
-														Inner: &h.A{
-															HREF:  c.URL("/examples/").String(),
-															Inner: h.String("Examples"),
-														},
-													},
-													&h.Div{
-														Class: "span8",
-														Inner: &h.Div{
-															Class: "pull-right form-inline",
-															Inner: &h.Frag{
-																&h.Select{
-																	ID:   "rell-view-mode",
-																	Name: "view-mode",
-																	Inner: &h.Frag{
-																		&h.Option{
-																			Inner:    h.String("Website"),
-																			Selected: c.ViewMode == context.Website,
-																			Value:    string(context.Website),
-																			Data: map[string]interface{}{
-																				"url": c.URL(example.URL).String(),
-																			},
-																		},
-																		&h.Option{
-																			Inner:    h.String("Canvas"),
-																			Selected: c.ViewMode == context.Canvas,
-																			Value:    string(context.Canvas),
-																			Data: map[string]interface{}{
-																				"url": c.CanvasURL(example.URL),
-																			},
-																		},
-																		&h.Option{
-																			Inner:    h.String("Page Tab"),
-																			Selected: c.ViewMode == context.PageTab,
-																			Value:    string(context.PageTab),
-																			Data: map[string]interface{}{
-																				"url": c.PageTabURL(example.URL),
-																			},
-																		},
-																	},
-																},
-																h.String(" "),
-																&h.Button{
-																	Class: "btn",
-																	Type:  "submit",
-																	Inner: &h.Frag{
-																		&h.I{Class: "icon-edit"},
-																		h.String(" Save Code"),
-																	},
-																},
-																h.String(" "),
-																&h.A{
-																	ID:    "rell-run-code",
-																	Class: "btn btn-primary",
-																	Inner: &h.Frag{
-																		&h.I{Class: "icon-play icon-white"},
-																		h.String(" Run Code"),
-																	},
-																},
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									&h.Div{ID: "jsroot"},
+									&editorTop{Context: p.Context, Example: p.Example},
+									&editorArea{Context: p.Context, Example: p.Example},
+									&editorBottom{Context: p.Context, Example: p.Example},
+									&editorOutput{},
 								},
 							},
 							&h.Div{
 								Class: "span4",
-								ID:    "log-container",
 								Inner: &h.Frag{
-									&h.Button{
-										ID:    "rell-log-clear",
-										Class: "btn",
-										Inner: h.String("Clear"),
-									},
-									&h.Div{ID: "log"},
+									&logContainer{},
 								},
 							},
 						},
@@ -340,7 +236,173 @@ func renderExample(w http.ResponseWriter, r *http.Request, c *context.Context, e
 				},
 			},
 		},
-	}
+	}, nil
+}
+
+type editorTop struct {
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (e *editorTop) HTML() (h.HTML, error) {
+	return &h.Div{
+		Class: "row-fluid form-inline",
+		Inner: &h.Frag{
+			&h.Div{
+				Class: "span6",
+				Inner: &h.Frag{
+					&h.A{
+						ID:    "rell-login",
+						Class: "btn btn-primary",
+						Inner: &h.Frag{
+							&h.I{Class: "icon-user icon-white"},
+							h.String(" Log In"),
+						},
+					},
+					h.String(" "),
+					&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
+					h.String(" "),
+					&h.Span{ID: "auth-status", Inner: h.String("waiting")},
+					h.String(" "),
+					&h.Span{Class: "bar", Inner: h.String("|")},
+					h.String(" "),
+					&h.A{
+						ID:    "rell-disconnect",
+						Inner: h.String("Disconnect"),
+					},
+					h.String(" "),
+					&h.Span{Class: "bar", Inner: h.String("|")},
+					h.String(" "),
+					&h.A{
+						ID:    "rell-logout",
+						Inner: h.String("Logout"),
+					},
+				},
+			},
+			&h.Div{
+				Class: "span6",
+				Inner: &h.Div{
+					Class: "pull-right",
+					Inner: renderEnvSelector(e.Context, e.Example),
+				},
+			},
+		},
+	}, nil
+}
+
+type editorArea struct {
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (e *editorArea) HTML() (h.HTML, error) {
+	return &h.Div{
+		Class: "row-fluid",
+		Inner: &h.Textarea{
+			ID:    "jscode",
+			Name:  "code",
+			Inner: h.String(content(e.Context, e.Example)),
+		},
+	}, nil
+}
+
+type editorBottom struct {
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (e *editorBottom) HTML() (h.HTML, error) {
+	return &h.Div{
+		Class: "row-fluid form-inline",
+		Inner: &h.Frag{
+			&h.Strong{
+				Class: "span4",
+				Inner: &h.A{
+					HREF:  e.Context.URL("/examples/").String(),
+					Inner: h.String("Examples"),
+				},
+			},
+			&h.Div{
+				Class: "span8",
+				Inner: &h.Div{
+					Class: "pull-right",
+					Inner: &h.Frag{
+						&h.Select{
+							ID:   "rell-view-mode",
+							Name: "view-mode",
+							Inner: &h.Frag{
+								&h.Option{
+									Inner:    h.String("Website"),
+									Selected: e.Context.ViewMode == context.Website,
+									Value:    string(context.Website),
+									Data: map[string]interface{}{
+										"url": e.Context.URL(e.Example.URL).String(),
+									},
+								},
+								&h.Option{
+									Inner:    h.String("Canvas"),
+									Selected: e.Context.ViewMode == context.Canvas,
+									Value:    string(context.Canvas),
+									Data: map[string]interface{}{
+										"url": e.Context.CanvasURL(e.Example.URL),
+									},
+								},
+								&h.Option{
+									Inner:    h.String("Page Tab"),
+									Selected: e.Context.ViewMode == context.PageTab,
+									Value:    string(context.PageTab),
+									Data: map[string]interface{}{
+										"url": e.Context.PageTabURL(e.Example.URL),
+									},
+								},
+							},
+						},
+						h.String(" "),
+						&h.Button{
+							Class: "btn",
+							Type:  "submit",
+							Inner: &h.Frag{
+								&h.I{Class: "icon-edit"},
+								h.String(" Save Code"),
+							},
+						},
+						h.String(" "),
+						&h.A{
+							ID:    "rell-run-code",
+							Class: "btn btn-primary",
+							Inner: &h.Frag{
+								&h.I{Class: "icon-play icon-white"},
+								h.String(" Run Code"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+type editorOutput struct{}
+
+func (e *editorOutput) HTML() (h.HTML, error) {
+	return &h.Div{Class: "row-fluid", ID: "jsroot"}, nil
+}
+
+type logContainer struct{}
+
+func (e *logContainer) HTML() (h.HTML, error) {
+	return &h.Div{
+		Class: "span4",
+		ID:    "log-container",
+		Inner: &h.Frag{
+			&h.Button{
+				ID:    "rell-log-clear",
+				Class: "btn",
+				Inner: h.String("Clear"),
+			},
+			&h.Div{ID: "log"},
+		},
+	}, nil
 }
 
 func renderList(context *context.Context, db *examples.DB) *view.Page {
