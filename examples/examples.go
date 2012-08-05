@@ -7,7 +7,6 @@ import (
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.flag.pkgpath"
 	"github.com/daaku/rell/redis"
-	"github.com/simonz05/godis"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -124,16 +123,16 @@ func Load(version, path string) (*Example, error) {
 	}
 
 	if parts[1] == "saved" {
-		item, err := redis.Client().Get(makeKey(parts[2]))
+		item, err := redis.Client().Call("GET", makeKey(parts[2]))
 		if err != nil {
-			if err == godis.ErrKeyNotFound {
-				return nil, errcode.New(
-					http.StatusNotFound, "Example not found: %s", path)
-			}
 			return nil, err
 		}
+		if item.Nil() {
+			return nil, errcode.New(
+				http.StatusNotFound, "Example not found: %s", path)
+		}
 		return &Example{
-			Content: item.Bytes(),
+			Content: item.Elem.Bytes(),
 			Title:   "Stored Example",
 			URL:     path,
 		}, nil
@@ -203,7 +202,7 @@ func Save(content []byte) (string, error) {
 		return "", fmt.Errorf("Error comupting md5 sum: %s", err)
 	}
 	id := fmt.Sprintf("%x", h.Sum(nil))
-	err = redis.Client().Set(makeKey(id), content)
+	_, err = redis.Client().Call("SET", makeKey(id), content)
 	if err != nil {
 		log.Printf("Error in cache.Set: %s", err)
 	}

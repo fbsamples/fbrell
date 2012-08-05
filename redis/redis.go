@@ -3,20 +3,16 @@ package redis
 
 import (
 	"flag"
-	"fmt"
-	"github.com/simonz05/godis"
+	"github.com/daaku/go.redis"
 )
 
-var (
-	redisHost = flag.String("rell.redis.host", "127.0.0.1", "Redist host.")
-	redisPort = flag.Int("rell.redis.port", 6379, "Redist port.")
-	redisMemo *godis.Client
-)
+var memo = redis.NewClient("", 0, "", 50)
+
+func init() {
+	flag.StringVar(&memo.Addr, "rell.redis", "127.0.0.1:6379", "Redis addr.")
+}
 
 // Get the shared Memcache client instance.
-func Client() *godis.Client {
-	if redisMemo == nil {
-		redisMemo = godis.New(fmt.Sprintf("tcp:%s:%d", *redisHost, *redisPort), 0, "")
-	}
-	return redisMemo
+func Client() *redis.Client {
+	return memo
 }

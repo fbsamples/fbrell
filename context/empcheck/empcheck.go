@@ -5,7 +5,6 @@ import (
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/rell/redis"
-	"github.com/simonz05/godis"
 	"log"
 )
 
@@ -30,19 +29,19 @@ type user struct {
 func IsEmployee(id uint64) bool {
 	var err error
 	key := fmt.Sprintf("is_employee:%d", id)
-	item, err := redis.Client().Get(key)
-	if err != nil && err != godis.ErrKeyNotFound {
+	item, err := redis.Client().Call("GET", key)
+	if err != nil {
 		log.Printf("Error in redis.Get for IsEmployee: %+v", err)
-	} else if item != nil {
-		b := item.Bytes()
+	} else if !item.Nil() {
+		b := item.Elem.Bytes()
 		if len(b) > 0 {
 			if b[0] == yes {
 				return true
 			} else if b[0] == no {
 				return false
 			}
+			log.Printf("Unknown redis value for EmpCheck: %s=%s", key, b)
 		}
-		log.Printf("Unknown redis key/value for EmpCheck: %s=%s", key, b)
 	}
 
 	user := &user{}
@@ -55,7 +54,7 @@ func IsEmployee(id uint64) bool {
 	if user.IsEmployee {
 		value = yesSlice
 	}
-	err = redis.Client().Set(key, value)
+	_, err = redis.Client().Call("SET", key, value)
 	if err != nil {
 		log.Printf("Error in cache.Set: %s", err)
 	}
