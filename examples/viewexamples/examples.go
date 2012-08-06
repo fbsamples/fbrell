@@ -327,9 +327,17 @@ type viewModeDropdown struct {
 
 func (d *viewModeDropdown) HTML() (h.HTML, error) {
 	return &h.Div{
-		ID:    "rell-view-mode",
 		Class: "btn-group",
 		Inner: &h.Frag{
+			&h.Div{
+				Style: "display:none",
+				Inner: &h.Input{
+					Type:  "hidden",
+					ID:    "rell-view-mode",
+					Name:  "view-mode",
+					Value: d.Context.ViewMode,
+				},
+			},
 			&h.Button{
 				Class: "btn",
 				Inner: h.String(viewModeOptions[d.Context.ViewMode]),
@@ -394,9 +402,6 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 				Inner: &h.Div{
 					Class: "btn-toolbar pull-right",
 					Inner: &h.Frag{
-						h.HiddenInputs(url.Values{
-							"view-mode": []string{e.Context.ViewMode},
-						}),
 						&viewModeDropdown{
 							Context: e.Context,
 							Example: e.Example,
