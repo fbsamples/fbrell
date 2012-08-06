@@ -221,6 +221,15 @@ func (c *Context) Values() url.Values {
 	if c.Init != defaultContext.Init {
 		values.Set("init", strconv.FormatBool(c.Init))
 	}
+	if c.Status != defaultContext.Status {
+		values.Set("status", strconv.FormatBool(c.Status))
+	}
+	if c.UseChannel != defaultContext.UseChannel {
+		values.Set("channel", strconv.FormatBool(c.UseChannel))
+	}
+	if c.FrictionlessRequests != defaultContext.FrictionlessRequests {
+		values.Set("frictionlessRequests", strconv.FormatBool(c.FrictionlessRequests))
+	}
 	return values
 }
 
