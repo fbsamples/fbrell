@@ -517,25 +517,21 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 				Value: e.Context.AppID,
 			},
 			&checkboxInput{
-				Label:       h.String("Init"),
 				Name:        "init",
 				Checked:     e.Context.Init,
 				Description: h.String("Automatically initialize SDK."),
 			},
 			&checkboxInput{
-				Label:       h.String("Status"),
 				Name:        "status",
 				Checked:     e.Context.Status,
 				Description: h.String("Automatically trigger status ping."),
 			},
 			&checkboxInput{
-				Label:       h.String("Channel"),
 				Name:        "channel",
 				Checked:     e.Context.UseChannel,
 				Description: h.String("Specify explicit XD channel."),
 			},
 			&checkboxInput{
-				Label:       h.String("Frictionless Requests"),
 				Name:        "frictionlessRequests",
 				Checked:     e.Context.FrictionlessRequests,
 				Description: h.String("Enable frictionless requests."),
