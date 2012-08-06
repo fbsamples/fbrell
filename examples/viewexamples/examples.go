@@ -470,7 +470,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 				Label:      h.String("Application ID"),
 				Name:       "appid",
 				Value:      e.Context.AppID,
-				InputClass: "input-small",
+				InputClass: "input-medium",
 			},
 			&ui.ToggleGroup{
 				Inner: &h.Frag{
