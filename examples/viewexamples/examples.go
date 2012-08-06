@@ -327,15 +327,6 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 	return &h.Div{
 		Class: "btn-group",
 		Inner: &h.Frag{
-			&h.Div{
-				Style: "display:none",
-				Inner: &h.Input{
-					Type:  "hidden",
-					ID:    "rell-view-mode",
-					Name:  "view-mode",
-					Value: d.Context.ViewMode,
-				},
-			},
 			&h.Button{
 				Class: "btn",
 				Inner: h.String(viewModeOptions[d.Context.ViewMode]),
@@ -373,6 +364,15 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 							HREF:   d.Context.PageTabURL(d.Example.URL),
 						},
 					},
+				},
+			},
+			&h.Div{
+				Style: "display:none",
+				Inner: &h.Input{
+					Type:  "hidden",
+					ID:    "rell-view-mode",
+					Name:  "view-mode",
+					Value: d.Context.ViewMode,
 				},
 			},
 		},
