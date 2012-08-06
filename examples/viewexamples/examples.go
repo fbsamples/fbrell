@@ -460,7 +460,10 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 					&h.Button{
 						Type:  "submit",
 						Class: "btn btn-primary",
-						Inner: h.String("Update"),
+						Inner: &h.Frag{
+							&h.I{Class: "icon-refresh icon-white"},
+							h.String(" Update"),
+						},
 					},
 				},
 			},
