@@ -3,6 +3,7 @@ package viewexamples
 
 import (
 	"bytes"
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"github.com/daaku/go.fburl"
@@ -15,8 +16,9 @@ import (
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
 	"github.com/daaku/rell/view"
+	"io"
+	"log"
 	"net/http"
-	"strconv"
 )
 
 const (
@@ -400,8 +402,7 @@ type logContainer struct{}
 
 func (e *logContainer) HTML() (h.HTML, error) {
 	return &h.Div{
-		Class: "span4",
-		ID:    "log-container",
+		ID: "log-container",
 		Inner: &h.Frag{
 			&h.Button{
 				ID:    "rell-log-clear",
@@ -409,6 +410,91 @@ func (e *logContainer) HTML() (h.HTML, error) {
 				Inner: h.String("Clear"),
 			},
 			&h.Div{ID: "log"},
+		},
+	}, nil
+}
+
+func makeID(prefix string) string {
+	b := make([]byte, 8)
+	_, err := io.ReadFull(rand.Reader, b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if prefix == "" {
+		return fmt.Sprintf("%x", b)
+	}
+	return fmt.Sprintf("%s_%x", prefix, b)
+}
+
+type textInput struct {
+	Type  string
+	Label h.HTML
+	Name  string
+	Value interface{}
+}
+
+func (i *textInput) HTML() (h.HTML, error) {
+	t := i.Type
+	if t == "" {
+		t = "text"
+	}
+	id := makeID(i.Name)
+	return &h.Div{
+		Class: "control-group",
+		Inner: &h.Frag{
+			&h.Label{
+				Class: "control-label",
+				For:   id,
+				Inner: i.Label,
+			},
+			&h.Div{
+				Class: "controls",
+				Inner: &h.Frag{
+					&h.Input{
+						Type:  t,
+						ID:    id,
+						Name:  i.Name,
+						Value: fmt.Sprint(i.Value),
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+type checkboxInput struct {
+	Label       h.HTML
+	Name        string
+	Checked     bool
+	Description h.HTML
+}
+
+func (i *checkboxInput) HTML() (h.HTML, error) {
+	id := makeID(i.Name)
+	return &h.Div{
+		Class: "control-group",
+		Inner: &h.Frag{
+			&h.Label{
+				Class: "control-label",
+				For:   id,
+				Inner: i.Label,
+			},
+			&h.Div{
+				Class: "controls",
+				Inner: &h.Label{
+					Class: "checkbox",
+					Inner: &h.Frag{
+						&h.Input{
+							Type:    "checkbox",
+							ID:      id,
+							Name:    i.Name,
+							Checked: i.Checked,
+							Value:   "1",
+						},
+						i.Description,
+					},
+				},
+			},
 		},
 	}, nil
 }
@@ -425,22 +511,42 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 	return &h.Div{
 		Class: "well form-horizontal",
 		Inner: &h.Frag{
+			&textInput{
+				Label: h.String("Application ID"),
+				Name:  "appid",
+				Value: e.Context.AppID,
+			},
+			&checkboxInput{
+				Label:       h.String("Init"),
+				Name:        "init",
+				Checked:     e.Context.Init,
+				Description: h.String("Automatically initialize SDK."),
+			},
+			&checkboxInput{
+				Label:       h.String("Status"),
+				Name:        "status",
+				Checked:     e.Context.Status,
+				Description: h.String("Automatically trigger status ping."),
+			},
+			&checkboxInput{
+				Label:       h.String("Channel"),
+				Name:        "channel",
+				Checked:     e.Context.UseChannel,
+				Description: h.String("Specify explicit XD channel."),
+			},
+			&checkboxInput{
+				Label:       h.String("Frictionless Requests"),
+				Name:        "frictionlessRequests",
+				Checked:     e.Context.FrictionlessRequests,
+				Description: h.String("Enable frictionless requests."),
+			},
 			&h.Div{
-				Class: "control-group",
+				Class: "form-actions",
 				Inner: &h.Frag{
-					&h.Label{
-						Class: "control-label",
-						For:   "appid",
-						Inner: h.String("Application ID"),
-					},
-					&h.Div{
-						Class: "controls",
-						Inner: &h.Input{
-							Type:  "text",
-							ID:    "appid",
-							Name:  "appid",
-							Value: strconv.FormatUint(e.Context.AppID, 10),
-						},
+					&h.Button{
+						Type:  "submit",
+						Class: "btn btn-primary",
+						Inner: h.String("Update"),
 					},
 				},
 			},
