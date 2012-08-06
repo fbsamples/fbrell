@@ -72,7 +72,7 @@ var defaultContext = &Context{
 	Host:                 "www.fbrell.com",
 	Scheme:               "http",
 	ViewMode:             Website,
-	ViewportMode:         ViewportModeAuto,
+	ViewportMode:         ViewportModeMobile,
 	Module:               "all",
 	Init:                 true,
 }
@@ -265,7 +265,7 @@ func (c *Context) ViewURL(path string) string {
 // Context aware viewport for a customized mobile experience.
 func (c *Context) Viewport() string {
 	if c.ViewportMode == ViewportModeMobile {
-		return "initial-scale=1.0,maximum-scale=1.0"
+		return "width=device-width,initial-scale=1.0"
 	}
 	return ""
 }
