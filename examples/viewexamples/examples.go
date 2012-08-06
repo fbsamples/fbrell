@@ -27,13 +27,18 @@ const (
 
 var (
 	envOptions = map[string]string{
-		"Production with CDN":    "",
-		"Production without CDN": fburl.Production,
-		"Beta":                   fburl.Beta,
-		"Latest":                 "latest",
-		"Dev":                    "dev",
-		"Intern":                 "intern",
-		"In Your":                "inyour",
+		"":               "Production with CDN",
+		fburl.Production: "Production without CDN",
+		fburl.Beta:       "Beta",
+		"latest":         "Latest",
+		"dev":            "Dev",
+		"intern":         "Intern",
+		"inyour":         "In Your",
+	}
+	viewModeOptions = map[string]string{
+		context.Website: "Website",
+		context.PageTab: "Page Tab",
+		context.Canvas:  "Canvas",
 	}
 	errTokenMismatch = errors.New("Token mismatch.")
 )
@@ -315,6 +320,59 @@ func (e *editorArea) HTML() (h.HTML, error) {
 	}, nil
 }
 
+type viewModeDropdown struct {
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (d *viewModeDropdown) HTML() (h.HTML, error) {
+	return &h.Div{
+		ID:    "rell-view-mode",
+		Class: "btn-group",
+		Inner: &h.Frag{
+			&h.Button{
+				Class: "btn",
+				Inner: h.String(viewModeOptions[d.Context.ViewMode]),
+			},
+			&h.Button{
+				Class: "btn dropdown-toggle",
+				Data: map[string]interface{}{
+					"toggle": "dropdown",
+				},
+				Inner: &h.Span{
+					Class: "caret",
+				},
+			},
+			&h.Ul{
+				Class: "dropdown-menu",
+				Inner: &h.Frag{
+					&h.Li{
+						Inner: &h.A{
+							Inner:  h.String(viewModeOptions[context.Website]),
+							Target: "_top",
+							HREF:   d.Context.URL(d.Example.URL).String(),
+						},
+					},
+					&h.Li{
+						Inner: &h.A{
+							Inner:  h.String(viewModeOptions[context.Canvas]),
+							Target: "_top",
+							HREF:   d.Context.CanvasURL(d.Example.URL),
+						},
+					},
+					&h.Li{
+						Inner: &h.A{
+							Inner:  h.String(viewModeOptions[context.PageTab]),
+							Target: "_top",
+							HREF:   d.Context.PageTabURL(d.Example.URL),
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
 type editorBottom struct {
 	Context *context.Context
 	Example *examples.Example
@@ -334,54 +392,37 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 			&h.Div{
 				Class: "span8",
 				Inner: &h.Div{
-					Class: "pull-right",
+					Class: "btn-toolbar pull-right",
 					Inner: &h.Frag{
-						&h.Select{
-							ID:   "rell-view-mode",
-							Name: "view-mode",
-							Inner: &h.Frag{
-								&h.Option{
-									Inner:    h.String("Website"),
-									Selected: e.Context.ViewMode == context.Website,
-									Value:    string(context.Website),
-									Data: map[string]interface{}{
-										"url": e.Context.URL(e.Example.URL).String(),
-									},
-								},
-								&h.Option{
-									Inner:    h.String("Canvas"),
-									Selected: e.Context.ViewMode == context.Canvas,
-									Value:    string(context.Canvas),
-									Data: map[string]interface{}{
-										"url": e.Context.CanvasURL(e.Example.URL),
-									},
-								},
-								&h.Option{
-									Inner:    h.String("Page Tab"),
-									Selected: e.Context.ViewMode == context.PageTab,
-									Value:    string(context.PageTab),
-									Data: map[string]interface{}{
-										"url": e.Context.PageTabURL(e.Example.URL),
-									},
+						h.HiddenInputs(url.Values{
+							"view-mode": []string{e.Context.ViewMode},
+						}),
+						&viewModeDropdown{
+							Context: e.Context,
+							Example: e.Example,
+						},
+						h.String(" "),
+						&h.Div{
+							Class: "btn-group",
+							Inner: &h.Button{
+								Class: "btn",
+								Type:  "submit",
+								Inner: &h.Frag{
+									&h.I{Class: "icon-edit"},
+									h.String(" Save Code"),
 								},
 							},
 						},
 						h.String(" "),
-						&h.Button{
-							Class: "btn",
-							Type:  "submit",
-							Inner: &h.Frag{
-								&h.I{Class: "icon-edit"},
-								h.String(" Save Code"),
-							},
-						},
-						h.String(" "),
-						&h.A{
-							ID:    "rell-run-code",
-							Class: "btn btn-primary",
-							Inner: &h.Frag{
-								&h.I{Class: "icon-play icon-white"},
-								h.String(" Run Code"),
+						&h.Div{
+							Class: "btn-group",
+							Inner: &h.A{
+								ID:    "rell-run-code",
+								Class: "btn btn-primary",
+								Inner: &h.Frag{
+									&h.I{Class: "icon-play icon-white"},
+									h.String(" Run Code"),
+								},
 							},
 						},
 					},
@@ -536,38 +577,50 @@ func (e *envSelector) HTML() (h.HTML, error) {
 	if !e.Context.IsEmployee {
 		return nil, nil
 	}
-	frag := &h.Frag{}
-	foundSelected := false
-	selected := false
-	for title, value := range envOptions {
-		selected = e.Context.Env == value
-		if selected {
-			foundSelected = true
+	frag := &h.Frag{
+		h.HiddenInputs(url.Values{
+			"server": []string{e.Context.Env},
+		}),
+	}
+	for value, title := range envOptions {
+		if e.Context.Env == value {
+			continue
 		}
 		ctxCopy := e.Context.Copy()
 		ctxCopy.Env = value
-		frag.Append(&h.Option{
-			Inner:    h.String(title),
-			Selected: selected,
-			Value:    value,
-			Data: map[string]interface{}{
-				"url": ctxCopy.ViewURL(e.Example.URL),
+		frag.Append(&h.Li{
+			Inner: &h.A{
+				Inner:  h.String(title),
+				Target: "_top",
+				HREF:   ctxCopy.ViewURL(e.Example.URL),
 			},
 		})
 	}
-	if !foundSelected {
-		frag.Append(&h.Option{
-			Inner:    h.String(e.Context.Env),
-			Selected: true,
-			Value:    e.Context.Env,
-			Data: map[string]interface{}{
-				"url": e.Context.ViewURL(e.Example.URL),
-			},
-		})
+
+	title := envOptions[e.Context.Env]
+	if title == "" {
+		title = e.Context.Env
 	}
-	return &h.Select{
-		ID:    "rell-env",
-		Name:  "env",
-		Inner: frag,
+	return &h.Div{
+		Class: "btn-group",
+		Inner: &h.Frag{
+			&h.Button{
+				Class: "btn",
+				Inner: h.String(title),
+			},
+			&h.Button{
+				Class: "btn dropdown-toggle",
+				Data: map[string]interface{}{
+					"toggle": "dropdown",
+				},
+				Inner: &h.Span{
+					Class: "caret",
+				},
+			},
+			&h.Ul{
+				Class: "dropdown-menu",
+				Inner: frag,
+			},
+		},
 	}, nil
 }
