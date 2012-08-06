@@ -467,9 +467,10 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 		Class: "well form-horizontal",
 		Inner: &h.Frag{
 			&ui.TextInput{
-				Label: h.String("Application ID"),
-				Name:  "appid",
-				Value: e.Context.AppID,
+				Label:      h.String("Application ID"),
+				Name:       "appid",
+				Value:      e.Context.AppID,
+				InputClass: "input-small",
 			},
 			&ui.ToggleGroup{
 				Inner: &h.Frag{
