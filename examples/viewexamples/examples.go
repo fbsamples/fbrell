@@ -263,11 +263,9 @@ func (e *editorTop) HTML() (h.HTML, error) {
 				Class: "span6",
 				Inner: &h.Frag{
 					&h.A{
-						ID:    "rell-login",
-						Class: "btn btn-primary",
-						Inner: &h.Frag{
-							&h.I{Class: "icon-user icon-white"},
-							h.String(" Log In"),
+						ID: "rell-login",
+						Inner: &h.Span{
+							Inner: h.String(" Log In"),
 						},
 					},
 					h.String(" "),
