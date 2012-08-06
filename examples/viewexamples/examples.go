@@ -288,7 +288,10 @@ func (e *editorTop) HTML() (h.HTML, error) {
 				Class: "span6",
 				Inner: &h.Div{
 					Class: "pull-right",
-					Inner: renderEnvSelector(e.Context, e.Example),
+					Inner: &envSelector{
+						Context: e.Context,
+						Example: e.Example,
+					},
 				},
 			},
 		},
@@ -501,36 +504,41 @@ func (c *exampleCategory) HTML() (h.HTML, error) {
 	}, nil
 }
 
-func renderEnvSelector(c *context.Context, example *examples.Example) h.HTML {
-	if !c.IsEmployee {
-		return nil
+type envSelector struct {
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (e *envSelector) HTML() (h.HTML, error) {
+	if !e.Context.IsEmployee {
+		return nil, nil
 	}
 	frag := &h.Frag{}
 	foundSelected := false
 	selected := false
 	for title, value := range envOptions {
-		selected = c.Env == value
+		selected = e.Context.Env == value
 		if selected {
 			foundSelected = true
 		}
-		ctxCopy := c.Copy()
+		ctxCopy := e.Context.Copy()
 		ctxCopy.Env = value
 		frag.Append(&h.Option{
 			Inner:    h.String(title),
 			Selected: selected,
 			Value:    value,
 			Data: map[string]interface{}{
-				"url": ctxCopy.ViewURL(example.URL),
+				"url": ctxCopy.ViewURL(e.Example.URL),
 			},
 		})
 	}
 	if !foundSelected {
 		frag.Append(&h.Option{
-			Inner:    h.String(c.Env),
+			Inner:    h.String(e.Context.Env),
 			Selected: true,
-			Value:    c.Env,
+			Value:    e.Context.Env,
 			Data: map[string]interface{}{
-				"url": c.ViewURL(example.URL),
+				"url": e.Context.ViewURL(e.Example.URL),
 			},
 		})
 	}
@@ -538,5 +546,5 @@ func renderEnvSelector(c *context.Context, example *examples.Example) h.HTML {
 		ID:    "rell-env",
 		Name:  "env",
 		Inner: frag,
-	}
+	}, nil
 }
