@@ -40,11 +40,16 @@ var DefaultMeta = h.Compile(&h.Frag{
 var DefaultStyle = &h.Frag{
 	&static.LinkStyle{HREF: "css/bootstrap.min.css"},
 	&static.LinkStyle{HREF: "css/rell.css"},
-	//&static.LinkStyle{HREF: "rell.css"},
 }
 
 // The default Google Analytics setup.
 var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
+
+// Bootstrap Scripts.
+var BootstrapScripts = &h.Frag{
+	&static.Script{Src: "js/jquery-1.7.2.min.js"},
+	&static.Script{Src: "js/bootstrap.min.js"},
+}
 
 // A minimal standard page with no visible body.
 type Page struct {
@@ -91,6 +96,7 @@ func (p *Page) HTML() (h.HTML, error) {
 					&loader.HTML{
 						Resource: append([]loader.Resource{DefaultGA}, p.Resource...),
 					},
+					BootstrapScripts,
 				},
 			},
 		},
