@@ -3,22 +3,21 @@ package viewexamples
 
 import (
 	"bytes"
-	"crypto/rand"
 	"errors"
 	"fmt"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.js.loader"
+	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.stats"
 	"github.com/daaku/go.xsrf"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
 	"github.com/daaku/rell/view"
-	"io"
-	"log"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -201,8 +200,6 @@ type page struct {
 }
 
 func (p *page) HTML() (h.HTML, error) {
-	hiddenInputs := p.Context.Values()
-	hiddenInputs.Set(paramName, xsrf.Token(p.Writer, p.Request, savedPath))
 	return &view.Page{
 		Context: p.Context,
 		Title:   p.Example.Title,
@@ -214,11 +211,13 @@ func (p *page) HTML() (h.HTML, error) {
 		Body: &h.Div{
 			Class: "container-fluid",
 			Inner: &h.Form{
-				Action: p.Context.URL(savedPath).String(),
+				Action: savedPath,
 				Method: h.Post,
 				Target: "_top",
 				Inner: &h.Frag{
-					h.HiddenInputs(hiddenInputs),
+					h.HiddenInputs(url.Values{
+						paramName: []string{xsrf.Token(p.Writer, p.Request, savedPath)},
+					}),
 					&h.Div{
 						Class: "row-fluid",
 						Inner: &h.Frag{
@@ -414,91 +413,6 @@ func (e *logContainer) HTML() (h.HTML, error) {
 	}, nil
 }
 
-func makeID(prefix string) string {
-	b := make([]byte, 8)
-	_, err := io.ReadFull(rand.Reader, b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if prefix == "" {
-		return fmt.Sprintf("%x", b)
-	}
-	return fmt.Sprintf("%s_%x", prefix, b)
-}
-
-type textInput struct {
-	Type  string
-	Label h.HTML
-	Name  string
-	Value interface{}
-}
-
-func (i *textInput) HTML() (h.HTML, error) {
-	t := i.Type
-	if t == "" {
-		t = "text"
-	}
-	id := makeID(i.Name)
-	return &h.Div{
-		Class: "control-group",
-		Inner: &h.Frag{
-			&h.Label{
-				Class: "control-label",
-				For:   id,
-				Inner: i.Label,
-			},
-			&h.Div{
-				Class: "controls",
-				Inner: &h.Frag{
-					&h.Input{
-						Type:  t,
-						ID:    id,
-						Name:  i.Name,
-						Value: fmt.Sprint(i.Value),
-					},
-				},
-			},
-		},
-	}, nil
-}
-
-type checkboxInput struct {
-	Label       h.HTML
-	Name        string
-	Checked     bool
-	Description h.HTML
-}
-
-func (i *checkboxInput) HTML() (h.HTML, error) {
-	id := makeID(i.Name)
-	return &h.Div{
-		Class: "control-group",
-		Inner: &h.Frag{
-			&h.Label{
-				Class: "control-label",
-				For:   id,
-				Inner: i.Label,
-			},
-			&h.Div{
-				Class: "controls",
-				Inner: &h.Label{
-					Class: "checkbox",
-					Inner: &h.Frag{
-						&h.Input{
-							Type:    "checkbox",
-							ID:      id,
-							Name:    i.Name,
-							Checked: i.Checked,
-							Value:   "1",
-						},
-						i.Description,
-					},
-				},
-			},
-		},
-	}, nil
-}
-
 type contextEditor struct {
 	Context *context.Context
 	Example *examples.Example
@@ -506,35 +420,39 @@ type contextEditor struct {
 
 func (e *contextEditor) HTML() (h.HTML, error) {
 	if !e.Context.IsEmployee {
-		return nil, nil
+		return h.HiddenInputs(e.Context.Values()), nil
 	}
 	return &h.Div{
 		Class: "well form-horizontal",
 		Inner: &h.Frag{
-			&textInput{
+			&ui.TextInput{
 				Label: h.String("Application ID"),
 				Name:  "appid",
 				Value: e.Context.AppID,
 			},
-			&checkboxInput{
-				Name:        "init",
-				Checked:     e.Context.Init,
-				Description: h.String("Automatically initialize SDK."),
-			},
-			&checkboxInput{
-				Name:        "status",
-				Checked:     e.Context.Status,
-				Description: h.String("Automatically trigger status ping."),
-			},
-			&checkboxInput{
-				Name:        "channel",
-				Checked:     e.Context.UseChannel,
-				Description: h.String("Specify explicit XD channel."),
-			},
-			&checkboxInput{
-				Name:        "frictionlessRequests",
-				Checked:     e.Context.FrictionlessRequests,
-				Description: h.String("Enable frictionless requests."),
+			&ui.ToggleGroup{
+				Inner: &h.Frag{
+					&ui.ToggleItem{
+						Name:        "init",
+						Checked:     e.Context.Init,
+						Description: h.String("Automatically initialize SDK."),
+					},
+					&ui.ToggleItem{
+						Name:        "status",
+						Checked:     e.Context.Status,
+						Description: h.String("Automatically trigger status ping."),
+					},
+					&ui.ToggleItem{
+						Name:        "channel",
+						Checked:     e.Context.UseChannel,
+						Description: h.String("Specify explicit XD channel."),
+					},
+					&ui.ToggleItem{
+						Name:        "frictionlessRequests",
+						Checked:     e.Context.FrictionlessRequests,
+						Description: h.String("Enable frictionless requests."),
+					},
+				},
 			},
 			&h.Div{
 				Class: "form-actions",
