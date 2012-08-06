@@ -16,6 +16,10 @@ a {
   margin-top: 7px;
 }
 
+#log-container {
+  position: relative;
+}
+
 #rell-log-clear {
   position: absolute;
   top: 0;
