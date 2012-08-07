@@ -205,15 +205,20 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 					},
 					&h.Div{
 						Class: "row",
-						Inner: &h.Div{
-							Class: "span12",
-							Inner: &h.Frag{
-								renderMetaTable(o),
-								&h.Iframe{
-									Class: "like",
-									Src:   o.LikeURL(),
+						Inner: &h.Frag{
+							&h.Div{
+								Class: "span6",
+								Inner: &h.Frag{
+									renderMetaTable(o),
+									&h.Iframe{
+										Class: "like",
+										Src:   o.LikeURL(),
+									},
 								},
-								&h.A{
+							},
+							&h.Div{
+								Class: "span6",
+								Inner: &h.A{
 									HREF: o.ImageURL(),
 									Inner: &h.Img{
 										Src: o.ImageURL(),
