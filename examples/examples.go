@@ -2,6 +2,7 @@
 package examples
 
 import (
+	"bytes"
 	"crypto/md5"
 	"fmt"
 	"github.com/daaku/go.errcode"
@@ -40,6 +41,7 @@ type Category struct {
 
 type DB struct {
 	Category []*Category
+	Reverse  map[string]*Example
 }
 
 var (
@@ -67,7 +69,11 @@ func loadDir(name string) (*DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read directory %s: %s", name, err)
 	}
-	db := &DB{Category: make([]*Category, 0, len(categories))}
+	db := &DB{
+		Category: make([]*Category, 0, len(categories)),
+		Reverse:  make(map[string]*Example),
+	}
+	db.Reverse[ContentID(emptyExample.Content)] = emptyExample
 	for _, categoryFileInfo := range categories {
 		categoryName := categoryFileInfo.Name()
 		if !categoryFileInfo.IsDir() {
@@ -86,8 +92,8 @@ func loadDir(name string) (*DB, error) {
 			return nil, fmt.Errorf("Failed to read category %s: %s", categoryDir, err)
 		}
 		category.Example = make([]*Example, 0, len(examples))
-		for _, example := range examples {
-			exampleName := example.Name()
+		for _, exampleFileInfo := range examples {
+			exampleName := exampleFileInfo.Name()
 			exampleFile := filepath.Join(categoryDir, exampleName)
 			content, err := ioutil.ReadFile(exampleFile)
 			if err != nil {
@@ -95,13 +101,15 @@ func loadDir(name string) (*DB, error) {
 					"Failed to read example %s: %s", exampleFile, err)
 			}
 			cleanName := exampleName[:len(exampleName)-5]
-			category.Example = append(category.Example, &Example{
+			example := &Example{
 				Name:    cleanName,
 				Content: content,
 				AutoRun: true,
 				Title:   categoryName + " · " + cleanName,
 				URL:     path.Join("/", categoryName, cleanName),
-			})
+			}
+			category.Example = append(category.Example, example)
+			db.Reverse[ContentID(bytes.TrimSpace(content))] = example
 		}
 		db.Category = append(db.Category, category)
 	}
@@ -190,25 +198,28 @@ func (c *Category) FindExample(name string) *Example {
 }
 
 // Save an Example.
-func Save(content []byte) (string, error) {
+func Save(id string, content []byte) error {
 	if len(content) > 10240 {
-		return "", errcode.New(
+		return errcode.New(
 			http.StatusRequestEntityTooLarge,
 			"Maximum allowed size is 10 kilobytes.")
 	}
-	h := md5.New()
-	_, err := h.Write(content)
-	if err != nil {
-		return "", fmt.Errorf("Error comupting md5 sum: %s", err)
-	}
-	id := fmt.Sprintf("%x", h.Sum(nil))
-	_, err = redis.Client().Call("SET", makeKey(id), content)
+	_, err := redis.Client().Call("SET", makeKey(id), content)
 	if err != nil {
 		log.Printf("Error in cache.Set: %s", err)
 	}
-	return id, err
+	return err
 }
 
 func makeKey(id string) string {
 	return "fbrell_examples:" + id
+}
+
+func ContentID(content []byte) string {
+	h := md5.New()
+	_, err := h.Write(content)
+	if err != nil {
+		log.Fatalf("Error comupting md5 sum: %s", err)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

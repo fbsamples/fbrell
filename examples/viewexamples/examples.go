@@ -90,13 +90,22 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, errTokenMismatch)
 			return
 		}
-		hash, err := examples.Save([]byte(r.FormValue("code")))
+		content := bytes.TrimSpace([]byte(r.FormValue("code")))
+		content = bytes.Replace(content, []byte{13}, nil, -1) // remove CR
+		id := examples.ContentID(content)
+		db := examples.GetDB(c.Version)
+		example, ok := db.Reverse[id]
+		if ok {
+			http.Redirect(w, r, c.ViewURL(example.URL), 302)
+			return
+		}
+		err = examples.Save(id, content)
 		if err != nil {
 			view.Error(w, r, err)
 			return
 		}
 		stats.Inc("saved example")
-		http.Redirect(w, r, c.ViewURL(savedPath+hash), 302)
+		http.Redirect(w, r, c.ViewURL(savedPath+id), 302)
 		return
 	} else {
 		context, example, err := parse(r)
