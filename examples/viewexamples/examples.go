@@ -359,7 +359,11 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 		Inner: &h.Frag{
 			&h.Button{
 				Class: "btn",
-				Inner: h.String(viewModeOptions[d.Context.ViewMode]),
+				Inner: &h.Frag{
+					&h.I{Class: "icon-eye-open"},
+					h.String(" "),
+					h.String(viewModeOptions[d.Context.ViewMode]),
+				},
 			},
 			&h.Button{
 				Class: "btn dropdown-toggle",
@@ -458,7 +462,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 								Class: "btn",
 								Type:  "submit",
 								Inner: &h.Frag{
-									&h.I{Class: "icon-edit"},
+									&h.I{Class: "icon-file"},
 									h.String(" Save Code"),
 								},
 							},
@@ -651,7 +655,11 @@ func (e *envSelector) HTML() (h.HTML, error) {
 		Inner: &h.Frag{
 			&h.Button{
 				Class: "btn",
-				Inner: h.String(title),
+				Inner: &h.Frag{
+					&h.I{Class: "icon-road"},
+					h.String(" "),
+					h.String(title),
+				},
 			},
 			&h.Button{
 				Class: "btn dropdown-toggle",
