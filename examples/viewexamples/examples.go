@@ -256,47 +256,60 @@ type editorTop struct {
 }
 
 func (e *editorTop) HTML() (h.HTML, error) {
+	left := &h.Frag{
+		&h.A{
+			ID: "rell-login",
+			Inner: &h.Span{
+				Inner: h.String(" Log In"),
+			},
+		},
+		h.String(" "),
+		&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
+		h.String(" "),
+		&h.Span{ID: "auth-status", Inner: h.String("waiting")},
+		h.String(" "),
+		&h.Span{Class: "bar", Inner: h.String("|")},
+		h.String(" "),
+		&h.A{
+			ID:    "rell-disconnect",
+			Inner: h.String("Disconnect"),
+		},
+		h.String(" "),
+		&h.Span{Class: "bar", Inner: h.String("|")},
+		h.String(" "),
+		&h.A{
+			ID:    "rell-logout",
+			Inner: h.String("Logout"),
+		},
+	}
+
+	if e.Context.IsEmployee {
+		return &h.Div{
+			Class: "row-fluid form-inline",
+			Inner: &h.Frag{
+				&h.Div{
+					Class: "span8",
+					Inner: left,
+				},
+				&h.Div{
+					Class: "span4",
+					Inner: &h.Div{
+						Class: "pull-right",
+						Inner: &envSelector{
+							Context: e.Context,
+							Example: e.Example,
+						},
+					},
+				},
+			},
+		}, nil
+	}
 	return &h.Div{
 		Class: "row-fluid form-inline",
 		Inner: &h.Frag{
 			&h.Div{
-				Class: "span8",
-				Inner: &h.Frag{
-					&h.A{
-						ID: "rell-login",
-						Inner: &h.Span{
-							Inner: h.String(" Log In"),
-						},
-					},
-					h.String(" "),
-					&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
-					h.String(" "),
-					&h.Span{ID: "auth-status", Inner: h.String("waiting")},
-					h.String(" "),
-					&h.Span{Class: "bar", Inner: h.String("|")},
-					h.String(" "),
-					&h.A{
-						ID:    "rell-disconnect",
-						Inner: h.String("Disconnect"),
-					},
-					h.String(" "),
-					&h.Span{Class: "bar", Inner: h.String("|")},
-					h.String(" "),
-					&h.A{
-						ID:    "rell-logout",
-						Inner: h.String("Logout"),
-					},
-				},
-			},
-			&h.Div{
-				Class: "span4",
-				Inner: &h.Div{
-					Class: "pull-right",
-					Inner: &envSelector{
-						Context: e.Context,
-						Example: e.Example,
-					},
-				},
+				Class: "span12",
+				Inner: left,
 			},
 		},
 	}, nil
