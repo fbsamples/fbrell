@@ -48,6 +48,9 @@ var Rell = {
     $('rell-run-code').onclick = Rell.runCode
     $('rell-log-clear').onclick = Log.clear
     Rell.setCurrentViewMode()
+    if (example && !example.autoRun) {
+      Rell.setupAutoRunPopover()
+    }
   },
 
   /**
@@ -201,6 +204,13 @@ var Rell = {
     } else if (self === top) {
       select.value = 'website' // context.Website
     }
+  },
+
+  setupAutoRunPopover: function() {
+    // TODO global jquery reference
+    var el = window.$('#rell-run-code')
+    el.popover('show')
+    el.hover(function() { el.popover('hide') })
   }
 }
 

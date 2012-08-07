@@ -93,10 +93,10 @@ func (p *Page) HTML() (h.HTML, error) {
 					p.Body,
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},
+					BootstrapScripts,
 					&loader.HTML{
 						Resource: append([]loader.Resource{DefaultGA}, p.Resource...),
 					},
-					BootstrapScripts,
 				},
 			},
 		},

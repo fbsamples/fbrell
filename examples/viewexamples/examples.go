@@ -385,6 +385,23 @@ type editorBottom struct {
 }
 
 func (e *editorBottom) HTML() (h.HTML, error) {
+	runButton := &h.A{
+		ID:    "rell-run-code",
+		Class: "btn btn-primary",
+		Inner: &h.Frag{
+			&h.I{Class: "icon-play icon-white"},
+			h.String(" Run Code"),
+		},
+	}
+	if !e.Example.AutoRun {
+		runButton.Rel = "popover"
+		runButton.Data = map[string]interface{}{
+			"title":     "Click to Run",
+			"content":   "This example does not run automatically. Click this button to run it.",
+			"placement": "top",
+			"trigger":   "manual",
+		}
+	}
 	return &h.Div{
 		Class: "row-fluid form-inline",
 		Inner: &h.Frag{
@@ -419,14 +436,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 						h.String(" "),
 						&h.Div{
 							Class: "btn-group",
-							Inner: &h.A{
-								ID:    "rell-run-code",
-								Class: "btn btn-primary",
-								Inner: &h.Frag{
-									&h.I{Class: "icon-play icon-white"},
-									h.String(" Run Code"),
-								},
-							},
+							Inner: runButton,
 						},
 					},
 				},
