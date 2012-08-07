@@ -196,7 +196,7 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 							&h.Div{
 								Class: "span4",
 								Inner: &h.A{
-									Class: "btn btn-primary pull-right",
+									Class: "btn btn-info pull-right",
 									HREF:  o.LintURL(),
 									Inner: &h.Frag{
 										&h.I{Class: "icon-warning-sign icon-white"},
