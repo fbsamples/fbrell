@@ -51,6 +51,7 @@ var Rell = {
     if (example && !example.autoRun) {
       Rell.setupAutoRunPopover()
     }
+    window.$('.has-tooltip').tooltip()
   },
 
   /**

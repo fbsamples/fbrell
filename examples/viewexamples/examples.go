@@ -484,6 +484,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 				Name:       "appid",
 				Value:      e.Context.AppID,
 				InputClass: "input-medium",
+				Tooltip:    "Make sure the base domain allows fbrell.com",
 			},
 			&ui.ToggleGroup{
 				Inner: &h.Frag{
