@@ -46,7 +46,7 @@ var Rell = {
     $('rell-disconnect').onclick = Rell.disconnect
     $('rell-logout').onclick = Rell.logout
     $('rell-run-code').onclick = Rell.runCode
-    $('rell-log-clear').onclick = Log.clear
+    $('rell-log-clear').onclick = Rell.clearLog
     Rell.setCurrentViewMode()
     if (example && !example.autoRun) {
       Rell.setupAutoRunPopover()
@@ -212,6 +212,11 @@ var Rell = {
     var el = window.$('#rell-run-code')
     el.popover('show')
     el.hover(function() { el.popover('hide') })
+  },
+
+  clearLog: function() {
+    Log.clear()
+    return false
   }
 }
 
