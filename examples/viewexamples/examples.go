@@ -224,34 +224,42 @@ func (p *page) HTML() (h.HTML, error) {
 		}},
 		Body: &h.Div{
 			Class: "container-fluid",
-			Inner: &h.Form{
-				Action: savedPath,
-				Method: h.Post,
-				Target: "_top",
-				Inner: &h.Frag{
-					h.HiddenInputs(url.Values{
-						paramName: []string{xsrf.Token(p.Writer, p.Request, savedPath)},
-					}),
-					&h.Div{
-						Class: "row-fluid",
-						Inner: &h.Frag{
-							&h.Div{
-								Class: "span8",
-								Inner: &h.Frag{
-									&editorTop{Context: p.Context, Example: p.Example},
-									&editorArea{Context: p.Context, Example: p.Example},
-									&editorBottom{Context: p.Context, Example: p.Example},
-									&editorOutput{},
+			Inner: &h.Frag{
+				&h.Form{
+					Action: savedPath,
+					Method: h.Post,
+					Target: "_top",
+					Inner: &h.Frag{
+						h.HiddenInputs(url.Values{
+							paramName: []string{xsrf.Token(p.Writer, p.Request, savedPath)},
+						}),
+						&h.Div{
+							Class: "row-fluid",
+							Inner: &h.Frag{
+								&h.Div{
+									Class: "span8",
+									Inner: &h.Frag{
+										&editorTop{Context: p.Context, Example: p.Example},
+										&editorArea{Context: p.Context, Example: p.Example},
+										&editorBottom{Context: p.Context, Example: p.Example},
+									},
 								},
-							},
-							&h.Div{
-								Class: "span4",
-								Inner: &h.Frag{
-									&contextEditor{Context: p.Context, Example: p.Example},
-									&logContainer{},
+								&h.Div{
+									Class: "span4",
+									Inner: &h.Frag{
+										&contextEditor{Context: p.Context, Example: p.Example},
+										&logContainer{},
+									},
 								},
 							},
 						},
+					},
+				},
+				&h.Div{
+					Class: "row-fluid",
+					Inner: &h.Div{
+						Class: "span12",
+						Inner: &editorOutput{},
 					},
 				},
 			},
