@@ -518,7 +518,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 				Name:       "appid",
 				Value:      e.Context.AppID,
 				InputClass: "input-medium",
-				Tooltip:    "Make sure the base domain allows fbrell.com",
+				Tooltip:    "Make sure the base domain in the application settings for the specified ID allows fbrell.com.",
 			},
 			&ui.ToggleGroup{
 				Inner: &h.Frag{
@@ -526,21 +526,25 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 						Name:        "init",
 						Checked:     e.Context.Init,
 						Description: h.String("Automatically initialize SDK."),
+						Tooltip:     "This controls if FB.init() is automatically called. If off, you'll need to call it in your code.",
 					},
 					&ui.ToggleItem{
 						Name:        "status",
 						Checked:     e.Context.Status,
 						Description: h.String("Automatically trigger status ping."),
+						Tooltip:     "This controls the \"status\" parameter to FB.init.",
 					},
 					&ui.ToggleItem{
 						Name:        "channel",
 						Checked:     e.Context.UseChannel,
 						Description: h.String("Specify explicit XD channel."),
+						Tooltip:     "If enabled, the FB.init() call will get a custom \"channelUrl\" parameter pointed to " + e.Context.AbsoluteURL("/channel/").String(),
 					},
 					&ui.ToggleItem{
 						Name:        "frictionlessRequests",
 						Checked:     e.Context.FrictionlessRequests,
 						Description: h.String("Enable frictionless requests."),
+						Tooltip:     "This controls the \"frictionlessRequests\" parameter to FB.init.",
 					},
 				},
 			},
