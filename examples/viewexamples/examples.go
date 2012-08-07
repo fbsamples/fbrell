@@ -260,7 +260,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 		Class: "row-fluid form-inline",
 		Inner: &h.Frag{
 			&h.Div{
-				Class: "span6",
+				Class: "span8",
 				Inner: &h.Frag{
 					&h.A{
 						ID: "rell-login",
@@ -289,7 +289,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 				},
 			},
 			&h.Div{
-				Class: "span6",
+				Class: "span4",
 				Inner: &h.Div{
 					Class: "pull-right",
 					Inner: &envSelector{
