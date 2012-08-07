@@ -3,7 +3,7 @@
   "description": "The client side code for http://www.fbrell.com/ website.",
   "homepage": "https://www.fbrell.com/",
   "keywords": ["website"],
-  "version": "3.1.0",
+  "version": "3.2.0",
   "author": "Naitik Shah <n@daaku.org>",
   "repository": {
     "type": "git",
