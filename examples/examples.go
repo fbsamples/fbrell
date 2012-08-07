@@ -58,7 +58,7 @@ var (
 	mu  *DB
 
 	// Stock response for the index page.
-	emptyExample = &Example{Title: "Welcome", URL: "/"}
+	emptyExample = &Example{Title: "Welcome", URL: "/", AutoRun: true}
 )
 
 // Loads a specific examples directory.
