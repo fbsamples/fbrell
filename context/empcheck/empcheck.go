@@ -29,7 +29,7 @@ type user struct {
 func IsEmployee(id uint64) bool {
 	var err error
 	key := fmt.Sprintf("is_employee:%d", id)
-	item, err := redis.Client().Call("GET", key)
+	item, err := redis.Client.Call("GET", key)
 	if err != nil {
 		log.Printf("Error in redis.Get for IsEmployee: %+v", err)
 	} else if !item.Nil() {
@@ -54,7 +54,7 @@ func IsEmployee(id uint64) bool {
 	if user.IsEmployee {
 		value = yesSlice
 	}
-	_, err = redis.Client().Call("SET", key, value)
+	_, err = redis.Client.Call("SET", key, value)
 	if err != nil {
 		log.Printf("Error in cache.Set: %s", err)
 	}
