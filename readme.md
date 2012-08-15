@@ -16,9 +16,12 @@ You'll need these to make modifications to rell:
 - [Go](http://golang.org/) tested with version 1.0.x.
 - [Git](http://gitscm.com/) tested with version 1.7.x.
 
-Install the main command which will automatically pull dependencies:
+Install the main command which will automatically pull Go
+dependencies, then use npm to fetch JavaScript dependencies.
 
 ```sh
 go get -u github.com/daaku/rell
+cd $(go list -f '{{.Dir}}' github.com/daaku/rell)/js
+npm install
 rell -h
 ```
