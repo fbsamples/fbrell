@@ -3,6 +3,8 @@ package viewexamples
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/daaku/go.fburl"
@@ -16,6 +18,7 @@ import (
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
 	"github.com/daaku/rell/view"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -56,13 +59,27 @@ func parse(r *http.Request) (*context.Context, *examples.Example, error) {
 	return context, example, nil
 }
 
+// random string
+func randString(length int) string {
+	i := make([]byte, length)
+	_, err := rand.Read(i)
+	if err != nil {
+		log.Panicf("failed to generate randString: %s", err)
+	}
+	return hex.EncodeToString(i)
+}
+
 // Renders the example content including support for context sensitive
 // text substitution.
 func content(c *context.Context, e *examples.Example) []byte {
 	www := fburl.URL{
 		Env: c.Env,
 	}
-	return bytes.Replace(e.Content, []byte("{{www-server}}"), []byte(www.String()), -1)
+	rellServer := c.AbsoluteURL("/").String()
+	content := bytes.Replace(e.Content, []byte("{{www-server}}"), []byte(www.String()), -1)
+	content = bytes.Replace(content, []byte("{{rand}}"), []byte(randString(10)), -1)
+	content = bytes.Replace(content, []byte("{{rell-server}}"), []byte(rellServer), -1)
+	return content
 }
 
 func List(w http.ResponseWriter, r *http.Request) {
