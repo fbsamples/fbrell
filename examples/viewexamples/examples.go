@@ -75,7 +75,7 @@ func content(c *context.Context, e *examples.Example) []byte {
 	www := fburl.URL{
 		Env: c.Env,
 	}
-	rellServer := c.AbsoluteURL("/").String()
+	rellServer := context.Default().AbsoluteURL("/").String()
 	content := bytes.Replace(e.Content, []byte("{{www-server}}"), []byte(www.String()), -1)
 	content = bytes.Replace(content, []byte("{{rand}}"), []byte(randString(10)), -1)
 	content = bytes.Replace(content, []byte("{{rell-server}}"), []byte(rellServer), -1)
