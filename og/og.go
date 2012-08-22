@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/rell/context"
 	"io"
@@ -135,7 +136,10 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 		object.AddPair("og:url", url.String())
 	}
 
-	if object.shouldGenerate("fb:app_id") {
+	ogType := object.Type()
+	isGlobalOGType := !strings.Contains(ogType, ":")
+	isOwnedOGType := strings.HasPrefix(ogType, fbapp.Default.Namespace()+":")
+	if object.shouldGenerate("fb:app_id") && (isGlobalOGType || isOwnedOGType) {
 		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
 	}
 
