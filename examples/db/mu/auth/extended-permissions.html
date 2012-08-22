@@ -10,6 +10,6 @@ document.getElementById('fb-login').onclick = function() {
       Log.info('User is logged out');
     }
   };
-  FB.login(cb, { scope: 'read_stream' });
+  FB.login(cb, { scope: 'publish_actions' });
 };
 </script>
