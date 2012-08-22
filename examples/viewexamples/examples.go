@@ -7,6 +7,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/daaku/go.counting"
+	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
@@ -18,6 +20,8 @@ import (
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
 	"github.com/daaku/rell/view"
+	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -67,19 +71,6 @@ func randString(length int) string {
 		log.Panicf("failed to generate randString: %s", err)
 	}
 	return hex.EncodeToString(i)
-}
-
-// Renders the example content including support for context sensitive
-// text substitution.
-func content(c *context.Context, e *examples.Example) []byte {
-	www := fburl.URL{
-		Env: c.Env,
-	}
-	rellServer := context.Default().AbsoluteURL("/").String()
-	content := bytes.Replace(e.Content, []byte("{{www-server}}"), []byte(www.String()), -1)
-	content = bytes.Replace(content, []byte("{{rand}}"), []byte(randString(10)), -1)
-	content = bytes.Replace(content, []byte("{{rell-server}}"), []byte(rellServer), -1)
-	return content
 }
 
 func List(w http.ResponseWriter, r *http.Request) {
@@ -152,7 +143,10 @@ func Raw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	stats.Inc("viewed example in raw mode")
-	w.Write(content(context, example))
+	view.Write(w, r, &exampleContent{
+		Context: context,
+		Example: example,
+	})
 }
 
 func Simple(w http.ResponseWriter, r *http.Request) {
@@ -187,8 +181,11 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 						},
 					},
 					&h.Div{
-						ID:    "example",
-						Inner: h.UnsafeBytes(content(context, example)),
+						ID: "example",
+						Inner: &exampleContent{
+							Context: context,
+							Example: example,
+						},
 					},
 				},
 			},
@@ -358,9 +355,12 @@ func (e *editorArea) HTML() (h.HTML, error) {
 	return &h.Div{
 		Class: "row-fluid",
 		Inner: &h.Textarea{
-			ID:    "jscode",
-			Name:  "code",
-			Inner: h.String(content(e.Context, e.Example)),
+			ID:   "jscode",
+			Name: "code",
+			Inner: &exampleContent{
+				Context: e.Context,
+				Example: e.Example,
+			},
 		},
 	}, nil
 }
@@ -697,4 +697,40 @@ func (e *envSelector) HTML() (h.HTML, error) {
 			},
 		},
 	}, nil
+}
+
+type exampleContent struct {
+	Context *context.Context
+	Example *examples.Example
+}
+
+func (c *exampleContent) HTML() (h.HTML, error) {
+	return c, fmt.Errorf("exampleContent.HTML is a dangerous primitive")
+}
+
+// Renders the example content including support for context sensitive
+// text substitution.
+func (c *exampleContent) Write(w io.Writer) (int, error) {
+	e := c.Example
+	wwwURL := fburl.URL{
+		Env: c.Context.Env,
+	}
+	tpl, err := template.New("example-" + e.URL).Parse(string(e.Content))
+	if err != nil {
+		return 0, err
+	}
+	countingW := counting.NewWriter(w)
+	err = tpl.Execute(countingW,
+		struct {
+			Rand     string // a random token
+			RellFBNS string // the OG namespace
+			RellURL  string // local http://www.fbrell.com/ URL
+			WwwURL   string // server specific http://www.facebook.com/ URL
+		}{
+			Rand:     randString(10),
+			RellFBNS: fbapp.Default.Namespace(),
+			RellURL:  context.Default().AbsoluteURL("/").String(),
+			WwwURL:   wwwURL.String(),
+		})
+	return countingW.Count(), err
 }
