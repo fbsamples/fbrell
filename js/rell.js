@@ -159,6 +159,7 @@ var Rell = {
    * Run's the code in the textarea.
    */
   runCode: function() {
+    Log.info('Executed example')
     var root = $('jsroot')
     ScriptSoup.set(root, Rell.getCode())
     if (Rell.config.version == 'mu') {
