@@ -24,4 +24,5 @@ mv $PKGS ~/pkgs/repo/
 repo-add ~/pkgs/repo/custom.db.tar.gz ~/pkgs/repo/$PKGS
 echo "y" | sudo pacman -Sy $PKGNAME
 sudo systemctl --system daemon-reload
-sudo systemctl restart $PKGNAME.service
+# stop it and socket activation will start a new one
+sudo systemctl stop $PKGNAME.service
