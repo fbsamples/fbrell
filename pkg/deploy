@@ -23,4 +23,5 @@ PKGS=$(ls *pkg.tar.xz)
 mv $PKGS ~/pkgs/repo/
 repo-add ~/pkgs/repo/custom.db.tar.gz ~/pkgs/repo/$PKGS
 echo "y" | sudo pacman -Sy $PKGNAME
+sudo systemctl --system daemon-reload
 sudo systemctl restart $PKGNAME.service
