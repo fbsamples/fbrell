@@ -1,11 +1,10 @@
 pkgname=rell-latest
-pkgver=508
+pkgver=521
 pkgrel=1
 pkgdesc="Rell web app and resources."
 arch=('i686' 'x86_64')
 url="https://github.com/daaku/rell"
 license=('Apache')
-depends=('daemonize')
 makedepends=('git' 'nodejs')
 install=rell-latest.install
 options=(!strip)

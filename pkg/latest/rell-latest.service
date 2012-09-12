@@ -1,0 +1,8 @@
+[Unit]
+Description=Rell Latest Server
+Wants=redis-socket.service
+
+[Service]
+User=rell-latest
+ExecStart=/usr/bin/rell-latest -c /etc/conf.d/rell-latest
+Restart=always

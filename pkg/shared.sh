@@ -37,8 +37,9 @@ build() {
   install -d $gitabs/examples/db/old $pkgdir/usr/share/$pkgname/examples/old
   cp -r $gitabs/examples/db/old $pkgdir/usr/share/$pkgname/examples
 
-  msg "Installing rc script"
-  install -D $srcdir/../../rc $pkgdir/etc/rc.d/$pkgname
+  msg "Installing systemd service & socket"
+  install -D $srcdir/../$pkgname.service $pkgdir/usr/lib/systemd/system/$pkgname.service
+  install -D $srcdir/../$pkgname.socket $pkgdir/usr/lib/systemd/system/$pkgname.socket
 
   msg "Creating static resources"
   cd $gitabs/js
