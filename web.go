@@ -7,6 +7,7 @@ import (
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.flag.pkgpath"
 	"github.com/daaku/go.flagconfig"
+	"github.com/daaku/go.flagenv"
 	"github.com/daaku/go.grace/gracehttp"
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.httpstats"
@@ -51,6 +52,7 @@ func main() {
 	runtime.GOMAXPROCS(*goMaxProcs)
 	flag.Parse()
 	flagconfig.Parse()
+	flagenv.Parse()
 	pidfile.Write()
 	stats.SetBackend(stathatbackend.EZKey(*ezkey))
 	err := gracehttp.Serve(
