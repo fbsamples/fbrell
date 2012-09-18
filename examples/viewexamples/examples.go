@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/daaku/go.counting"
-	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
@@ -728,7 +727,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 			WwwURL   string // server specific http://www.facebook.com/ URL
 		}{
 			Rand:     randString(10),
-			RellFBNS: fbapp.Default.Namespace(),
+			RellFBNS: c.Context.AppNamespace(),
 			RellURL:  context.Default().AbsoluteURL("/").String(),
 			WwwURL:   wwwURL.String(),
 		})

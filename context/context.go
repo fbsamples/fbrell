@@ -7,10 +7,12 @@ import (
 	"code.google.com/p/gorilla/schema"
 	"encoding/json"
 	"fmt"
+	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
+	"github.com/daaku/go.stats"
 	"github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/context/empcheck"
 	"net/http"
@@ -175,7 +177,7 @@ func (c *Context) PageTabURL(name string) string {
 
 // Get the URL for loading this application in a Canvas page on Facebook.
 func (c *Context) CanvasURL(name string) string {
-	var base = "/" + fbapp.Default.Namespace() + "/"
+	var base = "/" + c.AppNamespace() + "/"
 	if name == "" || name == "/" {
 		name = base
 	} else {
@@ -190,6 +192,20 @@ func (c *Context) CanvasURL(name string) string {
 		Values:    c.Values(),
 	}
 	return url.String()
+}
+
+// Get the App Namespace, fetching it using the Graph API if necessary.
+func (c *Context) AppNamespace() string {
+	if c.AppID == fbapp.Default.ID() {
+		return fbapp.Default.Namespace()
+	}
+	stats.Inc("context app namespace fetch")
+	resp := struct{ Namespace string }{""}
+	err := fbapi.Get(&resp, fmt.Sprintf("/%d", c.AppID), fbapi.Fields{"namespace"})
+	if err != nil {
+		stats.Inc("context app namespace fetch failure")
+	}
+	return resp.Namespace
 }
 
 // Get a Channel URL for the SDK.
