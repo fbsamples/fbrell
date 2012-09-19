@@ -2,11 +2,14 @@
 package oauth
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
+	"github.com/daaku/go.h"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/view"
 	"net/http"
@@ -40,12 +43,18 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	values := url.Values{}
-	values.Set("client_id", strconv.FormatUint(fbapp.Default.ID(), 10))
-	values.Set("redirect_uri", redirectURI(c))
-	values.Set("state", state(w, r))
-	if r.FormValue("scope") != "" {
-		values.Set("scope", r.FormValue("scope"))
+	values.Set("client_id", strconv.FormatUint(c.AppID, 10))
+	if scope := r.FormValue("scope"); scope != "" {
+		values.Set("scope", scope)
 	}
+
+	if c.ViewMode == context.Website {
+		values.Set("redirect_uri", redirectURI(c))
+		values.Set("state", state(w, r))
+	} else {
+		values.Set("redirect_uri", c.ViewURL("/auth/session"))
+	}
+
 	dialogURL := fburl.URL{
 		Scheme:    "https",
 		SubDomain: fburl.DWww,
@@ -53,7 +62,15 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		Path:      "/dialog/oauth",
 		Values:    values,
 	}
-	http.Redirect(w, r, dialogURL.String(), 302)
+
+	if c.ViewMode == context.Website {
+		http.Redirect(w, r, dialogURL.String(), 302)
+	} else {
+		b, _ := json.Marshal(dialogURL.String())
+		view.Write(w, r, &h.Script{
+			Inner: h.Unsafe(fmt.Sprintf("top.location=%s", b)),
+		})
+	}
 }
 
 func Response(w http.ResponseWriter, r *http.Request) {
