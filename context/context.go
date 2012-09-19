@@ -87,6 +87,9 @@ func FromRequest(r *http.Request) (*Context, error) {
 	if err != nil {
 		return nil, err
 	}
+	if id := r.FormValue("client_id"); id != "" {
+		r.Form.Set("appid", id)
+	}
 	context := Default()
 	_ = schemaDecoder.Decode(context, r.URL.Query())
 	_ = schemaDecoder.Decode(context, r.Form)
