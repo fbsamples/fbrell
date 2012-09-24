@@ -47,7 +47,7 @@ var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
 
 // Bootstrap Scripts.
 var BootstrapScripts = &h.Frag{
-	&static.Script{Src: "js/jquery-1.7.2.min.js"},
+	&static.Script{Src: "js/jquery-1.8.2.min.js"},
 	&static.Script{Src: "js/bootstrap.min.js"},
 }
 
