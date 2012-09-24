@@ -40,6 +40,7 @@ var (
 		"dev":            "Dev",
 		"intern":         "Intern",
 		"inyour":         "In Your",
+		"sb":             "Sandbox",
 	}
 	viewModeOptions = map[string]string{
 		context.Website: "Website",
