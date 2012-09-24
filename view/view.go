@@ -37,18 +37,23 @@ var DefaultMeta = h.Compile(&h.Frag{
 })
 
 // The default stylesheet.
-var DefaultStyle = &h.Frag{
-	&static.LinkStyle{HREF: "css/bootstrap.min.css"},
-	&static.LinkStyle{HREF: "css/rell.css"},
+var DefaultStyle = &static.LinkStyle{
+	HREF: []string{
+		"css/bootstrap.min.css",
+		"css/bootstrap-responsive.min.css",
+		"css/rell.css",
+	},
 }
 
 // The default Google Analytics setup.
 var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
 
 // Bootstrap Scripts.
-var BootstrapScripts = &h.Frag{
-	&static.Script{Src: "js/jquery-1.8.2.min.js"},
-	&static.Script{Src: "js/bootstrap.min.js"},
+var BootstrapScripts = &static.Script{
+	Src: []string{
+		"js/jquery-1.8.2.min.js",
+		"js/bootstrap.min.js",
+	},
 }
 
 // A minimal standard page with no visible body.
