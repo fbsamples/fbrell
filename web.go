@@ -12,7 +12,6 @@ import (
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.httpgzip"
 	"github.com/daaku/go.httpstats"
-	"github.com/daaku/go.pidfile"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats"
@@ -54,7 +53,6 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 	flagenv.Parse()
-	pidfile.Write()
 	stats.SetBackend(stathatbackend.EZKey(*ezkey))
 	err := gracehttp.Serve(
 		gracehttp.Handler{*mainAddress, mainHandler()},
