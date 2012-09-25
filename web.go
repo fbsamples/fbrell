@@ -10,6 +10,7 @@ import (
 	"github.com/daaku/go.flagenv"
 	"github.com/daaku/go.grace/gracehttp"
 	"github.com/daaku/go.httpdev"
+	"github.com/daaku/go.httpgzip"
 	"github.com/daaku/go.httpstats"
 	"github.com/daaku/go.pidfile"
 	"github.com/daaku/go.signedrequest/appdata"
@@ -116,5 +117,6 @@ func mainHandler() (handler http.Handler) {
 		Handler: handler,
 		Secret:  fbapp.Default.SecretByte(),
 	}
+	handler = httpgzip.NewHandler(handler)
 	return handler
 }
