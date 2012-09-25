@@ -19,6 +19,7 @@ import (
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
 	"github.com/daaku/rell/view"
+	"github.com/daaku/sortutil"
 	"html/template"
 	"io"
 	"log"
@@ -652,15 +653,15 @@ func (e *envSelector) HTML() (h.HTML, error) {
 			"server": []string{e.Context.Env},
 		}),
 	}
-	for value, title := range envOptions {
-		if e.Context.Env == value {
+	for _, pair := range sortutil.StringMapByValue(envOptions) {
+		if e.Context.Env == pair.Key {
 			continue
 		}
 		ctxCopy := e.Context.Copy()
-		ctxCopy.Env = value
+		ctxCopy.Env = pair.Key
 		frag.Append(&h.Li{
 			Inner: &h.A{
-				Inner:  h.String(title),
+				Inner:  h.String(pair.Value),
 				Target: "_top",
 				HREF:   ctxCopy.ViewURL(e.Example.URL),
 			},
