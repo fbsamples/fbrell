@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/daaku/go.fburl"
+	"github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
 	"io"
 	"log"
@@ -107,7 +108,10 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		object.AddPair("og:url", url)
 	}
 
-	object.generateDefaults()
+	err = object.generateDefaults()
+	if err != nil {
+		return nil, err
+	}
 	return object, nil
 }
 
@@ -142,7 +146,10 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
 	}
 
-	object.generateDefaults()
+	err := object.generateDefaults()
+	if err != nil {
+		return nil, err
+	}
 	return object, nil
 }
 
@@ -158,16 +165,19 @@ func (o *Object) shouldGenerate(key string) bool {
 	return true
 }
 
-func (o *Object) generateDefaults() {
+func (o *Object) generateDefaults() error {
 	url := o.URL()
 	if o.shouldGenerate("og:image") {
-		img := o.context.AbsoluteURL(
-			"/public/images/" + hashedPick(url, stockImages))
-		o.AddPair("og:image", img.String())
+		img, err := static.URL("/images/" + hashedPick(url, stockImages))
+		if err != nil {
+			return err
+		}
+		o.AddPair("og:image", o.context.AbsoluteURL(img).String())
 	}
 	if o.shouldGenerate("og:description") {
 		o.AddPair("og:description", hashedPick(url, stockDescriptions))
 	}
+	return nil
 }
 
 // Get the first "og:type" value.
