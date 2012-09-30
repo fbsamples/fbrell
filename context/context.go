@@ -19,6 +19,7 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+	"time"
 )
 
 const defaultMaxMemory = 32 << 20 // 32 MB
@@ -204,10 +205,13 @@ func (c *Context) AppNamespace() string {
 	}
 	stats.Inc("context app namespace fetch")
 	resp := struct{ Namespace string }{""}
+	start := time.Now()
 	err := fbapi.Get(&resp, fmt.Sprintf("/%d", c.AppID), fbapi.Fields{"namespace"})
 	if err != nil {
 		stats.Inc("context app namespace fetch failure")
 	}
+	stats.Record(
+		"context app namespace graph api time", float64(time.Since(start).Nanoseconds()))
 	return resp.Namespace
 }
 

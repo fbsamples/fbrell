@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
+	"github.com/daaku/go.stats"
 	"github.com/daaku/rell/redis"
 	"log"
+	"time"
 )
 
 const (
@@ -45,11 +47,14 @@ func IsEmployee(id uint64) bool {
 	}
 
 	user := &user{}
+	start := time.Now()
 	err = fbapi.Get(user, fmt.Sprintf("/%d", id), app, fields)
 	if err != nil {
 		log.Printf("Ignoring error in IsEmployee check: %s", err)
 		return false
 	}
+	stats.Record(
+		"is employee graph api time", float64(time.Since(start).Nanoseconds()))
 	value := noSlice
 	if user.IsEmployee {
 		value = yesSlice
