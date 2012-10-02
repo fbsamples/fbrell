@@ -22,4 +22,4 @@ mkdir -p ~/pkgs/repo
 PKGS=$(ls *pkg.tar.xz)
 mv $PKGS ~/pkgs/repo/
 repo-add ~/pkgs/repo/custom.db.tar.gz ~/pkgs/repo/$PKGS
-ssh linode "echo y | pacman -Sy $PKGNAME && systemctl --system daemon-reload && systemctl stop $PKGNAME.service"
+ssh daaku.org "echo y | pacman -Sy $PKGNAME && systemctl --system daemon-reload && systemctl stop $PKGNAME.service"
