@@ -15,6 +15,7 @@ import (
 	"github.com/daaku/go.stats"
 	"github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/context/empcheck"
+	"github.com/daaku/rell/fbapic"
 	"net/http"
 	"net/url"
 	"path"
@@ -80,7 +81,10 @@ var defaultContext = &Context{
 	Init:                 true,
 }
 
-var schemaDecoder = schema.NewDecoder()
+var (
+	schemaDecoder = schema.NewDecoder()
+	nsCache       = fbapic.Cache{Prefix: "appns"}
+)
 
 // Create a context from a HTTP request.
 func FromRequest(r *http.Request) (*Context, error) {
@@ -206,7 +210,7 @@ func (c *Context) AppNamespace() string {
 	stats.Inc("context app namespace fetch")
 	resp := struct{ Namespace string }{""}
 	start := time.Now()
-	err := fbapi.Get(&resp, fmt.Sprintf("/%d", c.AppID), fbapi.Fields{"namespace"})
+	err := nsCache.Get(&resp, fmt.Sprintf("/%d", c.AppID), fbapi.Fields{"namespace"})
 	if err != nil {
 		stats.Inc("context app namespace fetch failure")
 	}
