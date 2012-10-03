@@ -60,9 +60,20 @@ func sortedEncode(v url.Values) string {
 func copyValues(source url.Values) url.Values {
 	dest := url.Values{}
 	for key, _ := range source {
-		dup := make([]string, len(source[key]))
-		copy(dup, source[key])
-		dest[key] = dup
+		switch key {
+		case "action_object_map":
+		case "action_ref_map":
+		case "action_type_map":
+		case "fb_action_ids":
+		case "fb_action_types":
+		case "fb_locale":
+		case "fb_source":
+			continue
+		default:
+			dup := make([]string, len(source[key]))
+			copy(dup, source[key])
+			dest[key] = dup
+		}
 	}
 	return dest
 }
