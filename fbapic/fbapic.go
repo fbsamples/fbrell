@@ -12,9 +12,12 @@ import (
 	"time"
 )
 
+// Configure a Cached API accessor instance. You'll typically define
+// one per type of cached call. An instance can be shared across
+// goroutines.
 type Cache struct {
-	Prefix  string
-	Timeout time.Duration
+	Prefix  string        // cache key prefix
+	Timeout time.Duration // per value timeout
 }
 
 // Make a GET Graph API request.
@@ -29,10 +32,12 @@ func (c *Cache) Get(result interface{}, path string, values ...fbapi.Values) err
 	} else if !item.Nil() {
 		raw = item.Elem.Bytes()
 		stats.Inc("fbapic cache hit")
+		stats.Inc("fbapic cache hit " + c.Prefix)
 	}
 
 	if raw == nil {
 		stats.Inc("fbapic cache miss")
+		stats.Inc("fbapic cache miss " + c.Prefix)
 		final := url.Values{}
 		for _, v := range values {
 			v.Set(final)
@@ -43,6 +48,7 @@ func (c *Cache) Get(result interface{}, path string, values ...fbapi.Values) err
 			return err
 		}
 		stats.Record("fbapic graph api time", float64(time.Since(start).Nanoseconds()))
+		stats.Record("fbapic graph api time "+c.Prefix, float64(time.Since(start).Nanoseconds()))
 	}
 
 	err = json.Unmarshal(raw, result)
