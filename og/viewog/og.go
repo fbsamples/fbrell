@@ -7,9 +7,9 @@ import (
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.js.loader"
-	"github.com/daaku/go.stats"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/og"
+	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
 	"net/http"
 	"strconv"
@@ -41,7 +41,7 @@ func Values(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	stats.Inc("viewed og")
+	service.Stats.Inc("viewed og")
 	view.Write(w, r, renderObject(context, object))
 }
 
@@ -63,7 +63,7 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	stats.Inc("viewed rog")
+	service.Stats.Inc("viewed rog")
 	view.Write(w, r, renderObject(context, object))
 }
 
@@ -89,7 +89,7 @@ func Redirect(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	stats.Inc("rog-redirect request")
+	service.Stats.Inc("rog-redirect request")
 	if count == 0 {
 		http.Redirect(
 			w, r, context.AbsoluteURL("/rog/"+parts[4]).String(), status)
