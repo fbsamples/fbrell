@@ -5,13 +5,17 @@ import (
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/rell/fbapic"
+	"github.com/daaku/rell/redis"
 	"log"
 )
 
 var (
 	app    = fbapp.Flag("empcheck")
 	fields = fbapi.Fields([]string{"is_employee"})
-	cached = &fbapic.Cache{Prefix: "is_employee"}
+	cached = &fbapic.Cache{
+		Prefix:  "is_employee",
+		Backend: redis.ByteCache,
+	}
 )
 
 type user struct {

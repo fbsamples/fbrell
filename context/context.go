@@ -15,6 +15,7 @@ import (
 	"github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/context/empcheck"
 	"github.com/daaku/rell/fbapic"
+	"github.com/daaku/rell/redis"
 	"net/http"
 	"net/url"
 	"path"
@@ -81,7 +82,10 @@ var defaultContext = &Context{
 
 var (
 	schemaDecoder = schema.NewDecoder()
-	nsCache       = fbapic.Cache{Prefix: "appns"}
+	nsCache       = fbapic.Cache{
+		Prefix:  "appns",
+		Backend: redis.ByteCache,
+	}
 )
 
 // Create a context from a HTTP request.
