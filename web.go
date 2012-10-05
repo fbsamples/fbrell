@@ -13,7 +13,6 @@ import (
 	"github.com/daaku/go.httpstats"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.static"
-	"github.com/daaku/go.stats"
 	"github.com/daaku/go.viewvar"
 	"github.com/daaku/rell/context/viewcontext"
 	"github.com/daaku/rell/examples/viewexamples"
@@ -51,7 +50,6 @@ func main() {
 	flag.Usage = flagconfig.Usage
 	flag.Parse()
 	flagconfig.Parse()
-	stats.SetBackend(service.Stats)
 	err := gracehttp.Serve(
 		gracehttp.Handler{*mainAddress, mainHandler()},
 		gracehttp.Handler{*adminAddress, adminHandler()},
