@@ -12,7 +12,6 @@ import (
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
-	"github.com/daaku/go.stats"
 	"github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/context/empcheck"
 	"github.com/daaku/rell/fbapic"
@@ -20,7 +19,6 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	"time"
 )
 
 const defaultMaxMemory = 32 << 20 // 32 MB
@@ -207,15 +205,8 @@ func (c *Context) AppNamespace() string {
 	if c.AppID == fbapp.Default.ID() {
 		return fbapp.Default.Namespace()
 	}
-	stats.Inc("context app namespace fetch")
 	resp := struct{ Namespace string }{""}
-	start := time.Now()
-	err := nsCache.Get(&resp, fmt.Sprintf("/%d", c.AppID), fbapi.Fields{"namespace"})
-	if err != nil {
-		stats.Inc("context app namespace fetch failure")
-	}
-	stats.Record(
-		"context app namespace graph api time", float64(time.Since(start).Nanoseconds()))
+	nsCache.Get(&resp, fmt.Sprintf("/%d", c.AppID), fbapi.Fields{"namespace"})
 	return resp.Namespace
 }
 

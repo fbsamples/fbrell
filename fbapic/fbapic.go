@@ -45,6 +45,8 @@ func (c *Cache) Get(result interface{}, path string, values ...fbapi.Values) err
 		start := time.Now()
 		raw, err = fbapi.GetRaw(path, final)
 		if err != nil {
+			stats.Inc("fbapic graph api error")
+			stats.Inc("fbapic graph api error " + c.Prefix)
 			return err
 		}
 		stats.Record("fbapic graph api time", float64(time.Since(start).Nanoseconds()))
