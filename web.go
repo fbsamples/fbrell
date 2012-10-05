@@ -49,6 +49,7 @@ var (
 
 func main() {
 	runtime.GOMAXPROCS(*goMaxProcs)
+	flag.Usage = flagconfig.Usage
 	flag.Parse()
 	flagconfig.Parse()
 	stats.SetBackend(stathatbackend.EZKey(*ezkey))
