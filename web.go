@@ -108,7 +108,11 @@ func mainHandler() (handler http.Handler) {
 	mux.HandleFunc(oauth.Path, oauth.Handle)
 	mux.HandleFunc("/sleep/", httpdev.Sleep)
 
-	handler = httpstats.NewHandler("web", mux)
+	handler = &httpstats.Handler{
+		Name:    "web",
+		Handler: mux,
+		Stats:   service.Stats,
+	}
 	handler = &appdata.Handler{
 		Handler: handler,
 		Secret:  fbapp.Default.SecretByte(),
