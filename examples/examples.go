@@ -1,4 +1,4 @@
-// Package examples implements the DB and S3 backed examples backend for Rell.
+// Package examples provides stock and stored examples.
 package examples
 
 import (
@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.flag.pkgpath"
-	"github.com/daaku/rell/service"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,6 +22,15 @@ var hidden = map[string]bool{
 	"hidden": true,
 	"secret": true,
 	"tests":  true,
+}
+
+type ByteStore interface {
+	Store(key string, value []byte) error
+	Get(key string) ([]byte, error)
+}
+
+type Store struct {
+	ByteStore ByteStore
 }
 
 type Example struct {
@@ -117,7 +125,7 @@ func loadDir(name string) (*DB, error) {
 }
 
 // Load an Example for a given version and path.
-func Load(version, path string) (*Example, error) {
+func (s *Store) Load(version, path string) (*Example, error) {
 	parts := strings.Split(path, "/")
 	if len(parts) == 2 && parts[1] == "" {
 		return emptyExample, nil
@@ -131,16 +139,16 @@ func Load(version, path string) (*Example, error) {
 	}
 
 	if parts[1] == "saved" {
-		item, err := service.Redis.Call("GET", makeKey(parts[2]))
+		content, err := s.ByteStore.Get(makeKey(parts[2]))
 		if err != nil {
 			return nil, err
 		}
-		if item.Nil() {
+		if content == nil {
 			return nil, errcode.New(
 				http.StatusNotFound, "Example not found: %s", path)
 		}
 		return &Example{
-			Content: item.Elem.Bytes(),
+			Content: content,
 			Title:   "Stored Example",
 			URL:     path,
 		}, nil
@@ -198,15 +206,15 @@ func (c *Category) FindExample(name string) *Example {
 }
 
 // Save an Example.
-func Save(id string, content []byte) error {
+func (s *Store) Save(id string, content []byte) error {
 	if len(content) > 10240 {
 		return errcode.New(
 			http.StatusRequestEntityTooLarge,
 			"Maximum allowed size is 10 kilobytes.")
 	}
-	_, err := service.Redis.Call("SET", makeKey(id), content)
+	err := s.ByteStore.Store(makeKey(id), content)
 	if err != nil {
-		log.Printf("Error in cache.Set: %s", err)
+		log.Printf("Error in ByteStore.Store: %s", err)
 	}
 	return err
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
+	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
 	"github.com/daaku/sortutil"
 	"html/template"
@@ -49,6 +50,7 @@ var (
 		context.Canvas:  "Canvas",
 	}
 	errTokenMismatch = errors.New("Token mismatch.")
+	exampleStore     = &examples.Store{service.ByteStore}
 )
 
 // Parse the Context and an Example.
@@ -57,7 +59,7 @@ func parse(r *http.Request) (*context.Context, *examples.Example, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	example, err := examples.Load(context.Version, r.URL.Path)
+	example, err := exampleStore.Load(context.Version, r.URL.Path)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -108,7 +110,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, c.ViewURL(example.URL), 302)
 			return
 		}
-		err = examples.Save(id, content)
+		err = exampleStore.Save(id, content)
 		if err != nil {
 			view.Error(w, r, err)
 			return
