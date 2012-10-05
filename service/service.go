@@ -8,11 +8,15 @@ import (
 )
 
 var (
-	Redis     = redis.ClientFlag("rell.redis")
 	Stats     = stathatbackend.EZKeyFlag("rell.stats")
+	Redis     = redis.ClientFlag("rell.redis")
 	ByteCache = &bytecache{Redis}
 	ByteStore = &bytestore{Redis}
 )
+
+func init() {
+	Redis.Stats = Stats
+}
 
 type bytecache struct {
 	Redis *redis.Client
