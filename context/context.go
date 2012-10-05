@@ -84,7 +84,7 @@ var (
 	schemaDecoder = schema.NewDecoder()
 	nsCache       = fbapic.Cache{
 		Prefix:  "appns",
-		Backend: redis.ByteCache,
+		Storage: redis.ByteCache,
 	}
 )
 

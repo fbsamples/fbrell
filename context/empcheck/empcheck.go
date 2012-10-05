@@ -14,7 +14,7 @@ var (
 	fields = fbapi.Fields([]string{"is_employee"})
 	cached = &fbapic.Cache{
 		Prefix:  "is_employee",
-		Backend: redis.ByteCache,
+		Storage: redis.ByteCache,
 	}
 )
 

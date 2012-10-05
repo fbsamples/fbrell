@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type Backend interface {
+type Storage interface {
 	Store(key string, value []byte) error
 	Get(key string) ([]byte, error)
 }
@@ -20,7 +20,7 @@ type Backend interface {
 // one per type of cached call. An instance can be shared across
 // goroutines.
 type Cache struct {
-	Backend Backend       // provides the storage implementation
+	Storage Storage       // provides the storage implementation
 	Prefix  string        // cache key prefix
 	Timeout time.Duration // per value timeout
 }
@@ -28,11 +28,11 @@ type Cache struct {
 // Make a GET Graph API request.
 func (c *Cache) Get(result interface{}, path string, values ...fbapi.Values) error {
 	key := fmt.Sprintf("%s:%s", c.Prefix, path)
-	raw, err := c.Backend.Get(key)
+	raw, err := c.Storage.Get(key)
 	if err != nil {
-		stats.Inc("fbapic backend.Get error")
-		stats.Inc("fbapic backend.Get error " + c.Prefix)
-		return fmt.Errorf("fbapic error in backend.Get: %s", err)
+		stats.Inc("fbapic storage.Get error")
+		stats.Inc("fbapic storage.Get error " + c.Prefix)
+		return fmt.Errorf("fbapic error in storage.Get: %s", err)
 	}
 
 	if raw == nil {
@@ -53,7 +53,7 @@ func (c *Cache) Get(result interface{}, path string, values ...fbapi.Values) err
 		stats.Record("fbapic graph api time", taken)
 		stats.Record("fbapic graph api time "+c.Prefix, taken)
 
-		err = c.Backend.Store(key, raw)
+		err = c.Storage.Store(key, raw)
 		if err != nil {
 			log.Printf("fbapic error in cache.Set: %s", err)
 		}
