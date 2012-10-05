@@ -5,7 +5,7 @@ import (
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/rell/fbapic"
-	"github.com/daaku/rell/redis"
+	"github.com/daaku/rell/service"
 	"log"
 )
 
@@ -13,8 +13,9 @@ var (
 	app    = fbapp.Flag("empcheck")
 	fields = fbapi.Fields([]string{"is_employee"})
 	cached = &fbapic.Cache{
-		Prefix:  "is_employee",
-		Storage: redis.ByteCache,
+		Prefix:    "is_employee",
+		ByteCache: service.ByteCache,
+		Stats:     service.Stats,
 	}
 )
 

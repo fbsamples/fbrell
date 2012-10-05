@@ -14,12 +14,12 @@ import (
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats"
-	"github.com/daaku/go.stats/stathatbackend"
 	"github.com/daaku/go.viewvar"
 	"github.com/daaku/rell/context/viewcontext"
 	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/rell/oauth"
 	"github.com/daaku/rell/og/viewog"
+	"github.com/daaku/rell/service"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -44,7 +44,6 @@ var (
 		"rell.gomaxprocs",
 		runtime.NumCPU(),
 		"Maximum processes to use.")
-	ezkey = flag.String("rell.stats.key", "", "The stathat ezkey.")
 )
 
 func main() {
@@ -52,7 +51,7 @@ func main() {
 	flag.Usage = flagconfig.Usage
 	flag.Parse()
 	flagconfig.Parse()
-	stats.SetBackend(stathatbackend.EZKey(*ezkey))
+	stats.SetBackend(service.Stats)
 	err := gracehttp.Serve(
 		gracehttp.Handler{*mainAddress, mainHandler()},
 		gracehttp.Handler{*adminAddress, adminHandler()},

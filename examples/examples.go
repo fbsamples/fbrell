@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.flag.pkgpath"
-	"github.com/daaku/rell/redis"
+	"github.com/daaku/rell/service"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -131,7 +131,7 @@ func Load(version, path string) (*Example, error) {
 	}
 
 	if parts[1] == "saved" {
-		item, err := redis.Client.Call("GET", makeKey(parts[2]))
+		item, err := service.Redis.Call("GET", makeKey(parts[2]))
 		if err != nil {
 			return nil, err
 		}
@@ -204,7 +204,7 @@ func Save(id string, content []byte) error {
 			http.StatusRequestEntityTooLarge,
 			"Maximum allowed size is 10 kilobytes.")
 	}
-	_, err := redis.Client.Call("SET", makeKey(id), content)
+	_, err := service.Redis.Call("SET", makeKey(id), content)
 	if err != nil {
 		log.Printf("Error in cache.Set: %s", err)
 	}

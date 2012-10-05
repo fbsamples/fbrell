@@ -5,14 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/daaku/go.fbapi"
-	"github.com/daaku/go.stats"
 	"log"
 	"net/url"
 	"time"
 )
 
-type Storage interface {
-	Store(key string, value []byte) error
+type Stats interface {
+	Inc(name string)
+	Record(name string, value float64)
+}
+
+type ByteCache interface {
+	Store(key string, value []byte, timeout time.Duration) error
 	Get(key string) ([]byte, error)
 }
 
@@ -20,24 +24,25 @@ type Storage interface {
 // one per type of cached call. An instance can be shared across
 // goroutines.
 type Cache struct {
-	Storage Storage       // provides the storage implementation
-	Prefix  string        // cache key prefix
-	Timeout time.Duration // per value timeout
+	ByteCache ByteCache     // storage implementation
+	Stats     Stats         // stats implementation
+	Prefix    string        // cache key prefix
+	Timeout   time.Duration // per value timeout
 }
 
 // Make a GET Graph API request.
 func (c *Cache) Get(result interface{}, path string, values ...fbapi.Values) error {
 	key := fmt.Sprintf("%s:%s", c.Prefix, path)
-	raw, err := c.Storage.Get(key)
+	raw, err := c.ByteCache.Get(key)
 	if err != nil {
-		stats.Inc("fbapic storage.Get error")
-		stats.Inc("fbapic storage.Get error " + c.Prefix)
+		c.Stats.Inc("fbapic storage.Get error")
+		c.Stats.Inc("fbapic storage.Get error " + c.Prefix)
 		return fmt.Errorf("fbapic error in storage.Get: %s", err)
 	}
 
 	if raw == nil {
-		stats.Inc("fbapic cache miss")
-		stats.Inc("fbapic cache miss " + c.Prefix)
+		c.Stats.Inc("fbapic cache miss")
+		c.Stats.Inc("fbapic cache miss " + c.Prefix)
 		final := url.Values{}
 		for _, v := range values {
 			v.Set(final)
@@ -45,21 +50,21 @@ func (c *Cache) Get(result interface{}, path string, values ...fbapi.Values) err
 		start := time.Now()
 		raw, err = fbapi.GetRaw(path, final)
 		if err != nil {
-			stats.Inc("fbapic graph api error")
-			stats.Inc("fbapic graph api error " + c.Prefix)
+			c.Stats.Inc("fbapic graph api error")
+			c.Stats.Inc("fbapic graph api error " + c.Prefix)
 			return err
 		}
 		taken := float64(time.Since(start).Nanoseconds())
-		stats.Record("fbapic graph api time", taken)
-		stats.Record("fbapic graph api time "+c.Prefix, taken)
+		c.Stats.Record("fbapic graph api time", taken)
+		c.Stats.Record("fbapic graph api time "+c.Prefix, taken)
 
-		err = c.Storage.Store(key, raw)
+		err = c.ByteCache.Store(key, raw, c.Timeout)
 		if err != nil {
 			log.Printf("fbapic error in cache.Set: %s", err)
 		}
 	} else {
-		stats.Inc("fbapic cache hit")
-		stats.Inc("fbapic cache hit " + c.Prefix)
+		c.Stats.Inc("fbapic cache hit")
+		c.Stats.Inc("fbapic cache hit " + c.Prefix)
 	}
 
 	err = json.Unmarshal(raw, result)
