@@ -13,7 +13,6 @@ import (
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.h.ui"
-	"github.com/daaku/go.stats"
 	"github.com/daaku/go.xsrf"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
@@ -82,7 +81,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	stats.Inc("viewed examples listing")
+	service.Stats.Inc("viewed examples listing")
 	view.Write(w, r, &examplesList{
 		Context: context,
 		DB:      examples.GetDB(context.Version),
@@ -97,7 +96,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
-			stats.Inc(savedPath + " xsrf failure")
+			service.Stats.Inc(savedPath + " xsrf failure")
 			view.Error(w, r, errTokenMismatch)
 			return
 		}
@@ -115,7 +114,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, err)
 			return
 		}
-		stats.Inc("saved example")
+		service.Stats.Inc("saved example")
 		http.Redirect(w, r, c.ViewURL(savedPath+id), 302)
 		return
 	} else {
@@ -124,7 +123,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, err)
 			return
 		}
-		stats.Inc("viewed saved example")
+		service.Stats.Inc("viewed saved example")
 		view.Write(w, r, &page{
 			Writer:  w,
 			Request: r,
@@ -145,7 +144,7 @@ func Raw(w http.ResponseWriter, r *http.Request) {
 			w, r, errors.New("Not allowed to view this example in raw mode."))
 		return
 	}
-	stats.Inc("viewed example in raw mode")
+	service.Stats.Inc("viewed example in raw mode")
 	view.Write(w, r, &exampleContent{
 		Context: context,
 		Example: example,
@@ -163,7 +162,7 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 			w, r, errors.New("Not allowed to view this example in simple mode."))
 		return
 	}
-	stats.Inc("viewed example in simple mode")
+	service.Stats.Inc("viewed example in simple mode")
 	view.Write(w, r, &h.Document{
 		Inner: &h.Frag{
 			&h.Head{
@@ -203,7 +202,7 @@ func SdkChannel(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	stats.Inc("viewed channel")
+	service.Stats.Inc("viewed channel")
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
 	view.Write(w, r, &h.Script{Src: context.SdkURL()})
 }
@@ -214,7 +213,7 @@ func Example(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	stats.Inc("viewed stock example")
+	service.Stats.Inc("viewed stock example")
 	view.Write(w, r, &page{
 		Writer:  w,
 		Request: r,
