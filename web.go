@@ -5,14 +5,12 @@ import (
 	"flag"
 	"github.com/daaku/go.browserify"
 	"github.com/daaku/go.fbapp"
-	"github.com/daaku/go.flag.pkgpath"
 	"github.com/daaku/go.flagconfig"
 	"github.com/daaku/go.grace/gracehttp"
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.httpgzip"
 	"github.com/daaku/go.httpstats"
 	"github.com/daaku/go.signedrequest/appdata"
-	"github.com/daaku/go.static"
 	"github.com/daaku/go.viewvar"
 	"github.com/daaku/rell/context/viewcontext"
 	"github.com/daaku/rell/examples/viewexamples"
@@ -35,10 +33,6 @@ var (
 		"rell.admin.address",
 		":43601",
 		"Admin http server address.")
-	publicDir = pkgpath.Dir(
-		"rell.public",
-		"github.com/daaku/rell/public",
-		"The directory to serve static files from.")
 	goMaxProcs = flag.Int(
 		"rell.gomaxprocs",
 		runtime.NumCPU(),
@@ -61,7 +55,7 @@ func main() {
 
 // binds a path to a single file
 func staticFile(mux *http.ServeMux, name string) {
-	abs := filepath.Join(*publicDir, name)
+	abs := filepath.Join(service.Static.DiskPath, name)
 	mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, abs)
 	})
@@ -73,7 +67,7 @@ func adminHandler() http.Handler {
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc("/vars/", viewvar.Json)
+	mux.HandleFunc("/vars4/", viewvar.Json)
 	return mux
 }
 
@@ -81,15 +75,14 @@ func mainHandler() (handler http.Handler) {
 	const public = "/public/"
 
 	mux := http.NewServeMux()
-
-	static.SetDir(*publicDir)
-	mux.HandleFunc(static.Path, static.Handle)
+	mux.Handle(service.Static.HttpPath, service.Static)
 
 	staticFile(mux, "/favicon.ico")
 	staticFile(mux, "/f8.jpg")
 	staticFile(mux, "/robots.txt")
 	mux.Handle(public,
-		http.StripPrefix(public, http.FileServer(http.Dir(*publicDir))))
+		http.StripPrefix(
+			public, http.FileServer(http.Dir(service.Static.DiskPath))))
 
 	mux.HandleFunc(browserify.Path, browserify.Handle)
 	mux.HandleFunc("/not_a_real_webpage", http.NotFound)

@@ -8,6 +8,7 @@ import (
 	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/service"
 	"log"
 	"net/http"
 )
@@ -38,6 +39,7 @@ var DefaultMeta = h.Compile(&h.Frag{
 
 // The default stylesheet.
 var DefaultStyle = &static.LinkStyle{
+	Handler: service.Static,
 	HREF: []string{
 		"css/bootstrap.min.css",
 		"css/bootstrap-responsive.min.css",
@@ -50,10 +52,12 @@ var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
 
 // Bootstrap Scripts.
 var BootstrapScripts = &static.Script{
+	Handler: service.Static,
 	Src: []string{
 		"js/jquery-1.8.2.min.js",
 		"js/bootstrap.min.js",
 	},
+	Async: true,
 }
 
 // A minimal standard page with no visible body.

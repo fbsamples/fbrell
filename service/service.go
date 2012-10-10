@@ -3,55 +3,20 @@ package service
 
 import (
 	"github.com/daaku/go.redis"
+	"github.com/daaku/go.redis/bytecache"
+	"github.com/daaku/go.redis/bytestore"
+	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats/stathatbackend"
-	"time"
 )
 
 var (
+	Static    = static.HandlerFlag("rell.static")
 	Stats     = stathatbackend.EZKeyFlag("rell.stats")
 	Redis     = redis.ClientFlag("rell.redis")
-	ByteCache = &bytecache{Redis}
-	ByteStore = &bytestore{Redis}
+	ByteCache = bytecache.New(Redis)
+	ByteStore = bytestore.New(Redis)
 )
 
 func init() {
 	Redis.Stats = Stats
-}
-
-type bytecache struct {
-	Redis *redis.Client
-}
-
-func (c *bytecache) Store(key string, value []byte, timeout time.Duration) error {
-	_, err := c.Redis.Call("SET", key, value)
-	return err
-}
-
-func (c *bytecache) Get(key string) ([]byte, error) {
-	item, err := c.Redis.Call("GET", key)
-	if err != nil {
-		return nil, err
-	} else if !item.Nil() {
-		return item.Elem.Bytes(), nil
-	}
-	return nil, nil
-}
-
-type bytestore struct {
-	Redis *redis.Client
-}
-
-func (c *bytestore) Store(key string, value []byte) error {
-	_, err := c.Redis.Call("SET", key, value)
-	return err
-}
-
-func (c *bytestore) Get(key string) ([]byte, error) {
-	item, err := c.Redis.Call("GET", key)
-	if err != nil {
-		return nil, err
-	} else if !item.Nil() {
-		return item.Elem.Bytes(), nil
-	}
-	return nil, nil
 }

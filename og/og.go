@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/daaku/go.fburl"
-	"github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/service"
 	"io"
 	"log"
 	"net/url"
@@ -179,7 +179,7 @@ func (o *Object) shouldGenerate(key string) bool {
 func (o *Object) generateDefaults() error {
 	url := o.URL()
 	if o.shouldGenerate("og:image") {
-		img, err := static.URL("/images/" + hashedPick(url, stockImages))
+		img, err := service.Static.URL("/images/" + hashedPick(url, stockImages))
 		if err != nil {
 			return err
 		}
