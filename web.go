@@ -67,7 +67,7 @@ func adminHandler() http.Handler {
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	mux.HandleFunc("/vars4/", viewvar.Json)
+	mux.HandleFunc("/vars/", viewvar.Json)
 	return mux
 }
 
