@@ -29,6 +29,11 @@ func IsEmployee(id uint64) bool {
 	user := &user{}
 	err := cached.Get(user, fmt.Sprintf("/%d", id), app, fields)
 	if err != nil {
+		if apiErr, ok := err.(*fbapi.Error); ok {
+			if apiErr.Code == 100 { // common error with test users
+				return false
+			}
+		}
 		log.Printf("Ignoring error in IsEmployee check: %s", err)
 	}
 	return user.IsEmployee

@@ -40,10 +40,10 @@ var (
 )
 
 func main() {
-	runtime.GOMAXPROCS(*goMaxProcs)
 	flag.Usage = flagconfig.Usage
 	flag.Parse()
 	flagconfig.Parse()
+	runtime.GOMAXPROCS(*goMaxProcs)
 	err := gracehttp.Serve(
 		gracehttp.Handler{*mainAddress, mainHandler()},
 		gracehttp.Handler{*adminAddress, adminHandler()},
