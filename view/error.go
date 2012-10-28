@@ -29,7 +29,7 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		code = http.StatusInternalServerError
 	}
 	if code != http.StatusNotFound {
-		log.Printf("Error %d: %s %v", code, r.URL, err)
+		log.Printf("Error %d: %s %s %v", code, r.URL, err, err)
 	}
 	w.WriteHeader(code)
 	if usePlainText(r) {
