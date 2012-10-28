@@ -719,7 +719,8 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 	}
 	tpl, err := template.New("example-" + e.URL).Parse(string(e.Content))
 	if err != nil {
-		return 0, err
+		// if template parsing fails, we ignore it. it's probably malformed html
+		return w.Write(e.Content)
 	}
 	countingW := counting.NewWriter(w)
 	err = tpl.Execute(countingW,
@@ -734,5 +735,9 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 			RellURL:  context.Default().AbsoluteURL("/").String(),
 			WwwURL:   wwwURL.String(),
 		})
+	if err != nil {
+		// if template execution fails, we ignore it. it's probably malformed html
+		return w.Write(e.Content)
+	}
 	return countingW.Count(), err
 }
