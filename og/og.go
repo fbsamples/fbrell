@@ -66,8 +66,11 @@ func copyValues(source url.Values) url.Values {
 		case "action_type_map":
 		case "fb_action_ids":
 		case "fb_action_types":
+		case "fb_aggregation_id":
 		case "fb_locale":
 		case "fb_source":
+		case "ref":
+		case "refid":
 			continue
 		default:
 			dup := make([]string, len(source[key]))
