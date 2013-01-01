@@ -3,8 +3,8 @@ package empcheck
 import (
 	"fmt"
 	"github.com/daaku/go.fbapi"
+	"github.com/daaku/go.fbapi/fbapic"
 	"github.com/daaku/go.fbapp"
-	"github.com/daaku/rell/fbapic"
 	"github.com/daaku/rell/service"
 	"log"
 )
