@@ -42,7 +42,7 @@ func Values(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	service.Stats.Inc("viewed og")
-	view.Write(w, r, renderObject(context, object))
+	h.WriteResponse(w, r, renderObject(context, object))
 }
 
 // Handles /rog/* requests.
@@ -64,7 +64,7 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	service.Stats.Inc("viewed rog")
-	view.Write(w, r, renderObject(context, object))
+	h.WriteResponse(w, r, renderObject(context, object))
 }
 
 // Handles /rog-redirect/ requests.

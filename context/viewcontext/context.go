@@ -20,7 +20,7 @@ func humanJSON(v interface{}, w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error json.MarshalIndent: %s", err)
 	}
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
-		view.Write(w, r, &h.Document{
+		h.WriteResponse(w, r, &h.Document{
 			Inner: &h.Frag{
 				&h.Head{
 					Inner: &h.Frag{

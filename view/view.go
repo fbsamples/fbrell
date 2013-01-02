@@ -9,8 +9,6 @@ import (
 	"github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/service"
-	"log"
-	"net/http"
 )
 
 // The default metadata.
@@ -111,15 +109,4 @@ func (p *Page) HTML() (h.HTML, error) {
 			},
 		},
 	}, nil
-}
-
-// Writes a HTML response and writes errors on failure.
-func Write(w http.ResponseWriter, r *http.Request, html h.HTML) {
-	if r.Method != "HEAD" {
-		_, err := h.Write(w, html)
-		if err != nil {
-			log.Printf("Error writing HTML for URL: %s: %s", r.URL, err)
-			h.Write(w, h.String("FATAL ERROR"))
-		}
-	}
 }

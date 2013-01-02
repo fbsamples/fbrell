@@ -40,7 +40,7 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		page := &Page{
 			Body: h.String(err.err.Error()),
 		}
-		Write(w, r, page)
+		h.WriteResponse(w, r, page)
 	}
 }
 

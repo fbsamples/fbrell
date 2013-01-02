@@ -82,7 +82,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	service.Stats.Inc("viewed examples listing")
-	view.Write(w, r, &examplesList{
+	h.WriteResponse(w, r, &examplesList{
 		Context: context,
 		DB:      examples.GetDB(context.Version),
 	})
@@ -124,7 +124,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		service.Stats.Inc("viewed saved example")
-		view.Write(w, r, &page{
+		h.WriteResponse(w, r, &page{
 			Writer:  w,
 			Request: r,
 			Context: context,
@@ -145,7 +145,7 @@ func Raw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	service.Stats.Inc("viewed example in raw mode")
-	view.Write(w, r, &exampleContent{
+	h.WriteResponse(w, r, &exampleContent{
 		Context: context,
 		Example: example,
 	})
@@ -163,7 +163,7 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	service.Stats.Inc("viewed example in simple mode")
-	view.Write(w, r, &h.Document{
+	h.WriteResponse(w, r, &h.Document{
 		Inner: &h.Frag{
 			&h.Head{
 				Inner: &h.Frag{
@@ -204,7 +204,7 @@ func SdkChannel(w http.ResponseWriter, r *http.Request) {
 	}
 	service.Stats.Inc("viewed channel")
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
-	view.Write(w, r, &h.Script{Src: context.SdkURL()})
+	h.WriteResponse(w, r, &h.Script{Src: context.SdkURL()})
 }
 
 func Example(w http.ResponseWriter, r *http.Request) {
@@ -214,7 +214,7 @@ func Example(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	service.Stats.Inc("viewed stock example")
-	view.Write(w, r, &page{
+	h.WriteResponse(w, r, &page{
 		Writer:  w,
 		Request: r,
 		Context: context,

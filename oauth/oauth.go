@@ -67,7 +67,7 @@ func Start(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, dialogURL.String(), 302)
 	} else {
 		b, _ := json.Marshal(dialogURL.String())
-		view.Write(w, r, &h.Script{
+		h.WriteResponse(w, r, &h.Script{
 			Inner: h.Unsafe(fmt.Sprintf("top.location=%s", b)),
 		})
 	}
