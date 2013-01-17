@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/daaku/go.counting"
+	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
@@ -48,7 +49,7 @@ var (
 		context.PageTab: "Page Tab",
 		context.Canvas:  "Canvas",
 	}
-	errTokenMismatch = errors.New("Token mismatch.")
+	errTokenMismatch = errcode.New(http.StatusForbidden, "Token mismatch.")
 	exampleStore     = &examples.Store{service.ByteStore}
 )
 

@@ -28,9 +28,6 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if code == 0 {
 		code = http.StatusInternalServerError
 	}
-	if code != http.StatusNotFound {
-		log.Printf("Error %d: %s %s %v", code, r.URL, err, err)
-	}
 	w.WriteHeader(code)
 	if usePlainText(r) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -53,6 +50,7 @@ func Error(w http.ResponseWriter, r *http.Request, err error) {
 		errCode, ok := err.(ErrorCode)
 		if !ok {
 			errCode = errcode.Add(500, err)
+			log.Printf("Error %d: %s %s %v", errCode.Code(), r.URL, err, err)
 		}
 		handler = errorCodeHandler{errCode}
 	}
