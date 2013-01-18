@@ -4,7 +4,6 @@
 package context
 
 import (
-	"code.google.com/p/gorilla/schema"
 	"encoding/json"
 	"fmt"
 	"github.com/daaku/go.fbapi"
@@ -16,6 +15,7 @@ import (
 	"github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/context/empcheck"
 	"github.com/daaku/rell/service"
+	"github.com/gorilla/schema"
 	"net/http"
 	"net/url"
 	"path"
