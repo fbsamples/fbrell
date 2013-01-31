@@ -10,7 +10,6 @@
     "url": "https://github.com/daaku/rell"
   },
   "dependencies": {
-    "delegator": "1.3.x",
     "jsDump": "1.1.x"
   },
   "devDependencies": {

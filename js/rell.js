@@ -1,5 +1,6 @@
-var Log = require('./log')
-  , Tracer = require('./tracer')
+var Log = require('log')
+  , Tracer = require('tracer')
+  , $ = window.$
 
 // stolen from prototypejs
 // used to set innerHTML and execute any contained <scripts>
@@ -28,10 +29,6 @@ var ScriptSoup ={
   }
 }
 
-function $(id) {
-  return document.getElementById(id)
-}
-
 var Rell = {
   /**
    * go go go
@@ -39,19 +36,19 @@ var Rell = {
   init: function(config, example) {
     Rell.config = config
     Rell.config.autoRun = example ? example.autoRun : false
-    Log.init($('log'), Rell.config.level)
+    Log.init($('#log')[0], Rell.config.level)
     Log.debug('Configuration', Rell.config);
     (Rell['init_' + Rell.config.version] || Rell.init_old)()
-    $('rell-login').onclick = Rell.login
-    $('rell-disconnect').onclick = Rell.disconnect
-    $('rell-logout').onclick = Rell.logout
-    $('rell-run-code').onclick = Rell.runCode
-    $('rell-log-clear').onclick = Rell.clearLog
+    $('#rell-login').click(Rell.login)
+    $('#rell-disconnect').click(Rell.disconnect)
+    $('#rell-logout').click(Rell.logout)
+    $('#rell-run-code').click(Rell.runCode)
+    $('#rell-log-clear').click(Rell.clearLog)
     Rell.setCurrentViewMode()
     if (example && !example.autoRun) {
       Rell.setupAutoRunPopover()
     }
-    window.$('.has-tooltip').tooltip()
+    $('.has-tooltip').tooltip()
   },
 
   /**
@@ -89,9 +86,7 @@ var Rell = {
         } else if (result == 3) {
           status = 'notConnected'
         }
-        var el = $('auth-status')
-        el.className = status
-        el.innerHTML = status
+        $('#auth-status').removeClass().addClass(status).html(status)
       }, 500)
 
       Rell.autoRunCode()
@@ -146,9 +141,8 @@ var Rell = {
   },
 
   onStatusChange: function(response) {
-    var el = $('auth-status')
-    el.className = response.status
-    el.innerHTML = response.status
+    var status = response.status
+    $('#auth-status').removeClass().addClass(status).html(status)
   },
 
   autoRunCode: function() {
@@ -160,7 +154,7 @@ var Rell = {
    */
   runCode: function() {
     Log.info('Executed example')
-    var root = $('jsroot')
+    var root = $('#jsroot')[0]
     ScriptSoup.set(root, Rell.getCode())
     if (Rell.config.version == 'mu') {
       FB.XFBML.parse(root)
@@ -170,7 +164,7 @@ var Rell = {
   },
 
   getCode: function() {
-    return $('jscode').value
+    return $('#jscode').val()
   },
 
   login: function() {
@@ -198,19 +192,18 @@ var Rell = {
   },
 
   setCurrentViewMode: function() {
-    var select = $('rell-view-mode')
+    var select = $('#rell-view-mode')
     if (window.name.indexOf('canvas') > -1) {
-      select.value = 'canvas' // context.Canvas
+      select.val('canvas') // context.Canvas
     } else if (window.name.indexOf('app_runner') > -1) {
-      select.value = 'page-tab' // context.PageTab
+      select.val('page-tab') // context.PageTab
     } else if (self === top) {
-      select.value = 'website' // context.Website
+      select.val('website') // context.Website
     }
   },
 
   setupAutoRunPopover: function() {
-    // TODO global jquery reference
-    var el = window.$('#rell-run-code')
+    var el = $('#rell-run-code')
     el.popover('show')
     el.hover(function() { el.popover('hide') })
   },

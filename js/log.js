@@ -1,5 +1,5 @@
 var jsDump = require('jsDump')
-  , Delegator = require('delegator')
+  , $ = window.$
 
 function safe(str) {
   var div = document.createElement('div')
@@ -99,7 +99,7 @@ var Log = {
       }
     }
 
-    Delegator.listen('.log-entry .toggle', 'click', function() {
+    $('.log-entry .toggle').live('click', function() {
       try {
         var style = this.parentNode.nextSibling.style
         if (style.display == 'none') {
