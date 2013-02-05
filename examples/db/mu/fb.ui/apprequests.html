@@ -55,8 +55,10 @@ document.getElementById('clear-pending').onclick = function() {
 }
 
 document.getElementById('clear-prompted').onclick = function() {
+  var id = prompt('Enter the ID of the request to delete:')
+  if (!id) return
   FB.api(
-    prompt('Enter the ID of the request to delete:'),
+    id,
     'DELETE',
     Log.info.bind('delete request'));
 }
