@@ -1,5 +1,5 @@
-var Log = require('log')
-  , Tracer = require('tracer')
+var Log = require('./log')
+  , Tracer = require('./tracer')
   , $ = window.$
 
 // stolen from prototypejs

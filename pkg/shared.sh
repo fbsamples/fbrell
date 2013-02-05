@@ -8,11 +8,17 @@ build() {
   goimport=github.com/daaku/rell
   gitabs=${GOPATH}/src/$goimport
 
-  if [ ! -e ${gitabs} ]; then
-    mkdir -p $(dirname ${gitabs})
-    cd $(dirname ${gitabs})
-    ln -s $srcdir/../../..  $(basename ${gitabs})
-  fi
+  mkdir -p $(dirname ${gitabs})
+  cd $(dirname ${gitabs})
+  rsync \
+    --archive \
+    --one-file-system \
+    --sparse \
+    --quiet \
+    --delete \
+    --exclude=pkg \
+    --exclude=.git \
+    $srcdir/../../../  $(basename ${gitabs})/
 
   cd $gitabs
 
