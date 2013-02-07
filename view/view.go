@@ -55,7 +55,6 @@ var BootstrapScripts = &static.Script{
 		"js/jquery-1.8.2.min.js",
 		"js/bootstrap.min.js",
 	},
-	Async: true,
 }
 
 // A minimal standard page with no visible body.
