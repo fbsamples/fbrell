@@ -1,8 +1,8 @@
 NEW_USER=rell
 
 post_install() {
-  getent group $NEW_USER &>/dev/null || groupadd -r -g 191 $NEW_USER >/dev/null
-  getent passwd $NEW_USER &>/dev/null || useradd -r -u 191 -g $NEW_USER -d /var/lib/$NEW_USER -s /bin/false -c $NEW_USER $NEW_USER >/dev/null
+  getent group $NEW_USER &>/dev/null || groupadd -r -g 1910 $NEW_USER >/dev/null
+  getent passwd $NEW_USER &>/dev/null || useradd -r -u 1910 -g $NEW_USER -d /var/lib/$NEW_USER -s /bin/false -c $NEW_USER $NEW_USER >/dev/null
 }
 
 post_remove() {
