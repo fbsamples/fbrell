@@ -1,32 +1,21 @@
 build() {
   unset GIT_DIR # this can interefere with "go get"
-  msg "Cleaning old build"
-  rm -rf $pkgdir/*
 
-  export GOPATH=${srcdir}
-  cd ${GOPATH}
   goimport=github.com/daaku/rell
-  gitabs=${GOPATH}/src/$goimport
+  bindir=$pkgdir/usr/bin
+  install -d $bindir
+  GO_LDFLAGS="-X github.com/daaku/rell/context/viewcontext.version $pkgver"
 
-  mkdir -p $(dirname ${gitabs})
-  cd $(dirname ${gitabs})
-  rsync \
-    --archive \
-    --one-file-system \
-    --sparse \
-    --quiet \
-    --delete \
-    --exclude=pkg \
-    --exclude=.git \
-    $srcdir/../../../  $(basename ${gitabs})/
+  msg "Building"
+  go build -ldflags="$GO_LDFLAGS" -o=$bindir/$pkgname $goimport
 
-  cd $gitabs
+  gitabs=${srcdir}/../../..
 
   msg "Getting go dependenices"
-  go get -v
+  (cd $gitabs && go get -v)
 
   msg "Getting npm dependencies"
-  (cd js && npm install)
+  (cd $gitabs/js && npm install)
 
   bindir=$pkgdir/usr/bin
   mkdir -p $bindir
