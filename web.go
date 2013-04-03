@@ -44,10 +44,15 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 	runtime.GOMAXPROCS(*goMaxProcs)
+	service.Stats.Start()
 	err := gracehttp.Serve(
 		gracehttp.Handler{*mainAddress, mainHandler()},
 		gracehttp.Handler{*adminAddress, adminHandler()},
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = service.Stats.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
