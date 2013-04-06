@@ -1,6 +1,6 @@
 pkgname=rell-latest
-pkgver=588
-pkgrel=1
+pkgver=589
+pkgrel=2
 pkgdesc="Rell web app and resources."
 arch=('i686' 'x86_64')
 url="https://github.com/daaku/rell"
