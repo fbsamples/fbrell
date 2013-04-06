@@ -9,4 +9,4 @@ makedepends=('git' 'nodejs')
 install=rell.install
 options=(!strip)
 
-source $(dirname $(dirname $srcdir))/shared.sh
+source ../shared.sh
