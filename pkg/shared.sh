@@ -18,7 +18,7 @@ build() {
   (cd $gitabs/js && npm install)
 
   bindir=$pkgdir/usr/bin
-  mkdir -p $bindir
+  install -d $bindir
   binfile=$bindir/$pkgname
   msg "Building"
   GO_LDFLAGS="-X github.com/daaku/rell/context/viewcontext.version $pkgver"
