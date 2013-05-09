@@ -46,8 +46,8 @@ func main() {
 	runtime.GOMAXPROCS(*goMaxProcs)
 	service.Stats.Start()
 	err := gracehttp.Serve(
-		gracehttp.Handler{*mainAddress, mainHandler()},
-		gracehttp.Handler{*adminAddress, adminHandler()},
+		&http.Server{Addr: *mainAddress, Handler: mainHandler()},
+		&http.Server{Addr: *adminAddress, Handler: adminHandler()},
 	)
 	if err != nil {
 		log.Fatal(err)
