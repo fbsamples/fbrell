@@ -16,6 +16,7 @@ var (
 		Prefix:    "is_employee",
 		ByteCache: service.ByteCache,
 		Stats:     service.Stats,
+		Client:    service.FbApiClient,
 	}
 )
 

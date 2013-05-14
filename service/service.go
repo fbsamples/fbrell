@@ -4,6 +4,7 @@ package service
 import (
 	"net/http"
 
+	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.httpcontrol"
 	"github.com/daaku/go.redis"
 	"github.com/daaku/go.redis/bytecache"
@@ -20,9 +21,11 @@ var (
 	ByteStore     = bytestore.New(Redis)
 	HttpTransport = httpcontrol.TransportFlag("rell.transport")
 	HttpClient    = &http.Client{Transport: HttpTransport}
+	FbApiClient   = fbapi.ClientFlag("rell.fbapi")
 )
 
 func init() {
 	Stats.Client = HttpClient
+	FbApiClient.HttpClient = HttpClient
 	Redis.Stats = Stats
 }

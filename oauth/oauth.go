@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/daaku/go.browserid"
-	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
 	"net/http"
 	"net/url"
@@ -88,7 +88,7 @@ func Response(w http.ResponseWriter, r *http.Request) {
 	values.Set("client_secret", fbapp.Default.Secret())
 	values.Set("redirect_uri", redirectURI(c))
 	values.Set("code", r.FormValue("code"))
-	res, err := fbapi.GetRaw("/oauth/access_token", values)
+	res, err := service.FbApiClient.GetRaw("/oauth/access_token", values)
 	if err != nil {
 		view.Error(w, r, err)
 		return

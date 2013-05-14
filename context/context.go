@@ -86,6 +86,7 @@ var (
 		Prefix:    "appns",
 		ByteCache: service.ByteCache,
 		Stats:     service.Stats,
+		Client:    service.FbApiClient,
 	}
 )
 
