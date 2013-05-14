@@ -20,7 +20,6 @@ import (
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.h.ui"
-	"github.com/daaku/go.xsrf"
 	"github.com/daaku/sortutil"
 
 	"github.com/daaku/rell/context"
@@ -98,7 +97,7 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, err)
 			return
 		}
-		if !xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
+		if !service.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
 			service.Stats.Inc(savedPath + " xsrf failure")
 			view.Error(w, r, errTokenMismatch)
 			return
@@ -250,7 +249,7 @@ func (p *page) HTML() (h.HTML, error) {
 					Target: "_top",
 					Inner: &h.Frag{
 						h.HiddenInputs(url.Values{
-							paramName: []string{xsrf.Token(p.Writer, p.Request, savedPath)},
+							paramName: []string{service.Xsrf.Token(p.Writer, p.Request, savedPath)},
 						}),
 						&h.Div{
 							Class: "row-fluid",

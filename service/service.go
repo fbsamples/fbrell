@@ -11,9 +11,11 @@ import (
 	"github.com/daaku/go.redis/bytestore"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats/stathatbackend"
+	"github.com/daaku/go.xsrf"
 )
 
 var (
+	Xsrf          = xsrf.ProviderFlag("xsrf")
 	Static        = static.HandlerFlag("rell.static")
 	Stats         = stathatbackend.EZKeyFlag("rell.stats")
 	Redis         = redis.ClientFlag("rell.redis")
