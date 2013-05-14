@@ -5,16 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
+
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
+
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
-	"net/http"
-	"net/url"
-	"strconv"
 )
 
 const (

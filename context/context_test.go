@@ -1,12 +1,14 @@
 package context_test
 
 import (
-	"github.com/daaku/go.fbapp"
-	"github.com/daaku/go.subset"
-	"github.com/daaku/rell/context"
 	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/daaku/go.fbapp"
+	"github.com/daaku/go.subset"
+
+	"github.com/daaku/rell/context"
 )
 
 func init() {

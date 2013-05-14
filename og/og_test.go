@@ -1,9 +1,10 @@
 package og
 
 import (
-	"github.com/daaku/rell/context"
 	"net/url"
 	"testing"
+
+	"github.com/daaku/rell/context"
 )
 
 // Order insensitive pairs matching. This isn't fully accurate as OG

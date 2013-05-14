@@ -3,17 +3,19 @@ package viewog
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.js.loader"
+
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 // Handles /og/ requests.

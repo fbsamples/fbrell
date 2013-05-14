@@ -2,10 +2,12 @@
 package viewcontext
 
 import (
+	"net/http"
+
 	"github.com/daaku/go.httpdev"
+
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/view"
-	"net/http"
 )
 
 var version string

@@ -6,6 +6,11 @@ package context
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
+	"path"
+	"strconv"
+
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapi/fbapic"
 	"github.com/daaku/go.fbapp"
@@ -13,13 +18,10 @@ import (
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
 	"github.com/daaku/go.trustforward"
+	"github.com/gorilla/schema"
+
 	"github.com/daaku/rell/context/empcheck"
 	"github.com/daaku/rell/service"
-	"github.com/gorilla/schema"
-	"net/http"
-	"net/url"
-	"path"
-	"strconv"
 )
 
 const defaultMaxMemory = 32 << 20 // 32 MB

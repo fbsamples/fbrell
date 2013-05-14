@@ -7,15 +7,17 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/daaku/go.fburl"
-	"github.com/daaku/rell/context"
-	"github.com/daaku/rell/service"
 	"io"
 	"log"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/daaku/go.fburl"
+
+	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/service"
 )
 
 // The representation of of <meta property="{key}" content="{value}">.

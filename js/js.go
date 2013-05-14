@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
+
 	"github.com/daaku/go.browserify"
 	"github.com/daaku/go.flag.pkgpath"
+
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
-	"log"
 )
 
 // The default script. The working directory is set in init().

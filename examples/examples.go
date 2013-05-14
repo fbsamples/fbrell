@@ -5,14 +5,15 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"github.com/daaku/go.errcode"
-	"github.com/daaku/go.flag.pkgpath"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/daaku/go.errcode"
+	"github.com/daaku/go.flag.pkgpath"
 )
 
 // Some categories are hidden from the listing.

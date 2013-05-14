@@ -7,6 +7,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"html/template"
+	"io"
+	"log"
+	"net/http"
+	"net/url"
+
 	"github.com/daaku/go.counting"
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.fburl"
@@ -15,17 +21,13 @@ import (
 	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.xsrf"
+	"github.com/daaku/sortutil"
+
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
 	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
-	"github.com/daaku/sortutil"
-	"html/template"
-	"io"
-	"log"
-	"net/http"
-	"net/url"
 )
 
 const (

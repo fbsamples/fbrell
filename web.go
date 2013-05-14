@@ -3,6 +3,12 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
+	"net/http/pprof"
+	"path/filepath"
+	"runtime"
+
 	"github.com/daaku/go.browserify"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.flagconfig"
@@ -12,16 +18,12 @@ import (
 	"github.com/daaku/go.httpstats"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.viewvar"
+
 	"github.com/daaku/rell/context/viewcontext"
 	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/rell/oauth"
 	"github.com/daaku/rell/og/viewog"
 	"github.com/daaku/rell/service"
-	"log"
-	"net/http"
-	"net/http/pprof"
-	"path/filepath"
-	"runtime"
 )
 
 var (

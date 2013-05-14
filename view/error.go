@@ -1,12 +1,13 @@
 package view
 
 import (
-	"github.com/daaku/go.errcode"
-	"github.com/daaku/go.h"
 	"io"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/daaku/go.errcode"
+	"github.com/daaku/go.h"
 )
 
 // HTTP Coded Error.

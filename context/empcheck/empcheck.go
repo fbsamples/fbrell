@@ -2,11 +2,13 @@ package empcheck
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapi/fbapic"
 	"github.com/daaku/go.fbapp"
+
 	"github.com/daaku/rell/service"
-	"log"
 )
 
 var (
