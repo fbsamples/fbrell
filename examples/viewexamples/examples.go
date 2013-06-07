@@ -206,6 +206,7 @@ func SdkChannel(w http.ResponseWriter, r *http.Request) {
 	}
 	service.Stats.Inc("viewed channel")
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	h.WriteResponse(w, r, &h.Script{Src: context.SdkURL()})
 }
 
