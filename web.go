@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/pprof"
+	"os"
 	"path/filepath"
 	"runtime"
 
@@ -46,6 +47,12 @@ func main() {
 	flag.Parse()
 	flagconfig.Parse()
 	runtime.GOMAXPROCS(*goMaxProcs)
+
+	// for systemd started servers we can skip the date/time since journald
+	// already shows it
+	if os.Getppid() == 1 {
+		log.SetFlags(0)
+	}
 
 	if err := service.HttpTransport.Start(); err != nil {
 		log.Fatal(err)
