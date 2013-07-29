@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -24,7 +26,10 @@ const (
 	resp = "response/"
 )
 
-var errInvalidState = errors.New("Invalid state")
+var (
+	errOAuthFail    = errors.New("OAuth code exchange failure.")
+	errInvalidState = errors.New("Invalid state")
+)
 
 func Handle(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
@@ -85,17 +90,36 @@ func Response(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, errInvalidState)
 		return
 	}
+
 	values := url.Values{}
 	values.Set("client_id", strconv.FormatUint(fbapp.Default.ID(), 10))
 	values.Set("client_secret", fbapp.Default.Secret())
 	values.Set("redirect_uri", redirectURI(c))
 	values.Set("code", r.FormValue("code"))
-	res, err := service.FbApiClient.GetRaw("/oauth/access_token", values)
+
+	atURL := &fburl.URL{
+		Scheme:    "https",
+		SubDomain: fburl.DGraph,
+		Env:       c.Env,
+		Path:      "/oauth/access_token",
+		Values:    values,
+	}
+
+	req, err := http.NewRequest("GET", atURL.String(), nil)
 	if err != nil {
+		log.Printf("oauth.Response error: %s", err)
+		view.Error(w, r, errOAuthFail)
+	}
+	res, err := service.HttpClient.Do(req)
+	if err != nil {
+		log.Printf("oauth.Response error: %s", err)
+		view.Error(w, r, errOAuthFail)
+	}
+	defer res.Body.Close()
+	if _, err := io.Copy(w, res.Body); err != nil {
 		view.Error(w, r, err)
 		return
 	}
-	w.Write(res)
 }
 
 func state(w http.ResponseWriter, r *http.Request) string {

@@ -52,6 +52,7 @@ func main() {
 	// already shows it
 	if os.Getppid() == 1 {
 		log.SetFlags(0)
+		service.Logger.SetFlags(0)
 	}
 
 	if err := service.HttpTransport.Start(); err != nil {

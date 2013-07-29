@@ -10,13 +10,13 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+	"time"
 
-	"github.com/daaku/go.fbapi"
-	"github.com/daaku/go.fbapi/fbapic"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
+	"github.com/daaku/go.subcache"
 	"github.com/daaku/go.trustforward"
 	"github.com/gorilla/schema"
 
@@ -84,12 +84,13 @@ var defaultContext = &Context{
 
 var (
 	schemaDecoder = schema.NewDecoder()
-	nsCache       = fbapic.Cache{
-		Prefix:    "appns",
-		ByteCache: service.ByteCache,
-		Stats:     service.Stats,
-		Client:    service.FbApiClient,
+	nsCache       = &subcache.Client{
+		Prefix:      "appns",
+		ByteCache:   service.ByteCache,
+		Stats:       service.SubCacheStats,
+		ErrorLogger: service.Logger,
 	}
+	nsCacheTimeout = 60 * 24 * time.Hour
 )
 
 // Create a context from a HTTP request.
@@ -213,9 +214,23 @@ func (c *Context) AppNamespace() string {
 	if c.AppID == fbapp.Default.ID() {
 		return fbapp.Default.Namespace()
 	}
-	resp := struct{ Namespace string }{""}
-	nsCache.Get(&resp, fmt.Sprintf("/%d", c.AppID), fbapi.Fields{"namespace"})
-	return resp.Namespace
+
+	ids := strconv.FormatUint(c.AppID, 10)
+	ns, _ := nsCache.Get(ids)
+	if ns != nil {
+		return string(ns)
+	}
+
+	res := struct{ Namespace string }{""}
+	req := http.Request{Method: "GET", URL: &url.URL{Path: ids}}
+	_, err := service.FbApiClient.Do(&req, &res)
+	if err != nil {
+		service.Logger.Printf("Ignoring error API call for AppNamespace: %s", err)
+		return ""
+	}
+
+	nsCache.Store(ids, []byte(res.Namespace), nsCacheTimeout)
+	return res.Namespace
 }
 
 // Get a Channel URL for the SDK.
