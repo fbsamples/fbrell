@@ -31,15 +31,18 @@ var (
 	mainAddress = flag.String(
 		"rell.address",
 		":43600",
-		"Server address to bind to.")
+		"Server address to bind to.",
+	)
 	adminAddress = flag.String(
 		"rell.admin.address",
 		":43601",
-		"Admin http server address.")
+		"Admin http server address.",
+	)
 	goMaxProcs = flag.Int(
 		"rell.gomaxprocs",
 		runtime.NumCPU(),
-		"Maximum processes to use.")
+		"Maximum processes to use.",
+	)
 )
 
 func main() {
