@@ -229,12 +229,12 @@ func (o *Object) AppID() string {
 // Get a URL to the Lint tool for the Object.
 func (o *Object) LintURL() string {
 	values := url.Values{}
-	values.Set("url", o.URL())
+	values.Set("q", o.URL())
 	u := &fburl.URL{
 		Scheme:    o.context.Scheme,
 		Env:       o.context.Env,
 		SubDomain: fburl.DDevelopers,
-		Path:      "/tools/lint",
+		Path:      "/tools/debug/og/object",
 		Values:    values,
 	}
 	return u.String()
