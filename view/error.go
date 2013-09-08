@@ -29,12 +29,14 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if code == 0 {
 		code = http.StatusInternalServerError
 	}
-	w.WriteHeader(code)
 	if usePlainText(r) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(code)
 		io.Copy(w, strings.NewReader(err.err.Error()))
 		w.Write([]byte("\n"))
 	} else {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(code)
 		page := &Page{
 			Body: h.String(err.err.Error()),
 		}
