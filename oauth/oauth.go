@@ -110,7 +110,7 @@ func Response(w http.ResponseWriter, r *http.Request) {
 		log.Printf("oauth.Response error: %s", err)
 		view.Error(w, r, errOAuthFail)
 	}
-	res, err := service.HttpClient.Do(req)
+	res, err := service.HttpTransport.RoundTrip(req)
 	if err != nil {
 		log.Printf("oauth.Response error: %s", err)
 		view.Error(w, r, errOAuthFail)

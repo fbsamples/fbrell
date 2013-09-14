@@ -4,7 +4,6 @@ package service
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/daaku/go.fbapi"
@@ -13,7 +12,7 @@ import (
 	"github.com/daaku/go.redis/bytecache"
 	"github.com/daaku/go.redis/bytestore"
 	"github.com/daaku/go.static"
-	"github.com/daaku/go.stats/stathatbackend"
+	"github.com/daaku/go.stats/stathat"
 	"github.com/daaku/go.subcache"
 	"github.com/daaku/go.xsrf"
 )
@@ -21,18 +20,17 @@ import (
 var (
 	Xsrf          = xsrf.ProviderFlag("xsrf")
 	Static        = static.HandlerFlag("rell.static")
-	Stats         = stathatbackend.EZKeyFlag("rell.stats")
+	Stats         = stathat.EZKeyFlag("rell.stats")
 	Redis         = redis.ClientFlag("rell.redis")
 	ByteCache     = bytecache.New(Redis)
 	ByteStore     = bytestore.New(Redis)
 	HttpTransport = httpcontrol.TransportFlag("rell.transport")
-	HttpClient    = &http.Client{Transport: HttpTransport}
 	FbApiClient   = fbapi.ClientFlag("rell.fbapi")
 	Logger        = log.New(os.Stderr, "", log.LstdFlags)
 )
 
 func init() {
-	Stats.Client = HttpClient
+	Stats.Transport = HttpTransport
 	FbApiClient.Transport = HttpTransport
 	Redis.Stats = Stats
 }

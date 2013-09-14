@@ -58,13 +58,6 @@ func main() {
 		service.Logger.SetFlags(0)
 	}
 
-	if err := service.HttpTransport.Start(); err != nil {
-		log.Fatal(err)
-	}
-	if err := service.Stats.Start(); err != nil {
-		log.Fatal(err)
-	}
-
 	err := gracehttp.Serve(
 		&http.Server{Addr: *mainAddress, Handler: mainHandler()},
 		&http.Server{Addr: *adminAddress, Handler: adminHandler()},
@@ -74,9 +67,6 @@ func main() {
 	}
 
 	if err := service.Stats.Close(); err != nil {
-		log.Fatal(err)
-	}
-	if err := service.HttpTransport.Close(); err != nil {
 		log.Fatal(err)
 	}
 }
