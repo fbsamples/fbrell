@@ -21,6 +21,7 @@ import (
 	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
+	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats"
 	"github.com/daaku/go.xsrf"
 	"github.com/daaku/sortutil"
@@ -58,6 +59,7 @@ var (
 type Handler struct {
 	ContextParser *context.Parser
 	ExampleStore  *examples.Store
+	Static        *static.Handler
 	Stats         stats.Backend
 	Xsrf          *xsrf.Provider
 }
@@ -84,6 +86,7 @@ func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
 	a.Stats.Count("viewed examples listing", 1)
 	h.WriteResponse(w, r, &examplesList{
 		Context: context,
+		Static:  a.Static,
 		DB:      examples.GetDB(context.Version),
 	})
 }
@@ -128,6 +131,7 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 			Writer:  w,
 			Request: r,
 			Context: context,
+			Static:  a.Static,
 			Example: example,
 			Xsrf:    a.Xsrf,
 		})
@@ -220,6 +224,7 @@ func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
 		Writer:  w,
 		Request: r,
 		Context: context,
+		Static:  a.Static,
 		Example: example,
 		Xsrf:    a.Xsrf,
 	})
@@ -229,6 +234,7 @@ type page struct {
 	Writer  http.ResponseWriter
 	Request *http.Request
 	Context *context.Context
+	Static  *static.Handler
 	Example *examples.Example
 	Xsrf    *xsrf.Provider
 }
@@ -236,6 +242,7 @@ type page struct {
 func (p *page) HTML() (h.HTML, error) {
 	return &view.Page{
 		Context: p.Context,
+		Static:  p.Static,
 		Title:   p.Example.Title,
 		Class:   "main",
 		Resource: []loader.Resource{&js.Init{
@@ -591,6 +598,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 type examplesList struct {
 	Context *context.Context
 	DB      *examples.DB
+	Static  *static.Handler
 }
 
 func (l *examplesList) HTML() (h.HTML, error) {
@@ -605,6 +613,7 @@ func (l *examplesList) HTML() (h.HTML, error) {
 	}
 	return &view.Page{
 		Context: l.Context,
+		Static:  l.Static,
 		Title:   "Examples",
 		Class:   "examples",
 		Body: &h.Div{

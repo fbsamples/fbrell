@@ -21,6 +21,7 @@ import (
 
 type Handler struct {
 	ContextParser *context.Parser
+	Static        *static.Handler
 	Stats         stats.Backend
 }
 
@@ -44,13 +45,13 @@ func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
 	if len(parts) > 3 {
 		values.Set("og:title", parts[3])
 	}
-	object, err := og.NewFromValues(context, values)
+	object, err := og.NewFromValues(context, a.Static, values)
 	if err != nil {
 		view.Error(w, r, err)
 		return
 	}
 	a.Stats.Count("viewed og", 1)
-	h.WriteResponse(w, r, renderObject(context, object))
+	h.WriteResponse(w, r, renderObject(context, a.Static, object))
 }
 
 // Handles /rog/* requests.
@@ -66,13 +67,13 @@ func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) {
 			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
 		return
 	}
-	object, err := og.NewFromBase64(context, parts[2])
+	object, err := og.NewFromBase64(context, a.Static, parts[2])
 	if err != nil {
 		view.Error(w, r, err)
 		return
 	}
 	a.Stats.Count("viewed rog", 1)
-	h.WriteResponse(w, r, renderObject(context, object))
+	h.WriteResponse(w, r, renderObject(context, a.Static, object))
 }
 
 // Handles /rog-redirect/ requests.
@@ -159,7 +160,7 @@ func renderMetaTable(o *og.Object) h.HTML {
 }
 
 // Render a document for the Object.
-func renderObject(context *context.Context, o *og.Object) h.HTML {
+func renderObject(context *context.Context, s *static.Handler, o *og.Object) h.HTML {
 	var title, header h.HTML
 	if o.Title() != "" {
 		title = &h.Title{h.String(o.Title())}
@@ -177,7 +178,7 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 					&h.Meta{Charset: "utf-8"},
 					title,
 					&static.LinkStyle{
-						Handler: context.Static,
+						Handler: s,
 						HREF:    view.DefaultStyleHREFs,
 					},
 					renderMeta(o),

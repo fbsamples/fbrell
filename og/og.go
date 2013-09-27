@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/daaku/go.fburl"
+	"github.com/daaku/go.static"
 
 	"github.com/daaku/rell/context"
 )
@@ -83,7 +84,7 @@ func copyValues(source url.Values) url.Values {
 }
 
 // Create a new Object from Base64 JSON encoded data.
-func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
+func NewFromBase64(context *context.Context, s *static.Handler, b64 string) (*Object, error) {
 	jsonBytes, err := base64.URLEncoding.DecodeString(fixPadding(b64))
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -123,7 +124,7 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		object.AddPair("og:url", url)
 	}
 
-	err = object.generateDefaults(context)
+	err = object.generateDefaults(context, s)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +132,7 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 }
 
 // Create a new Object from query string data.
-func NewFromValues(context *context.Context, values url.Values) (*Object, error) {
+func NewFromValues(context *context.Context, s *static.Handler, values url.Values) (*Object, error) {
 	object := &Object{context: context}
 	for key, values := range values {
 		if strings.Contains(key, ":") {
@@ -161,7 +162,7 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
 	}
 
-	err := object.generateDefaults(context)
+	err := object.generateDefaults(context, s)
 	if err != nil {
 		return nil, err
 	}
@@ -180,10 +181,10 @@ func (o *Object) shouldGenerate(key string) bool {
 	return true
 }
 
-func (o *Object) generateDefaults(context *context.Context) error {
+func (o *Object) generateDefaults(context *context.Context, s *static.Handler) error {
 	url := o.URL()
 	if o.shouldGenerate("og:image") {
-		img, err := context.Static.URL("/images/" + hashedPick(url, stockImages))
+		img, err := s.URL("/images/" + hashedPick(url, stockImages))
 		if err != nil {
 			return err
 		}

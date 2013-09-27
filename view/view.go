@@ -53,6 +53,7 @@ var BootstrapScriptsSrc = []string{
 // A minimal standard page with no visible body.
 type Page struct {
 	Context  *context.Context
+	Static   *static.Handler
 	Class    string
 	Head     h.HTML
 	Body     h.HTML
@@ -83,7 +84,7 @@ func (p *Page) HTML() (h.HTML, error) {
 						h.Unsafe(" &mdash; Facebook Read Eval Log Loop"),
 					},
 					&static.LinkStyle{
-						Handler: p.Context.Static,
+						Handler: p.Static,
 						HREF:    DefaultStyleHREFs,
 					},
 					p.Head,
@@ -96,7 +97,7 @@ func (p *Page) HTML() (h.HTML, error) {
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},
 					&static.Script{
-						Handler: p.Context.Static,
+						Handler: p.Static,
 						Src:     BootstrapScriptsSrc,
 					},
 					&loader.HTML{

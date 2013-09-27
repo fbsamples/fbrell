@@ -71,7 +71,6 @@ func main() {
 	contextParser := &context.Parser{
 		EmpChecker:   empChecker,
 		AppNSFetcher: appNSFetcher,
-		Static:       static,
 	}
 
 	app := &web.App{
@@ -85,10 +84,12 @@ func main() {
 			ExampleStore:  exampleStore,
 			Stats:         sh,
 			Xsrf:          xsrf,
+			Static:        static,
 		},
 		OgHandler: &viewog.Handler{
 			ContextParser: contextParser,
 			Stats:         sh,
+			Static:        static,
 		},
 		OauthHandler: &oauth.Handler{
 			ContextParser: contextParser,

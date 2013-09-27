@@ -15,7 +15,6 @@ import (
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
-	"github.com/daaku/go.static"
 	"github.com/daaku/go.trustforward"
 	"github.com/gorilla/schema"
 
@@ -64,7 +63,6 @@ type Context struct {
 	ViewportMode         string              `schema:"viewport-mode"`
 	IsEmployee           bool                `schema:"-"`
 	Init                 bool                `schema:"init"`
-	Static               *static.Handler     `schema:"-"`
 }
 
 // Defaults for the context.
@@ -90,7 +88,6 @@ var (
 type Parser struct {
 	EmpChecker   *empcheck.Checker
 	AppNSFetcher *appns.Fetcher
-	Static       *static.Handler
 }
 
 // Create a context from a HTTP request.
@@ -103,7 +100,6 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 		r.Form.Set("appid", id)
 	}
 	context := Default()
-	context.Static = p.Static
 	_ = schemaDecoder.Decode(context, r.URL.Query())
 	_ = schemaDecoder.Decode(context, r.Form)
 	rawSr := r.FormValue("signed_request")
