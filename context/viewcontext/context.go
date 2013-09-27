@@ -12,9 +12,13 @@ import (
 
 var version string
 
+type Handler struct {
+	ContextParser *context.Parser
+}
+
 // Handler for /info/ to see a JSON view of some server context.
-func Info(w http.ResponseWriter, r *http.Request) {
-	context, err := context.FromRequest(r)
+func (h *Handler) Info(w http.ResponseWriter, r *http.Request) {
+	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return

@@ -17,7 +17,6 @@ import (
 	"github.com/daaku/go.fburl"
 
 	"github.com/daaku/rell/context"
-	"github.com/daaku/rell/service"
 )
 
 // The representation of of <meta property="{key}" content="{value}">.
@@ -124,7 +123,7 @@ func NewFromBase64(context *context.Context, b64 string) (*Object, error) {
 		object.AddPair("og:url", url)
 	}
 
-	err = object.generateDefaults()
+	err = object.generateDefaults(context)
 	if err != nil {
 		return nil, err
 	}
@@ -157,12 +156,12 @@ func NewFromValues(context *context.Context, values url.Values) (*Object, error)
 
 	ogType := object.Type()
 	isGlobalOGType := !strings.Contains(ogType, ":")
-	isOwnedOGType := strings.HasPrefix(ogType, context.AppNamespace()+":")
+	isOwnedOGType := strings.HasPrefix(ogType, context.AppNamespace+":")
 	if object.shouldGenerate("fb:app_id") && (isGlobalOGType || isOwnedOGType) {
 		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
 	}
 
-	err := object.generateDefaults()
+	err := object.generateDefaults(context)
 	if err != nil {
 		return nil, err
 	}
@@ -181,10 +180,10 @@ func (o *Object) shouldGenerate(key string) bool {
 	return true
 }
 
-func (o *Object) generateDefaults() error {
+func (o *Object) generateDefaults(context *context.Context) error {
 	url := o.URL()
 	if o.shouldGenerate("og:image") {
-		img, err := service.Static.URL("/images/" + hashedPick(url, stockImages))
+		img, err := context.Static.URL("/images/" + hashedPick(url, stockImages))
 		if err != nil {
 			return err
 		}

@@ -17,7 +17,6 @@ import (
 	"github.com/daaku/go.h"
 
 	"github.com/daaku/rell/context"
-	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
 )
 
@@ -31,20 +30,25 @@ var (
 	errInvalidState = errors.New("Invalid state")
 )
 
-func Handle(w http.ResponseWriter, r *http.Request) {
+type Handler struct {
+	ContextParser *context.Parser
+	HttpTransport http.RoundTripper
+}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case Path:
-		Start(w, r)
+		h.Start(w, r)
 		return
 	case Path + resp:
-		Response(w, r)
+		h.Response(w, r)
 		return
 	}
 	http.NotFound(w, r)
 }
 
-func Start(w http.ResponseWriter, r *http.Request) {
-	c, err := context.FromRequest(r)
+func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
+	c, err := a.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
@@ -80,8 +84,8 @@ func Start(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Response(w http.ResponseWriter, r *http.Request) {
-	c, err := context.FromRequest(r)
+func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
+	c, err := h.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
@@ -110,7 +114,7 @@ func Response(w http.ResponseWriter, r *http.Request) {
 		log.Printf("oauth.Response error: %s", err)
 		view.Error(w, r, errOAuthFail)
 	}
-	res, err := service.HttpTransport.RoundTrip(req)
+	res, err := h.HttpTransport.RoundTrip(req)
 	if err != nil {
 		log.Printf("oauth.Response error: %s", err)
 		view.Error(w, r, errOAuthFail)

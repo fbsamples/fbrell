@@ -1,0 +1,107 @@
+// Package web provides the main HTTP entrypoint for rell.
+package web
+
+import (
+	"net/http"
+	"net/http/pprof"
+	"path/filepath"
+	"sync"
+
+	"github.com/daaku/go.browserify"
+	"github.com/daaku/go.fbapp"
+	"github.com/daaku/go.httpdev"
+	"github.com/daaku/go.httpgzip"
+	"github.com/daaku/go.httpstats"
+	"github.com/daaku/go.signedrequest/appdata"
+	"github.com/daaku/go.static"
+	"github.com/daaku/go.stats"
+	"github.com/daaku/go.viewvar"
+
+	"github.com/daaku/rell/context/viewcontext"
+	"github.com/daaku/rell/examples/viewexamples"
+	"github.com/daaku/rell/oauth"
+	"github.com/daaku/rell/og/viewog"
+)
+
+// The rell web application.
+type App struct {
+	ContextHandler  *viewcontext.Handler
+	ExamplesHandler *viewexamples.Handler
+	OgHandler       *viewog.Handler
+	OauthHandler    *oauth.Handler
+	Stats           stats.Backend
+	Static          *static.Handler
+
+	adminHandler     http.Handler
+	adminHandlerOnce sync.Once
+	mainHandler      http.Handler
+	mainHandlerOnce  sync.Once
+}
+
+// Serve HTTP requests for the admin port.
+func (a *App) AdminHandler(w http.ResponseWriter, r *http.Request) {
+	a.adminHandlerOnce.Do(func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		mux.HandleFunc("/vars/", viewvar.Json)
+		a.adminHandler = mux
+	})
+	a.adminHandler.ServeHTTP(w, r)
+}
+
+// Serve HTTP requests for the main port.
+func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
+	a.mainHandlerOnce.Do(func() {
+		const public = "/public/"
+
+		mux := http.NewServeMux()
+		mux.Handle(a.Static.HttpPath, a.Static)
+
+		a.staticFile(mux, "/favicon.ico")
+		a.staticFile(mux, "/f8.jpg")
+		a.staticFile(mux, "/robots.txt")
+		mux.Handle(public,
+			http.StripPrefix(
+				public, http.FileServer(http.Dir(a.Static.DiskPath))))
+
+		mux.HandleFunc(browserify.Path, browserify.Handle)
+		mux.HandleFunc("/not_a_real_webpage", http.NotFound)
+		mux.HandleFunc("/info/", a.ContextHandler.Info)
+		mux.HandleFunc("/examples/", a.ExamplesHandler.List)
+		mux.HandleFunc("/saved/", a.ExamplesHandler.Saved)
+		mux.HandleFunc("/raw/", a.ExamplesHandler.Raw)
+		mux.HandleFunc("/simple/", a.ExamplesHandler.Simple)
+		mux.HandleFunc("/channel/", a.ExamplesHandler.SdkChannel)
+		mux.HandleFunc("/", a.ExamplesHandler.Example)
+		mux.HandleFunc("/og/", a.OgHandler.Values)
+		mux.HandleFunc("/rog/", a.OgHandler.Base64)
+		mux.HandleFunc("/rog-redirect/", a.OgHandler.Redirect)
+		mux.Handle(oauth.Path, a.OauthHandler)
+		mux.HandleFunc("/sleep/", httpdev.Sleep)
+
+		var handler http.Handler
+		handler = &httpstats.Handler{
+			Name:    "web",
+			Handler: mux,
+			Stats:   a.Stats,
+		}
+		handler = &appdata.Handler{
+			Handler: handler,
+			Secret:  fbapp.Default.SecretByte(),
+		}
+		handler = httpgzip.NewHandler(handler)
+		a.mainHandler = handler
+	})
+	a.mainHandler.ServeHTTP(w, r)
+}
+
+// binds a path to a single file
+func (a *App) staticFile(mux *http.ServeMux, name string) {
+	abs := filepath.Join(a.Static.DiskPath, name)
+	mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, abs)
+	})
+}

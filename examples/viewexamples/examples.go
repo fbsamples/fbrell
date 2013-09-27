@@ -21,12 +21,13 @@ import (
 	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
+	"github.com/daaku/go.stats"
+	"github.com/daaku/go.xsrf"
 	"github.com/daaku/sortutil"
 
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/js"
-	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
 )
 
@@ -52,54 +53,50 @@ var (
 		context.Canvas:  "Canvas",
 	}
 	errTokenMismatch = errcode.New(http.StatusForbidden, "Token mismatch.")
-	exampleStore     = &examples.Store{ByteStore: service.ByteStore}
 )
 
+type Handler struct {
+	ContextParser *context.Parser
+	ExampleStore  *examples.Store
+	Stats         stats.Backend
+	Xsrf          *xsrf.Provider
+}
+
 // Parse the Context and an Example.
-func parse(r *http.Request) (*context.Context, *examples.Example, error) {
-	context, err := context.FromRequest(r)
+func (h *Handler) parse(r *http.Request) (*context.Context, *examples.Example, error) {
+	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
 		return nil, nil, err
 	}
-	example, err := exampleStore.Load(context.Version, r.URL.Path)
+	example, err := h.ExampleStore.Load(context.Version, r.URL.Path)
 	if err != nil {
 		return nil, nil, err
 	}
 	return context, example, nil
 }
 
-// random string
-func randString(length int) string {
-	i := make([]byte, length)
-	_, err := rand.Read(i)
-	if err != nil {
-		log.Panicf("failed to generate randString: %s", err)
-	}
-	return hex.EncodeToString(i)
-}
-
-func List(w http.ResponseWriter, r *http.Request) {
-	context, err := context.FromRequest(r)
+func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
+	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
 	}
-	service.Stats.Inc("viewed examples listing")
+	a.Stats.Count("viewed examples listing", 1)
 	h.WriteResponse(w, r, &examplesList{
 		Context: context,
 		DB:      examples.GetDB(context.Version),
 	})
 }
 
-func Saved(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" && r.URL.Path == savedPath {
-		c, err := context.FromRequest(r)
+		c, err := a.ContextParser.FromRequest(r)
 		if err != nil {
 			view.Error(w, r, err)
 			return
 		}
-		if !service.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
-			service.Stats.Inc(savedPath + " xsrf failure")
+		if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
+			a.Stats.Count(savedPath+" xsrf failure", 1)
 			view.Error(w, r, errTokenMismatch)
 			return
 		}
@@ -112,32 +109,33 @@ func Saved(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, c.ViewURL(example.URL), 302)
 			return
 		}
-		err = exampleStore.Save(id, content)
+		err = a.ExampleStore.Save(id, content)
 		if err != nil {
 			view.Error(w, r, err)
 			return
 		}
-		service.Stats.Inc("saved example")
+		a.Stats.Count("saved example", 1)
 		http.Redirect(w, r, c.ViewURL(savedPath+id), 302)
 		return
 	} else {
-		context, example, err := parse(r)
+		context, example, err := a.parse(r)
 		if err != nil {
 			view.Error(w, r, err)
 			return
 		}
-		service.Stats.Inc("viewed saved example")
+		a.Stats.Count("viewed saved example", 1)
 		h.WriteResponse(w, r, &page{
 			Writer:  w,
 			Request: r,
 			Context: context,
 			Example: example,
+			Xsrf:    a.Xsrf,
 		})
 	}
 }
 
-func Raw(w http.ResponseWriter, r *http.Request) {
-	context, example, err := parse(r)
+func (a *Handler) Raw(w http.ResponseWriter, r *http.Request) {
+	context, example, err := a.parse(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
@@ -147,15 +145,15 @@ func Raw(w http.ResponseWriter, r *http.Request) {
 			w, r, errors.New("Not allowed to view this example in raw mode."))
 		return
 	}
-	service.Stats.Inc("viewed example in raw mode")
+	a.Stats.Count("viewed example in raw mode", 1)
 	h.WriteResponse(w, r, &exampleContent{
 		Context: context,
 		Example: example,
 	})
 }
 
-func Simple(w http.ResponseWriter, r *http.Request) {
-	context, example, err := parse(r)
+func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
+	context, example, err := a.parse(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
@@ -165,7 +163,7 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 			w, r, errors.New("Not allowed to view this example in simple mode."))
 		return
 	}
-	service.Stats.Inc("viewed example in simple mode")
+	a.Stats.Count("viewed example in simple mode", 1)
 	h.WriteResponse(w, r, &h.Document{
 		Inner: &h.Frag{
 			&h.Head{
@@ -198,31 +196,32 @@ func Simple(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func SdkChannel(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) SdkChannel(w http.ResponseWriter, r *http.Request) {
 	const maxAge = 31536000 // 1 year
-	context, err := context.FromRequest(r)
+	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
 	}
-	service.Stats.Inc("viewed channel")
+	a.Stats.Count("viewed channel", 1)
 	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	h.WriteResponse(w, r, &h.Script{Src: context.SdkURL()})
 }
 
-func Example(w http.ResponseWriter, r *http.Request) {
-	context, example, err := parse(r)
+func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
+	context, example, err := a.parse(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
 	}
-	service.Stats.Inc("viewed stock example")
+	a.Stats.Count("viewed stock example", 1)
 	h.WriteResponse(w, r, &page{
 		Writer:  w,
 		Request: r,
 		Context: context,
 		Example: example,
+		Xsrf:    a.Xsrf,
 	})
 }
 
@@ -231,6 +230,7 @@ type page struct {
 	Request *http.Request
 	Context *context.Context
 	Example *examples.Example
+	Xsrf    *xsrf.Provider
 }
 
 func (p *page) HTML() (h.HTML, error) {
@@ -251,7 +251,7 @@ func (p *page) HTML() (h.HTML, error) {
 					Target: "_top",
 					Inner: &h.Frag{
 						h.HiddenInputs(url.Values{
-							paramName: []string{service.Xsrf.Token(p.Writer, p.Request, savedPath)},
+							paramName: []string{p.Xsrf.Token(p.Writer, p.Request, savedPath)},
 						}),
 						&h.Div{
 							Class: "row-fluid",
@@ -736,7 +736,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 			WwwURL   string // server specific http://www.facebook.com/ URL
 		}{
 			Rand:     randString(10),
-			RellFBNS: c.Context.AppNamespace(),
+			RellFBNS: c.Context.AppNamespace,
 			RellURL:  context.Default().AbsoluteURL("/").String(),
 			WwwURL:   wwwURL.String(),
 		})
@@ -745,4 +745,14 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 		return w.Write(e.Content)
 	}
 	return countingW.Count(), err
+}
+
+// random string
+func randString(length int) string {
+	i := make([]byte, length)
+	_, err := rand.Read(i)
+	if err != nil {
+		log.Panicf("failed to generate randString: %s", err)
+	}
+	return hex.EncodeToString(i)
 }

@@ -10,18 +10,17 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	"time"
 
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
-	"github.com/daaku/go.subcache"
+	"github.com/daaku/go.static"
 	"github.com/daaku/go.trustforward"
 	"github.com/gorilla/schema"
 
+	"github.com/daaku/rell/context/appns"
 	"github.com/daaku/rell/context/empcheck"
-	"github.com/daaku/rell/service"
 )
 
 const defaultMaxMemory = 32 << 20 // 32 MB
@@ -48,6 +47,7 @@ const (
 // user via the URL.
 type Context struct {
 	AppID                uint64              `schema:"appid"`
+	AppNamespace         string              `schema:"-"`
 	Level                string              `schema:"level"`
 	Locale               string              `schema:"locale"`
 	Env                  string              `schema:"server"`
@@ -64,6 +64,7 @@ type Context struct {
 	ViewportMode         string              `schema:"viewport-mode"`
 	IsEmployee           bool                `schema:"-"`
 	Init                 bool                `schema:"init"`
+	Static               *static.Handler     `schema:"-"`
 }
 
 // Defaults for the context.
@@ -84,17 +85,16 @@ var defaultContext = &Context{
 
 var (
 	schemaDecoder = schema.NewDecoder()
-	nsCache       = &subcache.Client{
-		Prefix:      "appns",
-		ByteCache:   service.ByteCache,
-		Stats:       service.SubCacheStats,
-		ErrorLogger: service.Logger,
-	}
-	nsCacheTimeout = 60 * 24 * time.Hour
 )
 
+type Parser struct {
+	EmpChecker   *empcheck.Checker
+	AppNSFetcher *appns.Fetcher
+	Static       *static.Handler
+}
+
 // Create a context from a HTTP request.
-func FromRequest(r *http.Request) (*Context, error) {
+func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 	err := r.ParseMultipartForm(defaultMaxMemory)
 	if err != nil {
 		return nil, err
@@ -103,6 +103,7 @@ func FromRequest(r *http.Request) (*Context, error) {
 		r.Form.Set("appid", id)
 	}
 	context := Default()
+	context.Static = p.Static
 	_ = schemaDecoder.Decode(context, r.URL.Query())
 	_ = schemaDecoder.Decode(context, r.Form)
 	rawSr := r.FormValue("signed_request")
@@ -126,8 +127,9 @@ func FromRequest(r *http.Request) (*Context, error) {
 	context.Host = trustforward.Host(r)
 	context.Scheme = trustforward.Scheme(r)
 	if context.SignedRequest != nil && context.SignedRequest.UserID != 0 {
-		context.IsEmployee = empcheck.IsEmployee(context.SignedRequest.UserID)
+		context.IsEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
 	}
+	context.AppNamespace = p.AppNSFetcher.Get(context.AppID)
 	return context, nil
 }
 
@@ -191,7 +193,7 @@ func (c *Context) PageTabURL(name string) string {
 
 // Get the URL for loading this application in a Canvas page on Facebook.
 func (c *Context) CanvasURL(name string) string {
-	var base = "/" + c.AppNamespace() + "/"
+	var base = "/" + c.AppNamespace + "/"
 	if name == "" || name == "/" {
 		name = base
 	} else {
@@ -206,30 +208,6 @@ func (c *Context) CanvasURL(name string) string {
 		Values:    c.Values(),
 	}
 	return url.String()
-}
-
-// Get the App Namespace, fetching it using the Graph API if necessary.
-func (c *Context) AppNamespace() string {
-	if c.AppID == fbapp.Default.ID() {
-		return fbapp.Default.Namespace()
-	}
-
-	ids := strconv.FormatUint(c.AppID, 10)
-	ns, _ := nsCache.Get(ids)
-	if ns != nil {
-		return string(ns)
-	}
-
-	res := struct{ Namespace string }{""}
-	req := http.Request{Method: "GET", URL: &url.URL{Path: ids}}
-	_, err := service.FbApiClient.Do(&req, &res)
-	if err != nil {
-		service.Logger.Printf("Ignoring error API call for AppNamespace: %s", err)
-		return ""
-	}
-
-	nsCache.Store(ids, []byte(res.Namespace), nsCacheTimeout)
-	return res.Namespace
 }
 
 // Get a Channel URL for the SDK.

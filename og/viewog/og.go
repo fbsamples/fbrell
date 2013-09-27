@@ -11,16 +11,22 @@ import (
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.js.loader"
+	"github.com/daaku/go.static"
+	"github.com/daaku/go.stats"
 
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/og"
-	"github.com/daaku/rell/service"
 	"github.com/daaku/rell/view"
 )
 
+type Handler struct {
+	ContextParser *context.Parser
+	Stats         stats.Backend
+}
+
 // Handles /og/ requests.
-func Values(w http.ResponseWriter, r *http.Request) {
-	context, err := context.FromRequest(r)
+func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
+	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
@@ -43,13 +49,13 @@ func Values(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	service.Stats.Inc("viewed og")
+	a.Stats.Count("viewed og", 1)
 	h.WriteResponse(w, r, renderObject(context, object))
 }
 
 // Handles /rog/* requests.
-func Base64(w http.ResponseWriter, r *http.Request) {
-	context, err := context.FromRequest(r)
+func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) {
+	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
@@ -65,12 +71,12 @@ func Base64(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, err)
 		return
 	}
-	service.Stats.Inc("viewed rog")
+	a.Stats.Count("viewed rog", 1)
 	h.WriteResponse(w, r, renderObject(context, object))
 }
 
 // Handles /rog-redirect/ requests.
-func Redirect(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 5 {
 		view.Error(w, r, fmt.Errorf("Invalid URL: %s", r.URL.Path))
@@ -86,12 +92,12 @@ func Redirect(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, fmt.Errorf("Invalid count: %s", parts[3]))
 		return
 	}
-	context, err := context.FromRequest(r)
+	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, err)
 		return
 	}
-	service.Stats.Inc("rog-redirect request")
+	h.Stats.Count("rog-redirect request", 1)
 	if count == 0 {
 		http.Redirect(
 			w, r, context.AbsoluteURL("/rog/"+parts[4]).String(), status)
@@ -170,7 +176,10 @@ func renderObject(context *context.Context, o *og.Object) h.HTML {
 				Inner: &h.Frag{
 					&h.Meta{Charset: "utf-8"},
 					title,
-					view.DefaultStyle,
+					&static.LinkStyle{
+						Handler: context.Static,
+						HREF:    view.DefaultStyleHREFs,
+					},
 					renderMeta(o),
 				},
 			},

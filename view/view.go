@@ -9,7 +9,6 @@ import (
 	"github.com/daaku/go.static"
 
 	"github.com/daaku/rell/context"
-	"github.com/daaku/rell/service"
 )
 
 // The default metadata.
@@ -36,26 +35,19 @@ var DefaultMeta = h.Compile(&h.Frag{
 	},
 })
 
-// The default stylesheet.
-var DefaultStyle = &static.LinkStyle{
-	Handler: service.Static,
-	HREF: []string{
-		"css/bootstrap.min.css",
-		"css/bootstrap-responsive.min.css",
-		"css/rell.css",
-	},
+var DefaultStyleHREFs = []string{
+	"css/bootstrap.min.css",
+	"css/bootstrap-responsive.min.css",
+	"css/rell.css",
 }
 
 // The default Google Analytics setup.
 var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
 
 // Bootstrap Scripts.
-var BootstrapScripts = &static.Script{
-	Handler: service.Static,
-	Src: []string{
-		"js/jquery-1.8.2.min.js",
-		"js/bootstrap.min.js",
-	},
+var BootstrapScriptsSrc = []string{
+	"js/jquery-1.8.2.min.js",
+	"js/bootstrap.min.js",
 }
 
 // A minimal standard page with no visible body.
@@ -90,7 +82,10 @@ func (p *Page) HTML() (h.HTML, error) {
 						h.String(p.Title),
 						h.Unsafe(" &mdash; Facebook Read Eval Log Loop"),
 					},
-					DefaultStyle,
+					&static.LinkStyle{
+						Handler: p.Context.Static,
+						HREF:    DefaultStyleHREFs,
+					},
 					p.Head,
 				},
 			},
@@ -100,7 +95,10 @@ func (p *Page) HTML() (h.HTML, error) {
 					p.Body,
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},
-					BootstrapScripts,
+					&static.Script{
+						Handler: p.Context.Static,
+						Src:     BootstrapScriptsSrc,
+					},
 					&loader.HTML{
 						Resource: p.Resource,
 					},
