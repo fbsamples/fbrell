@@ -20,6 +20,7 @@ import (
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.h.ui"
+	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/sortutil"
 
 	"github.com/daaku/rell/context"
@@ -51,7 +52,7 @@ var (
 		context.Canvas:  "Canvas",
 	}
 	errTokenMismatch = errcode.New(http.StatusForbidden, "Token mismatch.")
-	exampleStore     = &examples.Store{service.ByteStore}
+	exampleStore     = &examples.Store{ByteStore: service.ByteStore}
 )
 
 // Parse the Context and an Example.
@@ -720,6 +721,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 	wwwURL := fburl.URL{
 		Env: c.Context.Env,
 	}
+	w = htmlwriter.New(w)
 	tpl, err := template.New("example-" + e.URL).Parse(string(e.Content))
 	if err != nil {
 		// if template parsing fails, we ignore it. it's probably malformed html
