@@ -51,6 +51,7 @@ func main() {
 	empChecker := &empcheck.Checker{
 		FbApiClient:  fbApiClient,
 		App:          fbapp.Flag("empcheck"),
+		Logger:       logger,
 		CacheTimeout: 24 * 90 * time.Hour,
 		Cache: &subcache.Client{
 			Prefix:      "is_employee",
@@ -61,6 +62,7 @@ func main() {
 	}
 	appNSFetcher := &appns.Fetcher{
 		FbApiClient:  fbApiClient,
+		Logger:       logger,
 		CacheTimeout: 60 * 24 * time.Hour,
 		Cache: &subcache.Client{
 			Prefix:      "appns",
