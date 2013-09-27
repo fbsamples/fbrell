@@ -124,13 +124,12 @@ func main() {
 	redis.Stats = sh
 
 	if err := sh.Start(); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// for systemd started servers we can skip the date/time since journald
 	// already shows it
 	if os.Getppid() == 1 {
-		log.SetFlags(0)
 		logger.SetFlags(0)
 	}
 
@@ -139,10 +138,10 @@ func main() {
 		&http.Server{Addr: *adminAddress, Handler: http.HandlerFunc(app.AdminHandler)},
 	)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	if err := sh.Stop(); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }
