@@ -82,6 +82,7 @@ func main() {
 		Static: static,
 		ContextHandler: &viewcontext.Handler{
 			ContextParser: contextParser,
+			Static:        static,
 		},
 		ExamplesHandler: &viewexamples.Handler{
 			ContextParser: contextParser,
@@ -98,6 +99,7 @@ func main() {
 		OauthHandler: &oauth.Handler{
 			ContextParser: contextParser,
 			HttpTransport: httpTransport,
+			Static:        static,
 		},
 	}
 

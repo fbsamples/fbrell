@@ -8,6 +8,7 @@ import (
 
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.h"
+	"github.com/daaku/go.static"
 )
 
 // HTTP Coded Error.
@@ -18,7 +19,8 @@ type ErrorCode interface {
 
 // http.Handler for ErrorCode.
 type errorCodeHandler struct {
-	err ErrorCode
+	Static *static.Handler
+	err    ErrorCode
 }
 
 // Serve an appropriate response for this error. Currently this means
@@ -38,7 +40,8 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(code)
 		page := &Page{
-			Body: h.String(err.err.Error()),
+			Static: err.Static,
+			Body:   h.String(err.err.Error()),
 		}
 		h.WriteResponse(w, r, page)
 	}
@@ -47,7 +50,7 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Send a error response. If the error also implements http.Handler,
 // it will simply be passed control, otherwise the default error
 // rendering will be used.
-func Error(w http.ResponseWriter, r *http.Request, err error) {
+func Error(w http.ResponseWriter, r *http.Request, s *static.Handler, err error) {
 	handler, ok := err.(http.Handler)
 	if !ok {
 		errCode, ok := err.(ErrorCode)
@@ -55,7 +58,10 @@ func Error(w http.ResponseWriter, r *http.Request, err error) {
 			errCode = errcode.Add(500, err)
 			log.Printf("Error %d: %s %s %v", errCode.Code(), r.URL, err, err)
 		}
-		handler = errorCodeHandler{errCode}
+		handler = errorCodeHandler{
+			Static: s,
+			err:    errCode,
+		}
 	}
 	handler.ServeHTTP(w, r)
 }

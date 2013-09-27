@@ -15,6 +15,7 @@ import (
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
+	"github.com/daaku/go.static"
 
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/view"
@@ -33,6 +34,7 @@ var (
 type Handler struct {
 	ContextParser *context.Parser
 	HttpTransport http.RoundTripper
+	Static        *static.Handler
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +52,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
 	c, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	values := url.Values{}
@@ -87,11 +89,11 @@ func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
 	c, err := h.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, h.Static, err)
 		return
 	}
 	if r.FormValue("state") != state(w, r) {
-		view.Error(w, r, errInvalidState)
+		view.Error(w, r, h.Static, errInvalidState)
 		return
 	}
 
@@ -112,16 +114,16 @@ func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
 	req, err := http.NewRequest("GET", atURL.String(), nil)
 	if err != nil {
 		log.Printf("oauth.Response error: %s", err)
-		view.Error(w, r, errOAuthFail)
+		view.Error(w, r, h.Static, errOAuthFail)
 	}
 	res, err := h.HttpTransport.RoundTrip(req)
 	if err != nil {
 		log.Printf("oauth.Response error: %s", err)
-		view.Error(w, r, errOAuthFail)
+		view.Error(w, r, h.Static, errOAuthFail)
 	}
 	defer res.Body.Close()
 	if _, err := io.Copy(w, res.Body); err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, h.Static, err)
 		return
 	}
 }

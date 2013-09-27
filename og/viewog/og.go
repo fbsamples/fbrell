@@ -29,13 +29,13 @@ type Handler struct {
 func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
 	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	values := r.URL.Query()
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) > 4 {
-		view.Error(w, r, errcode.New(
+		view.Error(w, r, a.Static, errcode.New(
 			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
 		return
 	}
@@ -47,7 +47,7 @@ func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
 	}
 	object, err := og.NewFromValues(context, a.Static, values)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	a.Stats.Count("viewed og", 1)
@@ -58,18 +58,18 @@ func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
 func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) {
 	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {
-		view.Error(w, r, errcode.New(
+		view.Error(w, r, a.Static, errcode.New(
 			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
 		return
 	}
 	object, err := og.NewFromBase64(context, a.Static, parts[2])
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	a.Stats.Count("viewed rog", 1)
@@ -80,22 +80,22 @@ func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 5 {
-		view.Error(w, r, fmt.Errorf("Invalid URL: %s", r.URL.Path))
+		view.Error(w, r, h.Static, fmt.Errorf("Invalid URL: %s", r.URL.Path))
 		return
 	}
 	status, err := strconv.Atoi(parts[2])
 	if err != nil || (status != 301 && status != 302) {
-		view.Error(w, r, fmt.Errorf("Invalid status: %s", parts[2]))
+		view.Error(w, r, h.Static, fmt.Errorf("Invalid status: %s", parts[2]))
 		return
 	}
 	count, err := strconv.Atoi(parts[3])
 	if err != nil {
-		view.Error(w, r, fmt.Errorf("Invalid count: %s", parts[3]))
+		view.Error(w, r, h.Static, fmt.Errorf("Invalid count: %s", parts[3]))
 		return
 	}
 	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, h.Static, err)
 		return
 	}
 	h.Stats.Count("rog-redirect request", 1)

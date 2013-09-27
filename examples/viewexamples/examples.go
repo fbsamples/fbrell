@@ -80,7 +80,7 @@ func (h *Handler) parse(r *http.Request) (*context.Context, *examples.Example, e
 func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
 	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	a.Stats.Count("viewed examples listing", 1)
@@ -95,12 +95,12 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" && r.URL.Path == savedPath {
 		c, err := a.ContextParser.FromRequest(r)
 		if err != nil {
-			view.Error(w, r, err)
+			view.Error(w, r, a.Static, err)
 			return
 		}
 		if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
 			a.Stats.Count(savedPath+" xsrf failure", 1)
-			view.Error(w, r, errTokenMismatch)
+			view.Error(w, r, a.Static, errTokenMismatch)
 			return
 		}
 		content := bytes.TrimSpace([]byte(r.FormValue("code")))
@@ -114,7 +114,7 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 		}
 		err = a.ExampleStore.Save(id, content)
 		if err != nil {
-			view.Error(w, r, err)
+			view.Error(w, r, a.Static, err)
 			return
 		}
 		a.Stats.Count("saved example", 1)
@@ -123,7 +123,7 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 	} else {
 		context, example, err := a.parse(r)
 		if err != nil {
-			view.Error(w, r, err)
+			view.Error(w, r, a.Static, err)
 			return
 		}
 		a.Stats.Count("viewed saved example", 1)
@@ -141,12 +141,12 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 func (a *Handler) Raw(w http.ResponseWriter, r *http.Request) {
 	context, example, err := a.parse(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	if !example.AutoRun {
 		view.Error(
-			w, r, errors.New("Not allowed to view this example in raw mode."))
+			w, r, a.Static, errors.New("Not allowed to view this example in raw mode."))
 		return
 	}
 	a.Stats.Count("viewed example in raw mode", 1)
@@ -159,12 +159,12 @@ func (a *Handler) Raw(w http.ResponseWriter, r *http.Request) {
 func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
 	context, example, err := a.parse(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	if !example.AutoRun {
 		view.Error(
-			w, r, errors.New("Not allowed to view this example in simple mode."))
+			w, r, a.Static, errors.New("Not allowed to view this example in simple mode."))
 		return
 	}
 	a.Stats.Count("viewed example in simple mode", 1)
@@ -204,7 +204,7 @@ func (a *Handler) SdkChannel(w http.ResponseWriter, r *http.Request) {
 	const maxAge = 31536000 // 1 year
 	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	a.Stats.Count("viewed channel", 1)
@@ -216,7 +216,7 @@ func (a *Handler) SdkChannel(w http.ResponseWriter, r *http.Request) {
 func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
 	context, example, err := a.parse(r)
 	if err != nil {
-		view.Error(w, r, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
 	a.Stats.Count("viewed stock example", 1)
