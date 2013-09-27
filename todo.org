@@ -1,3 +1,0 @@
-* redis crash causes fbrell to crash instead of reconnect
-* pprof collection, storage & aggregation
-* stathat http issues require restart to fix
