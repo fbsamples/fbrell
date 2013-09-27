@@ -172,7 +172,6 @@ func (c *Context) SdkURL() string {
 				"%s://%s/js/api_lib/v0.4/FeatureLoader.js.php", c.Scheme, server)
 		}
 	}
-	panic("Not reached")
 }
 
 // Get the URL for loading this application in a Page Tab on Facebook.
@@ -300,7 +299,6 @@ func (c *Context) ViewURL(path string) string {
 	default:
 		return c.AbsoluteURL(path).String()
 	}
-	panic("not reached")
 }
 
 // Context aware viewport for a customized mobile experience.
