@@ -20,7 +20,7 @@ import (
 var (
 	Xsrf          = xsrf.ProviderFlag("xsrf")
 	Static        = static.HandlerFlag("rell.static")
-	Stats         = stathat.EZKeyFlag("rell.stats")
+	Stats         = stathat.ClientFlag("rell.stats")
 	Redis         = redis.ClientFlag("rell.redis")
 	ByteCache     = bytecache.New(Redis)
 	ByteStore     = bytestore.New(Redis)

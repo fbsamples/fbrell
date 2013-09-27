@@ -51,6 +51,10 @@ func main() {
 	flagconfig.Parse()
 	runtime.GOMAXPROCS(*goMaxProcs)
 
+	if err := service.Stats.Start(); err != nil {
+		log.Fatal(err)
+	}
+
 	// for systemd started servers we can skip the date/time since journald
 	// already shows it
 	if os.Getppid() == 1 {
@@ -66,7 +70,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := service.Stats.Close(); err != nil {
+	if err := service.Stats.Stop(); err != nil {
 		log.Fatal(err)
 	}
 }
