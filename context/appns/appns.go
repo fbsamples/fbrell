@@ -1,3 +1,5 @@
+// Package appns provides a component to get the canvas namespace for a
+// Facebook application.
 package appns
 
 import (

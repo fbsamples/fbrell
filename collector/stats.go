@@ -1,3 +1,4 @@
+// Package collector provides rell specific stats collection routines.
 package collector
 
 import (

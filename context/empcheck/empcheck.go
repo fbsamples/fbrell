@@ -1,3 +1,4 @@
+// Package empcheck checks for employees.
 package empcheck
 
 import (
