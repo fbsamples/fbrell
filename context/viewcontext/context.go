@@ -19,7 +19,7 @@ type Handler struct {
 }
 
 // Handler for /info/ to see a JSON view of some server context.
-func (h *Handler) Info(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
 		view.Error(w, r, h.Static, err)

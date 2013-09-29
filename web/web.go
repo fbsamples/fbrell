@@ -69,7 +69,7 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 
 		mux.HandleFunc(browserify.Path, browserify.Handle)
 		mux.HandleFunc("/not_a_real_webpage", http.NotFound)
-		mux.HandleFunc("/info/", a.ContextHandler.Info)
+		mux.Handle("/info/", a.ContextHandler)
 		mux.HandleFunc("/examples/", a.ExamplesHandler.List)
 		mux.HandleFunc("/saved/", a.ExamplesHandler.Saved)
 		mux.HandleFunc("/raw/", a.ExamplesHandler.Raw)
