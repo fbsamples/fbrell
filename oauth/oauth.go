@@ -35,6 +35,7 @@ type Handler struct {
 	ContextParser *context.Parser
 	HttpTransport http.RoundTripper
 	Static        *static.Handler
+	App           fbapp.App
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -98,8 +99,8 @@ func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
 	}
 
 	values := url.Values{}
-	values.Set("client_id", strconv.FormatUint(fbapp.Default.ID(), 10))
-	values.Set("client_secret", fbapp.Default.Secret())
+	values.Set("client_id", strconv.FormatUint(h.App.ID(), 10))
+	values.Set("client_secret", h.App.Secret())
 	values.Set("redirect_uri", redirectURI(c))
 	values.Set("code", r.FormValue("code"))
 

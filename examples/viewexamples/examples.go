@@ -128,12 +128,13 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 		}
 		a.Stats.Count("viewed saved example", 1)
 		h.WriteResponse(w, r, &page{
-			Writer:  w,
-			Request: r,
-			Context: context,
-			Static:  a.Static,
-			Example: example,
-			Xsrf:    a.Xsrf,
+			Writer:        w,
+			Request:       r,
+			ContextParser: a.ContextParser,
+			Context:       context,
+			Static:        a.Static,
+			Example:       example,
+			Xsrf:          a.Xsrf,
 		})
 	}
 }
@@ -151,8 +152,9 @@ func (a *Handler) Raw(w http.ResponseWriter, r *http.Request) {
 	}
 	a.Stats.Count("viewed example in raw mode", 1)
 	h.WriteResponse(w, r, &exampleContent{
-		Context: context,
-		Example: example,
+		ContextParser: a.ContextParser,
+		Context:       context,
+		Example:       example,
 	})
 }
 
@@ -190,8 +192,9 @@ func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
 					&h.Div{
 						ID: "example",
 						Inner: &exampleContent{
-							Context: context,
-							Example: example,
+							ContextParser: a.ContextParser,
+							Context:       context,
+							Example:       example,
 						},
 					},
 				},
@@ -221,22 +224,24 @@ func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
 	}
 	a.Stats.Count("viewed stock example", 1)
 	h.WriteResponse(w, r, &page{
-		Writer:  w,
-		Request: r,
-		Context: context,
-		Static:  a.Static,
-		Example: example,
-		Xsrf:    a.Xsrf,
+		Writer:        w,
+		Request:       r,
+		ContextParser: a.ContextParser,
+		Context:       context,
+		Static:        a.Static,
+		Example:       example,
+		Xsrf:          a.Xsrf,
 	})
 }
 
 type page struct {
-	Writer  http.ResponseWriter
-	Request *http.Request
-	Context *context.Context
-	Static  *static.Handler
-	Example *examples.Example
-	Xsrf    *xsrf.Provider
+	Writer        http.ResponseWriter
+	Request       *http.Request
+	ContextParser *context.Parser
+	Context       *context.Context
+	Static        *static.Handler
+	Example       *examples.Example
+	Xsrf          *xsrf.Provider
 }
 
 func (p *page) HTML() (h.HTML, error) {
@@ -267,7 +272,11 @@ func (p *page) HTML() (h.HTML, error) {
 									Class: "span8",
 									Inner: &h.Frag{
 										&editorTop{Context: p.Context, Example: p.Example},
-										&editorArea{Context: p.Context, Example: p.Example},
+										&editorArea{
+											ContextParser: p.ContextParser,
+											Context:       p.Context,
+											Example:       p.Example,
+										},
 										&editorBottom{Context: p.Context, Example: p.Example},
 									},
 								},
@@ -360,8 +369,9 @@ func (e *editorTop) HTML() (h.HTML, error) {
 }
 
 type editorArea struct {
-	Context *context.Context
-	Example *examples.Example
+	ContextParser *context.Parser
+	Context       *context.Context
+	Example       *examples.Example
 }
 
 func (e *editorArea) HTML() (h.HTML, error) {
@@ -371,8 +381,9 @@ func (e *editorArea) HTML() (h.HTML, error) {
 			ID:   "jscode",
 			Name: "code",
 			Inner: &exampleContent{
-				Context: e.Context,
-				Example: e.Example,
+				ContextParser: e.ContextParser,
+				Context:       e.Context,
+				Example:       e.Example,
 			},
 		},
 	}, nil
@@ -715,8 +726,9 @@ func (e *envSelector) HTML() (h.HTML, error) {
 }
 
 type exampleContent struct {
-	Context *context.Context
-	Example *examples.Example
+	ContextParser *context.Parser
+	Context       *context.Context
+	Example       *examples.Example
 }
 
 func (c *exampleContent) HTML() (h.HTML, error) {
@@ -746,7 +758,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 		}{
 			Rand:     randString(10),
 			RellFBNS: c.Context.AppNamespace,
-			RellURL:  context.Default().AbsoluteURL("/").String(),
+			RellURL:  c.ContextParser.Default().AbsoluteURL("/").String(),
 			WwwURL:   wwwURL.String(),
 		})
 	if err != nil {

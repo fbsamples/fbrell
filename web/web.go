@@ -31,6 +31,7 @@ type App struct {
 	OauthHandler    *oauth.Handler
 	Stats           stats.Backend
 	Static          *static.Handler
+	App             fbapp.App
 
 	adminHandler     http.Handler
 	adminHandlerOnce sync.Once
@@ -90,7 +91,7 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		handler = &appdata.Handler{
 			Handler: handler,
-			Secret:  fbapp.Default.SecretByte(),
+			Secret:  a.App.SecretByte(),
 		}
 		handler = httpgzip.NewHandler(handler)
 		a.mainHandler = handler

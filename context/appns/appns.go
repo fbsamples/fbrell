@@ -23,6 +23,7 @@ type Cache interface {
 
 type Fetcher struct {
 	FbApiClient  *fbapi.Client
+	Apps         []fbapp.App
 	Logger       Logger
 	Cache        Cache
 	CacheTimeout time.Duration
@@ -30,8 +31,10 @@ type Fetcher struct {
 
 // Get the App Namespace, fetching it using the Graph API if necessary.
 func (c *Fetcher) Get(id uint64) string {
-	if id == fbapp.Default.ID() {
-		return fbapp.Default.Namespace()
+	for _, app := range c.Apps {
+		if app.ID() == id {
+			return app.Namespace()
+		}
 	}
 
 	ids := strconv.FormatUint(id, 10)

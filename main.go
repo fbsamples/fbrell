@@ -36,6 +36,7 @@ import (
 )
 
 func main() {
+	mainapp := fbapp.Flag("fbapp")
 	sh := stathat.ClientFlag("rell.stats")
 	redis := redis.ClientFlag("rell.redis")
 	xsrf := xsrf.ProviderFlag("xsrf")
@@ -62,6 +63,7 @@ func main() {
 		},
 	}
 	appNSFetcher := &appns.Fetcher{
+		Apps:         []fbapp.App{mainapp},
 		FbApiClient:  fbApiClient,
 		Logger:       logger,
 		CacheTimeout: 60 * 24 * time.Hour,
@@ -74,6 +76,7 @@ func main() {
 	}
 	exampleStore := &examples.Store{ByteStore: byteStore}
 	contextParser := &context.Parser{
+		App:          mainapp,
 		EmpChecker:   empChecker,
 		AppNSFetcher: appNSFetcher,
 	}
@@ -81,6 +84,7 @@ func main() {
 	app := &web.App{
 		Stats:  sh,
 		Static: static,
+		App:    mainapp,
 		ContextHandler: &viewcontext.Handler{
 			ContextParser: contextParser,
 			Static:        static,
@@ -99,6 +103,7 @@ func main() {
 			ObjectParser:  &og.Parser{Static: static},
 		},
 		OauthHandler: &oauth.Handler{
+			App:           mainapp,
 			ContextParser: contextParser,
 			HttpTransport: httpTransport,
 			Static:        static,

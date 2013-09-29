@@ -46,6 +46,7 @@ const (
 // user via the URL.
 type Context struct {
 	AppID                uint64              `schema:"appid"`
+	defaultAppID         uint64              `schema:"-"`
 	AppNamespace         string              `schema:"-"`
 	Level                string              `schema:"level"`
 	Locale               string              `schema:"locale"`
@@ -88,6 +89,15 @@ var (
 type Parser struct {
 	EmpChecker   *empcheck.Checker
 	AppNSFetcher *appns.Fetcher
+	App          fbapp.App
+}
+
+// Create a default context.
+func (p *Parser) Default() *Context {
+	context := defaultContext.Copy()
+	context.AppID = p.App.ID()
+	context.defaultAppID = p.App.ID()
+	return context
 }
 
 // Create a context from a HTTP request.
@@ -99,13 +109,13 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 	if id := r.FormValue("client_id"); id != "" {
 		r.Form.Set("appid", id)
 	}
-	context := Default()
+	context := p.Default()
 	_ = schemaDecoder.Decode(context, r.URL.Query())
 	_ = schemaDecoder.Decode(context, r.Form)
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
 		context.SignedRequest, err = fbsr.Unmarshal(
-			[]byte(rawSr), fbapp.Default.SecretByte())
+			[]byte(rawSr), p.App.SecretByte())
 		if err == nil {
 			if context.SignedRequest.Page != nil {
 				context.ViewMode = PageTab
@@ -117,7 +127,7 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", context.AppID))
 		if cookie != nil {
 			context.SignedRequest, err = fbsr.Unmarshal(
-				[]byte(cookie.Value), fbapp.Default.SecretByte())
+				[]byte(cookie.Value), p.App.SecretByte())
 		}
 	}
 	context.Host = trustforward.Host(r)
@@ -133,13 +143,6 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 func (c *Context) Copy() *Context {
 	context := *c
 	return &context
-}
-
-// Create a default context.
-func Default() *Context {
-	context := defaultContext.Copy()
-	context.AppID = fbapp.Default.ID()
-	return context
 }
 
 // Get the URL for the JS SDK.
@@ -214,7 +217,7 @@ func (c *Context) ChannelURL() string {
 // Serialize the context back to URL values.
 func (c *Context) Values() url.Values {
 	values := url.Values{}
-	if c.AppID != fbapp.Default.ID() {
+	if c.AppID != c.defaultAppID {
 		values.Set("appid", strconv.FormatUint(c.AppID, 10))
 	}
 	if c.Env != defaultContext.Env {
