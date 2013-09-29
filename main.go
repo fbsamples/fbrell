@@ -30,6 +30,7 @@ import (
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/rell/oauth"
+	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/og/viewog"
 	"github.com/daaku/rell/web"
 )
@@ -95,6 +96,7 @@ func main() {
 			ContextParser: contextParser,
 			Stats:         sh,
 			Static:        static,
+			ObjectParser:  &og.Parser{Static: static},
 		},
 		OauthHandler: &oauth.Handler{
 			ContextParser: contextParser,

@@ -30,6 +30,7 @@ type Pair struct {
 type Object struct {
 	Pairs        []Pair
 	context      *context.Context
+	static       *static.Handler
 	skipGenerate []string
 }
 
@@ -83,8 +84,12 @@ func copyValues(source url.Values) url.Values {
 	return dest
 }
 
+type Parser struct {
+	Static *static.Handler
+}
+
 // Create a new Object from Base64 JSON encoded data.
-func NewFromBase64(context *context.Context, s *static.Handler, b64 string) (*Object, error) {
+func (p *Parser) FromBase64(context *context.Context, b64 string) (*Object, error) {
 	jsonBytes, err := base64.URLEncoding.DecodeString(fixPadding(b64))
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -97,7 +102,10 @@ func NewFromBase64(context *context.Context, s *static.Handler, b64 string) (*Ob
 			"Failed json unmarshal string %s with error %s", string(jsonBytes), err)
 	}
 
-	object := &Object{context: context}
+	object := &Object{
+		context: context,
+		static:  p.Static,
+	}
 	for _, row := range strSlices {
 		if len(row) != 2 {
 			return nil, fmt.Errorf("Got more than two elements in pair: %v", row)
@@ -124,7 +132,7 @@ func NewFromBase64(context *context.Context, s *static.Handler, b64 string) (*Ob
 		object.AddPair("og:url", url)
 	}
 
-	err = object.generateDefaults(context, s)
+	err = object.generateDefaults()
 	if err != nil {
 		return nil, err
 	}
@@ -132,8 +140,11 @@ func NewFromBase64(context *context.Context, s *static.Handler, b64 string) (*Ob
 }
 
 // Create a new Object from query string data.
-func NewFromValues(context *context.Context, s *static.Handler, values url.Values) (*Object, error) {
-	object := &Object{context: context}
+func (p *Parser) FromValues(context *context.Context, values url.Values) (*Object, error) {
+	object := &Object{
+		context: context,
+		static:  p.Static,
+	}
 	for key, values := range values {
 		if strings.Contains(key, ":") {
 			for _, value := range values {
@@ -162,7 +173,7 @@ func NewFromValues(context *context.Context, s *static.Handler, values url.Value
 		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
 	}
 
-	err := object.generateDefaults(context, s)
+	err := object.generateDefaults()
 	if err != nil {
 		return nil, err
 	}
@@ -181,10 +192,10 @@ func (o *Object) shouldGenerate(key string) bool {
 	return true
 }
 
-func (o *Object) generateDefaults(context *context.Context, s *static.Handler) error {
+func (o *Object) generateDefaults() error {
 	url := o.URL()
 	if o.shouldGenerate("og:image") {
-		img, err := s.URL("/images/" + hashedPick(url, stockImages))
+		img, err := o.static.URL("/images/" + hashedPick(url, stockImages))
 		if err != nil {
 			return err
 		}

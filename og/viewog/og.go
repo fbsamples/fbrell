@@ -23,6 +23,7 @@ type Handler struct {
 	ContextParser *context.Parser
 	Static        *static.Handler
 	Stats         stats.Backend
+	ObjectParser  *og.Parser
 }
 
 // Handles /og/ requests.
@@ -45,7 +46,7 @@ func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
 	if len(parts) > 3 {
 		values.Set("og:title", parts[3])
 	}
-	object, err := og.NewFromValues(context, a.Static, values)
+	object, err := a.ObjectParser.FromValues(context, values)
 	if err != nil {
 		view.Error(w, r, a.Static, err)
 		return
@@ -67,7 +68,7 @@ func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) {
 			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
 		return
 	}
-	object, err := og.NewFromBase64(context, a.Static, parts[2])
+	object, err := a.ObjectParser.FromBase64(context, parts[2])
 	if err != nil {
 		view.Error(w, r, a.Static, err)
 		return
