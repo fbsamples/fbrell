@@ -36,6 +36,7 @@ type Handler struct {
 	HttpTransport http.RoundTripper
 	Static        *static.Handler
 	App           fbapp.App
+	BrowserID     *browserid.Cookie
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,7 @@ func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
 
 	if c.ViewMode == context.Website {
 		values.Set("redirect_uri", redirectURI(c))
-		values.Set("state", state(w, r))
+		values.Set("state", a.state(w, r))
 	} else {
 		values.Set("redirect_uri", c.ViewURL("/auth/session"))
 	}
@@ -93,7 +94,7 @@ func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, h.Static, err)
 		return
 	}
-	if r.FormValue("state") != state(w, r) {
+	if r.FormValue("state") != h.state(w, r) {
 		view.Error(w, r, h.Static, errInvalidState)
 		return
 	}
@@ -129,8 +130,8 @@ func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func state(w http.ResponseWriter, r *http.Request) string {
-	return browserid.Get(w, r)[:10]
+func (h *Handler) state(w http.ResponseWriter, r *http.Request) string {
+	return h.BrowserID.Get(w, r)[:10]
 }
 
 func redirectURI(c *context.Context) string {

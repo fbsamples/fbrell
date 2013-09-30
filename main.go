@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.fbapi"
 	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.flagconfig"
@@ -37,9 +38,11 @@ import (
 
 func main() {
 	mainapp := fbapp.Flag("fbapp")
+	bid := browserid.CookieFlag("browserid")
 	sh := stathat.ClientFlag("rell.stats")
 	redis := redis.ClientFlag("rell.redis")
 	xsrf := xsrf.ProviderFlag("xsrf")
+	xsrf.BrowserID = bid
 	static := static.HandlerFlag("rell.static")
 	byteCache := bytecache.New(redis)
 	byteStore := bytestore.New(redis)
@@ -103,6 +106,7 @@ func main() {
 			ObjectParser:  &og.Parser{Static: static},
 		},
 		OauthHandler: &oauth.Handler{
+			BrowserID:     bid,
 			App:           mainapp,
 			ContextParser: contextParser,
 			HttpTransport: httpTransport,
