@@ -11,30 +11,6 @@ import (
 	"github.com/daaku/rell/context"
 )
 
-// The default metadata.
-var DefaultMeta = h.Compile(&h.Frag{
-	&h.Meta{
-		Name:    "description",
-		Content: "Examples for the Facebook Platform.",
-	},
-	&h.Meta{
-		Name: "keywords",
-		Content: "facebook, connect, facebook connect, javascript, " +
-			"examples, javascript sdk, javascript library, library, howto, " +
-			"tutorial, api, facebook api, authorization, xfbml, fbml, xfbml " +
-			"tags, fbml tags, facebook platform, facebook rest api, graph, " +
-			"facebook graph api, facebook graph api examples, facebook old" +
-			"rest api, facebook sdk",
-	},
-	&h.Meta{Property: "fb:app_id", Content: "184484190795"},
-	&h.Meta{Property: "og:type", Content: "website"},
-	&h.Meta{Property: "og:url", Content: "http://www.fbrell.com/"},
-	&h.Meta{
-		Property: "og:image",
-		Content:  "https://www.fbrell.com/logo.jpg",
-	},
-})
-
 var DefaultStyleHREFs = []string{
 	"css/bootstrap.min.css",
 	"css/bootstrap-responsive.min.css",
