@@ -11,23 +11,28 @@ import (
 	"github.com/daaku/rell/context"
 )
 
-var DefaultStyleHREFs = []string{
-	"css/bootstrap.min.css",
-	"css/bootstrap-responsive.min.css",
-	"css/rell.css",
+type PageConfig struct {
+	GA     *ga.Track
+	Style  []string
+	Script []string
 }
 
-// The default Google Analytics setup.
-var DefaultGA = &ga.Track{ID: "UA-15507059-1"}
-
-// Bootstrap Scripts.
-var BootstrapScriptsSrc = []string{
-	"js/jquery-1.8.2.min.js",
-	"js/bootstrap.min.js",
+var DefaultPageConfig = &PageConfig{
+	GA: &ga.Track{ID: "UA-15507059-1"},
+	Style: []string{
+		"css/bootstrap.min.css",
+		"css/bootstrap-responsive.min.css",
+		"css/rell.css",
+	},
+	Script: []string{
+		"js/jquery-1.8.2.min.js",
+		"js/bootstrap.min.js",
+	},
 }
 
 // A minimal standard page with no visible body.
 type Page struct {
+	Config   *PageConfig
 	Context  *context.Context
 	Static   *static.Handler
 	Class    string
@@ -47,6 +52,13 @@ func (p *Page) viewport() h.HTML {
 	return nil
 }
 
+func (p *Page) config() *PageConfig {
+	if p.Config == nil {
+		return DefaultPageConfig
+	}
+	return p.Config
+}
+
 func (p *Page) HTML() (h.HTML, error) {
 	return &h.Document{
 		XMLNS: h.XMLNS{"fb": "http://ogp.me/ns/fb#"},
@@ -61,7 +73,7 @@ func (p *Page) HTML() (h.HTML, error) {
 					},
 					&static.LinkStyle{
 						Handler: p.Static,
-						HREF:    DefaultStyleHREFs,
+						HREF:    p.config().Style,
 					},
 					p.Head,
 				},
@@ -74,12 +86,12 @@ func (p *Page) HTML() (h.HTML, error) {
 					&h.Div{ID: "FB_HiddenContainer"},
 					&static.Script{
 						Handler: p.Static,
-						Src:     BootstrapScriptsSrc,
+						Src:     p.config().Script,
 					},
 					&loader.HTML{
 						Resource: p.Resource,
 					},
-					DefaultGA,
+					p.config().GA,
 				},
 			},
 		},

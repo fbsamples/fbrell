@@ -180,7 +180,7 @@ func renderObject(context *context.Context, s *static.Handler, o *og.Object) h.H
 					title,
 					&static.LinkStyle{
 						Handler: s,
-						HREF:    view.DefaultStyleHREFs,
+						HREF:    view.DefaultPageConfig.Style,
 					},
 					renderMeta(o),
 				},
@@ -191,7 +191,7 @@ func renderObject(context *context.Context, s *static.Handler, o *og.Object) h.H
 					&h.Div{ID: "fb-root"},
 					&loader.HTML{
 						Resource: []loader.Resource{
-							view.DefaultGA,
+							view.DefaultPageConfig.GA,
 							&fb.Init{
 								URL:        context.SdkURL(),
 								AppID:      context.AppID,
