@@ -82,6 +82,7 @@ func main() {
 		App:          mainapp,
 		EmpChecker:   empChecker,
 		AppNSFetcher: appNSFetcher,
+		Stats:        sh,
 	}
 
 	app := &web.App{

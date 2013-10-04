@@ -15,6 +15,7 @@ import (
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
+	"github.com/daaku/go.stats"
 	"github.com/daaku/go.trustforward"
 	"github.com/gorilla/schema"
 
@@ -90,6 +91,7 @@ type Parser struct {
 	EmpChecker   *empcheck.Checker
 	AppNSFetcher *appns.Fetcher
 	App          fbapp.App
+	Stats        stats.Backend
 }
 
 // Create a default context.
@@ -136,6 +138,9 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 		context.IsEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
 	}
 	context.AppNamespace = p.AppNSFetcher.Get(context.AppID)
+	if context.Version != Mu {
+		p.Stats.Count("non_mu_view", 1)
+	}
 	return context, nil
 }
 
