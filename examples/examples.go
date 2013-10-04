@@ -58,11 +58,13 @@ var (
 	oldExamplesDir = pkgpath.Dir(
 		"rell.examples.old",
 		"github.com/daaku/rell/examples/db/old",
-		"The directory containing examples for the old SDK.")
+		"The directory containing examples for the old SDK.",
+	)
 	newExamplesDir = pkgpath.Dir(
 		"rell.examples.new",
 		"github.com/daaku/rell/examples/db/mu",
-		"The directory containing examples for the new SDK.")
+		"The directory containing examples for the new SDK.",
+	)
 
 	// We have two disk backed DBs.
 	old *DB
