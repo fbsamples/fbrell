@@ -54,6 +54,7 @@ var (
 		context.Canvas:  "Canvas",
 	}
 	errTokenMismatch = errcode.New(http.StatusForbidden, "Token mismatch.")
+	errSaveDisabled  = errcode.New(http.StatusForbidden, "Save disallowed.")
 )
 
 type Handler struct {
@@ -96,6 +97,11 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 		c, err := a.ContextParser.FromRequest(r)
 		if err != nil {
 			view.Error(w, r, a.Static, err)
+			return
+		}
+		if !c.IsEmployee {
+			a.Stats.Count("save disallowed", 1)
+			view.Error(w, r, a.Static, errSaveDisabled)
 			return
 		}
 		if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
@@ -477,6 +483,23 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 			"trigger":   "manual",
 		}
 	}
+	var saveButton h.HTML
+	if e.Context.IsEmployee {
+		saveButton = &h.Frag{
+			h.String(" "),
+			&h.Div{
+				Class: "btn-group",
+				Inner: &h.Button{
+					Class: "btn",
+					Type:  "submit",
+					Inner: &h.Frag{
+						&h.I{Class: "icon-file"},
+						h.String(" Save Code"),
+					},
+				},
+			},
+		}
+	}
 	return &h.Div{
 		Class: "row-fluid form-inline",
 		Inner: &h.Frag{
@@ -496,18 +519,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 							Context: e.Context,
 							Example: e.Example,
 						},
-						h.String(" "),
-						&h.Div{
-							Class: "btn-group",
-							Inner: &h.Button{
-								Class: "btn",
-								Type:  "submit",
-								Inner: &h.Frag{
-									&h.I{Class: "icon-file"},
-									h.String(" Save Code"),
-								},
-							},
-						},
+						saveButton,
 						h.String(" "),
 						&h.Div{
 							Class: "btn-group",
