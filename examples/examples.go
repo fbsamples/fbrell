@@ -54,21 +54,13 @@ type DB struct {
 }
 
 var (
-	// Directory for disk backed DBs.
-	oldExamplesDir = pkgpath.Dir(
-		"rell.examples.old",
-		"github.com/daaku/rell/examples/db/old",
-		"The directory containing examples for the old SDK.",
-	)
 	newExamplesDir = pkgpath.Dir(
 		"rell.examples.new",
 		"github.com/daaku/rell/examples/db/mu",
 		"The directory containing examples for the new SDK.",
 	)
 
-	// We have two disk backed DBs.
-	old *DB
-	mu  *DB
+	mu *DB
 
 	// Stock response for the index page.
 	emptyExample = &Example{Title: "Welcome", URL: "/", AutoRun: true}
@@ -128,7 +120,7 @@ func loadDir(name string) (*DB, error) {
 }
 
 // Load an Example for a given version and path.
-func (s *Store) Load(version, path string) (*Example, error) {
+func (s *Store) Load(path string) (*Example, error) {
 	parts := strings.Split(path, "/")
 	if len(parts) == 2 && parts[1] == "" {
 		return emptyExample, nil
@@ -156,7 +148,7 @@ func (s *Store) Load(version, path string) (*Example, error) {
 			URL:     path,
 		}, nil
 	}
-	category := GetDB(version).FindCategory(parts[1])
+	category := GetDB().FindCategory(parts[1])
 	if category == nil {
 		return nil, errcode.New(http.StatusNotFound, "Could not find category: %s", parts[1])
 	}
@@ -168,24 +160,15 @@ func (s *Store) Load(version, path string) (*Example, error) {
 }
 
 // Get the DB for a given SDK Version.
-func GetDB(version string) *DB {
+func GetDB() *DB {
 	var err error
-	if version == "mu" {
-		if mu == nil {
-			mu, err = loadDir(*newExamplesDir)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-		return mu
-	}
-	if old == nil {
-		old, err = loadDir(*oldExamplesDir)
+	if mu == nil {
+		mu, err = loadDir(*newExamplesDir)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	return old
+	return mu
 }
 
 // Find a category by it's name.

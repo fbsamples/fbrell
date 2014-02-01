@@ -38,65 +38,7 @@ var Rell = {
     Rell.config.autoRun = example ? example.autoRun : false
     Log.init($('#log')[0], Rell.config.level)
     Log.debug('Configuration', Rell.config);
-    (Rell['init_' + Rell.config.version] || Rell.init_old)()
-    $('#rell-login').click(Rell.login)
-    $('#rell-disconnect').click(Rell.disconnect)
-    $('#rell-logout').click(Rell.logout)
-    $('#rell-run-code').click(Rell.runCode)
-    $('#rell-log-clear').click(Rell.clearLog)
-    Rell.setCurrentViewMode()
-    if (example && !example.autoRun) {
-      Rell.setupAutoRunPopover()
-    }
-    $('.has-tooltip').tooltip()
-  },
 
-  /**
-   * name is magical
-   */
-  init_old: function() {
-    Log.debug('FB_RequireFeatures & FB.Facebook.init')
-
-    FB_RequireFeatures(['XFBML'], function() {
-      Log.debug('FB_RequireFeatures callback invoked')
-
-      // NOTE: replace built in logging with custom logging
-      FB.FBDebug.dump = function(obj, name) {
-        Log.debug(name, obj)
-      }
-      FB.FBDebug.writeLine = function(line) {
-        Log.debug(line)
-      }
-
-      FB.FBDebug.isEnabled = true
-      FB.FBDebug.logLevel = 6
-
-      var xd_receiver = '/public/xd_receiver.html'
-      if (document.location.protocol == 'https:') {
-        xd_receiver = '/public/xd_receiver_ssl.html'
-      }
-      FB.Facebook.init(Rell.config.appID, xd_receiver)
-      // sigh
-      window.setInterval(function() {
-        var
-          result = FB.Connect._singleton._status.result,
-          status = 'unknown'
-        if (result == 1) {
-          status = 'connected'
-        } else if (result == 3) {
-          status = 'notConnected'
-        }
-        $('#auth-status').removeClass().addClass(status).html(status)
-      }, 500)
-
-      Rell.autoRunCode()
-    })
-  },
-
-  /**
-   * name is magical
-   */
-  init_mu: function() {
     if (!window.FB) {
       Log.error('SDK failed to load.')
       return
@@ -138,6 +80,17 @@ var Rell = {
       FB.getLoginStatus(function() { Rell.autoRunCode() })
       FB.getLoginStatus(Rell.onStatusChange)
     }
+
+    $('#rell-login').click(Rell.login)
+    $('#rell-disconnect').click(Rell.disconnect)
+    $('#rell-logout').click(Rell.logout)
+    $('#rell-run-code').click(Rell.runCode)
+    $('#rell-log-clear').click(Rell.clearLog)
+    Rell.setCurrentViewMode()
+    if (example && !example.autoRun) {
+      Rell.setupAutoRunPopover()
+    }
+    $('.has-tooltip').tooltip()
   },
 
   onStatusChange: function(response) {
@@ -156,11 +109,7 @@ var Rell = {
     Log.info('Executed example')
     var root = $('#jsroot')[0]
     ScriptSoup.set(root, Rell.getCode())
-    if (Rell.config.version == 'mu') {
-      FB.XFBML.parse(root)
-    } else {
-      FB.XFBML.Host.parseDomTree(root)
-    }
+    FB.XFBML.parse(root)
   },
 
   getCode: function() {
@@ -168,27 +117,15 @@ var Rell = {
   },
 
   login: function() {
-    if (Rell.config.version == 'mu') {
-      FB.login(Log.debug.bind('FB.login callback'))
-    } else {
-      FB.Connect.requireSession(Log.debug.bind('requireSession callback'))
-    }
+    FB.login(Log.debug.bind('FB.login callback'))
   },
 
   logout: function() {
-    if (Rell.config.version == 'mu') {
-      FB.logout(Log.debug.bind('FB.logout callback'))
-    } else {
-      FB.Connect.logout(Log.debug.bind('FB.Connect.logout callback'))
-    }
+    FB.logout(Log.debug.bind('FB.logout callback'))
   },
 
   disconnect: function() {
-    if (Rell.config.version == 'mu') {
-      FB.api({ method: 'Auth.revokeAuthorization' }, Log.debug.bind('revokeAuthorization callback'))
-    } else {
-      FB.Facebook.apiClient.revokeAuthorization(null, Log.debug.bind('revokeAuthorization callback'))
-    }
+    FB.api({ method: 'Auth.revokeAuthorization' }, Log.debug.bind('revokeAuthorization callback'))
   },
 
   setCurrentViewMode: function() {

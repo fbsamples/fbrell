@@ -71,7 +71,7 @@ func (h *Handler) parse(r *http.Request) (*context.Context, *examples.Example, e
 	if err != nil {
 		return nil, nil, err
 	}
-	example, err := h.ExampleStore.Load(context.Version, r.URL.Path)
+	example, err := h.ExampleStore.Load(r.URL.Path)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -88,7 +88,7 @@ func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
 	h.WriteResponse(w, r, &examplesList{
 		Context: context,
 		Static:  a.Static,
-		DB:      examples.GetDB(context.Version),
+		DB:      examples.GetDB(),
 	})
 }
 
@@ -112,7 +112,7 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 		content := bytes.TrimSpace([]byte(r.FormValue("code")))
 		content = bytes.Replace(content, []byte{13}, nil, -1) // remove CR
 		id := examples.ContentID(content)
-		db := examples.GetDB(c.Version)
+		db := examples.GetDB()
 		example, ok := db.Reverse[id]
 		if ok {
 			http.Redirect(w, r, c.ViewURL(example.URL), 302)

@@ -25,13 +25,6 @@ import (
 
 const defaultMaxMemory = 32 << 20 // 32 MB
 
-// The allowed SDK Versions.
-const (
-	Mu  = "mu"
-	Old = "old"
-	Mid = "mid"
-)
-
 const (
 	// View Modes.
 	Website = "website"
@@ -53,7 +46,6 @@ type Context struct {
 	Locale               string              `schema:"locale"`
 	Env                  string              `schema:"server"`
 	Trace                bool                `schema:"trace"`
-	Version              string              `schema:"version"`
 	Status               bool                `schema:"status"`
 	FrictionlessRequests bool                `schema:"frictionlessRequests"`
 	UseChannel           bool                `schema:"channel"`
@@ -71,7 +63,6 @@ type Context struct {
 var defaultContext = &Context{
 	Level:                "debug",
 	Locale:               "en_US",
-	Version:              Mu,
 	Status:               true,
 	FrictionlessRequests: true,
 	UseChannel:           true,
@@ -138,9 +129,6 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 		context.IsEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
 	}
 	context.AppNamespace = p.AppNSFetcher.Get(context.AppID)
-	if context.Version != Mu {
-		p.Stats.Count("non_mu_view", 1)
-	}
 	return context, nil
 }
 
@@ -153,31 +141,12 @@ func (c *Context) Copy() *Context {
 // Get the URL for the JS SDK.
 func (c *Context) SdkURL() string {
 	var server string
-	if c.Version == Mu {
-		if c.Env == "" {
-			server = "connect.facebook.net"
-		} else {
-			server = fburl.Hostname("static", c.Env) + "/assets.php"
-		}
-		return fmt.Sprintf("%s://%s/%s/%s.js", c.Scheme, server, c.Locale, c.Module)
+	if c.Env == "" {
+		server = "connect.facebook.net"
 	} else {
-		if c.Env == "" {
-			if c.Scheme == "https" {
-				server = "s-static.ak.facebook.com"
-			} else {
-				server = "static.ak.facebook.com"
-			}
-		} else {
-			server = fburl.Hostname("static", c.Env)
-		}
-		if c.Version == Mid {
-			return fmt.Sprintf(
-				"%s://%s/connect.php/%s/js", c.Scheme, server, c.Locale)
-		} else {
-			return fmt.Sprintf(
-				"%s://%s/js/api_lib/v0.4/FeatureLoader.js.php", c.Scheme, server)
-		}
+		server = fburl.Hostname("static", c.Env) + "/assets.php"
 	}
+	return fmt.Sprintf("%s://%s/%s/%s.js", c.Scheme, server, c.Locale, c.Module)
 }
 
 // Get the URL for loading this application in a Page Tab on Facebook.
@@ -230,9 +199,6 @@ func (c *Context) Values() url.Values {
 	}
 	if c.Locale != defaultContext.Locale {
 		values.Set("locale", c.Locale)
-	}
-	if c.Version != defaultContext.Version {
-		values.Set("version", c.Version)
 	}
 	if c.ViewportMode != defaultContext.ViewportMode {
 		values.Set("viewport-mode", c.ViewportMode)
@@ -297,7 +263,6 @@ func (c *Context) MarshalJSON() ([]byte, error) {
 		"appID":                strconv.FormatUint(c.AppID, 10),
 		"level":                c.Level,
 		"trace":                c.Trace,
-		"version":              c.Version,
 		"status":               c.Status,
 		"frictionlessRequests": c.FrictionlessRequests,
 		"channel":              c.UseChannel,
