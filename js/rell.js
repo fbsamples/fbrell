@@ -34,6 +34,7 @@ var Rell = {
    * go go go
    */
   init: function(config, example) {
+    window.location.hash = ''
     Rell.config = config
     Rell.config.autoRun = example ? example.autoRun : false
     Log.init($('#log')[0], Rell.config.level)
