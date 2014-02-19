@@ -5,15 +5,10 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/daaku/go.fbapp"
-	"github.com/daaku/go.subset"
+	"github.com/ParsePlatform/go.subset"
 
 	"github.com/daaku/rell/context"
 )
-
-func init() {
-	fbapp.Default = fbapp.New(184484190795, "", "fbrelll")
-}
 
 func fromValues(t *testing.T, values url.Values) *context.Context {
 	req, err := http.NewRequest(
@@ -62,12 +57,10 @@ func TestComplex(t *testing.T) {
 	values.Add("status", "1")
 	values.Add("server", "beta")
 	values.Add("locale", "en_PI")
-	values.Add("version", "old")
 	expected := &context.Context{
-		Status:  true,
-		Env:     "beta",
-		Locale:  "en_PI",
-		Version: context.Old,
+		Status: true,
+		Env:    "beta",
+		Locale: "en_PI",
 	}
 	context := fromValues(t, values)
 	subset.Assert(t, expected, context)
