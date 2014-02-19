@@ -66,10 +66,6 @@ var Rell = {
       frictionlessRequests: Rell.config.frictionlessRequests
     }
 
-    if (Rell.config.channel) {
-      options.channelUrl = Rell.config.channelURL
-    }
-
     FB.init(options)
     if (top != self) {
       FB.Canvas.setAutoGrow(true)

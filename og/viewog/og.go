@@ -193,9 +193,8 @@ func renderObject(context *context.Context, s *static.Handler, o *og.Object) h.H
 						Resource: []loader.Resource{
 							view.DefaultPageConfig.GA,
 							&fb.Init{
-								URL:        context.SdkURL(),
-								AppID:      context.AppID,
-								ChannelURL: context.ChannelURL(),
+								URL:   context.SdkURL(),
+								AppID: context.AppID,
 							},
 						},
 					},

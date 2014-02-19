@@ -189,9 +189,8 @@ func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
 					&loader.HTML{
 						Resource: []loader.Resource{
 							&fb.Init{
-								AppID:      context.AppID,
-								ChannelURL: context.ChannelURL(),
-								URL:        context.SdkURL(),
+								AppID: context.AppID,
+								URL:   context.SdkURL(),
 							},
 						},
 					},
@@ -207,19 +206,6 @@ func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	})
-}
-
-func (a *Handler) SdkChannel(w http.ResponseWriter, r *http.Request) {
-	const maxAge = 31536000 // 1 year
-	context, err := a.ContextParser.FromRequest(r)
-	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
-	}
-	a.Stats.Count("viewed channel", 1)
-	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	h.WriteResponse(w, r, &h.Script{Src: context.SdkURL()})
 }
 
 func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
@@ -586,12 +572,6 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 						Checked:     e.Context.Status,
 						Description: h.String("Automatically trigger status ping."),
 						Tooltip:     "This controls the \"status\" parameter to FB.init.",
-					},
-					&ui.ToggleItem{
-						Name:        "channel",
-						Checked:     e.Context.UseChannel,
-						Description: h.String("Specify explicit XD channel."),
-						Tooltip:     "If enabled, the FB.init() call will get a custom \"channelUrl\" parameter pointed to " + e.Context.AbsoluteURL("/channel/").String(),
 					},
 					&ui.ToggleItem{
 						Name:        "frictionlessRequests",

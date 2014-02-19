@@ -48,7 +48,6 @@ type Context struct {
 	Trace                bool                `schema:"trace"`
 	Status               bool                `schema:"status"`
 	FrictionlessRequests bool                `schema:"frictionlessRequests"`
-	UseChannel           bool                `schema:"channel"`
 	Host                 string              `schema:"-"`
 	Scheme               string              `schema:"-"`
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
@@ -65,7 +64,6 @@ var defaultContext = &Context{
 	Locale:               "en_US",
 	Status:               true,
 	FrictionlessRequests: true,
-	UseChannel:           true,
 	Host:                 "www.fbrell.com",
 	Scheme:               "http",
 	ViewMode:             Website,
@@ -183,11 +181,6 @@ func (c *Context) CanvasURL(name string) string {
 	return url.String()
 }
 
-// Get a Channel URL for the SDK.
-func (c *Context) ChannelURL() string {
-	return c.AbsoluteURL("/channel/").String()
-}
-
 // Serialize the context back to URL values.
 func (c *Context) Values() url.Values {
 	values := url.Values{}
@@ -211,9 +204,6 @@ func (c *Context) Values() url.Values {
 	}
 	if c.Status != defaultContext.Status {
 		values.Set("status", strconv.FormatBool(c.Status))
-	}
-	if c.UseChannel != defaultContext.UseChannel {
-		values.Set("channel", strconv.FormatBool(c.UseChannel))
 	}
 	if c.FrictionlessRequests != defaultContext.FrictionlessRequests {
 		values.Set("frictionlessRequests", strconv.FormatBool(c.FrictionlessRequests))
@@ -265,8 +255,6 @@ func (c *Context) MarshalJSON() ([]byte, error) {
 		"trace":                c.Trace,
 		"status":               c.Status,
 		"frictionlessRequests": c.FrictionlessRequests,
-		"channel":              c.UseChannel,
-		"channelURL":           c.ChannelURL(),
 		"signedRequest":        c.SignedRequest,
 		"viewMode":             c.ViewMode,
 		"init":                 c.Init,

@@ -63,13 +63,11 @@ func TestComplex(t *testing.T) {
 	values.Add("server", "beta")
 	values.Add("locale", "en_PI")
 	values.Add("version", "old")
-	values.Add("channel", "false")
 	expected := &context.Context{
-		Status:     true,
-		Env:        "beta",
-		Locale:     "en_PI",
-		Version:    context.Old,
-		UseChannel: false,
+		Status:  true,
+		Env:     "beta",
+		Locale:  "en_PI",
+		Version: context.Old,
 	}
 	context := fromValues(t, values)
 	subset.Assert(t, expected, context)

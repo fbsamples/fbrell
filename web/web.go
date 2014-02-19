@@ -75,7 +75,6 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 		mux.HandleFunc("/saved/", a.ExamplesHandler.Saved)
 		mux.HandleFunc("/raw/", a.ExamplesHandler.Raw)
 		mux.HandleFunc("/simple/", a.ExamplesHandler.Simple)
-		mux.HandleFunc("/channel/", a.ExamplesHandler.SdkChannel)
 		mux.HandleFunc("/", a.ExamplesHandler.Example)
 		mux.HandleFunc("/og/", a.OgHandler.Values)
 		mux.HandleFunc("/rog/", a.OgHandler.Base64)
