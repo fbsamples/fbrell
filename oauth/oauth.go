@@ -27,8 +27,9 @@ const (
 )
 
 var (
-	errOAuthFail    = errors.New("OAuth code exchange failure.")
-	errInvalidState = errors.New("Invalid state")
+	errOAuthFail     = errors.New("OAuth code exchange failure.")
+	errInvalidState  = errors.New("Invalid state")
+	errEmployeesOnly = errors.New("This endpoint is for employees only.")
 )
 
 type Handler struct {
@@ -40,6 +41,16 @@ type Handler struct {
 }
 
 func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c, err := a.ContextParser.FromRequest(r)
+	if err != nil {
+		view.Error(w, r, a.Static, err)
+		return
+	}
+	if !c.IsEmployee {
+		view.Error(w, r, a.Static, errEmployeesOnly)
+		return
+	}
+
 	switch r.URL.Path {
 	case Path:
 		a.Start(w, r)
