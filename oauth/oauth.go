@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -39,16 +39,20 @@ type Handler struct {
 	BrowserID     *browserid.Cookie
 }
 
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case Path:
-		h.Start(w, r)
+		a.Start(w, r)
 		return
 	case Path + resp:
-		h.Response(w, r)
+		a.Response(w, r)
 		return
 	}
-	http.NotFound(w, r)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusNotFound)
+	h.WriteResponse(w, r, &h.Script{
+		Inner: h.Unsafe("top.location='/'"),
+	})
 }
 
 func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
@@ -88,20 +92,20 @@ func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
-	c, err := h.ContextParser.FromRequest(r)
+func (a *Handler) Response(w http.ResponseWriter, r *http.Request) {
+	c, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, h.Static, err)
+		view.Error(w, r, a.Static, err)
 		return
 	}
-	if r.FormValue("state") != h.state(w, r) {
-		view.Error(w, r, h.Static, errInvalidState)
+	if r.FormValue("state") != a.state(w, r) {
+		view.Error(w, r, a.Static, errInvalidState)
 		return
 	}
 
 	values := url.Values{}
-	values.Set("client_id", strconv.FormatUint(h.App.ID(), 10))
-	values.Set("client_secret", h.App.Secret())
+	values.Set("client_id", strconv.FormatUint(a.App.ID(), 10))
+	values.Set("client_secret", a.App.Secret())
 	values.Set("redirect_uri", redirectURI(c))
 	values.Set("code", r.FormValue("code"))
 
@@ -116,22 +120,27 @@ func (h *Handler) Response(w http.ResponseWriter, r *http.Request) {
 	req, err := http.NewRequest("GET", atURL.String(), nil)
 	if err != nil {
 		log.Printf("oauth.Response error: %s", err)
-		view.Error(w, r, h.Static, errOAuthFail)
+		view.Error(w, r, a.Static, errOAuthFail)
 	}
-	res, err := h.HttpTransport.RoundTrip(req)
+	res, err := a.HttpTransport.RoundTrip(req)
 	if err != nil {
 		log.Printf("oauth.Response error: %s", err)
-		view.Error(w, r, h.Static, errOAuthFail)
+		view.Error(w, r, a.Static, errOAuthFail)
 	}
 	defer res.Body.Close()
-	if _, err := io.Copy(w, res.Body); err != nil {
-		view.Error(w, r, h.Static, err)
-		return
+	bd, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Printf("oauth.Response error: %s", err)
+		view.Error(w, r, a.Static, errOAuthFail)
 	}
+	h.WriteResponse(w, r, &h.Frag{
+		&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
+		h.String(string(bd)),
+	})
 }
 
-func (h *Handler) state(w http.ResponseWriter, r *http.Request) string {
-	return h.BrowserID.Get(w, r)[:10]
+func (a *Handler) state(w http.ResponseWriter, r *http.Request) string {
+	return a.BrowserID.Get(w, r)[:10]
 }
 
 func redirectURI(c *context.Context) string {

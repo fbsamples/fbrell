@@ -41,7 +41,10 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(code)
 		page := &Page{
 			Static: err.Static,
-			Body:   h.String(err.err.Error()),
+			Body: &h.Frag{
+				h.String(err.err.Error()),
+				&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
+			},
 		}
 		h.WriteResponse(w, r, page)
 	}
