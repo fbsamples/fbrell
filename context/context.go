@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"regexp"
 	"strconv"
 
 	"github.com/daaku/go.fbapp"
@@ -22,6 +23,8 @@ import (
 	"github.com/daaku/rell/context/appns"
 	"github.com/daaku/rell/context/empcheck"
 )
+
+var envRegexp = regexp.MustCompile(`^[a-zA-Z0-9-_.]*$`)
 
 const defaultMaxMemory = 32 << 20 // 32 MB
 
@@ -127,6 +130,9 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 		context.IsEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
 	}
 	context.AppNamespace = p.AppNSFetcher.Get(context.AppID)
+	if context.Env != "" && !envRegexp.MatchString(context.Env) {
+		context.Env = ""
+	}
 	return context, nil
 }
 
@@ -138,10 +144,8 @@ func (c *Context) Copy() *Context {
 
 // Get the URL for the JS SDK.
 func (c *Context) SdkURL() string {
-	var server string
-	if c.Env == "" {
-		server = "connect.facebook.net"
-	} else {
+	server := "connect.facebook.net"
+	if c.Env != "" {
 		server = fburl.Hostname("static", c.Env) + "/assets.php"
 	}
 	return fmt.Sprintf("%s://%s/%s/%s.js", c.Scheme, server, c.Locale, c.Module)

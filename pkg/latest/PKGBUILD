@@ -1,5 +1,5 @@
 pkgname=rell-latest
-pkgver=652
+pkgver=657
 pkgrel=1
 pkgdesc="Rell web app and resources."
 arch=('i686' 'x86_64')
