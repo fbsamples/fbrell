@@ -19,7 +19,6 @@ import (
 // Some categories are hidden from the listing.
 var hidden = map[string]bool{
 	"bugs":   true,
-	"fbml":   true,
 	"hidden": true,
 	"secret": true,
 	"tests":  true,
