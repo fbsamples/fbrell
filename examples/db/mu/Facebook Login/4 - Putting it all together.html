@@ -1,0 +1,41 @@
+<h1>Putting it all together</h1>
+
+<p>This example shows you a fairly complete login system implemented using the JavaScript SDK, with the end result being a simple API call that prints your name. You can see how the response from the auth.statusChange event can be used to determine whether someone is logged in or not.</p>
+
+<h2>The Login Example</h2>
+
+<div class="fb-login-button" id="loginBtn" data-max-rows="1" data-size="medium"></div>
+
+<div id="accountInfo" style="padding-top: 20px">You haven't logged in yet.</div>
+
+<script>
+  FB.Event.subscribe('auth.statusChange', function(response) {
+    Log.info('Status Change Event', response);
+    if (response.status === 'connected') {
+      showAccountInfo();
+    } else {
+      document.getElementById('loginBtn').style.display = 'block';
+    }
+  });
+  
+  FB.getLoginStatus(function(response) {
+    Log.info('Login Status', response);
+    if (response.status === 'connected') {
+      showAccountInfo();
+    } else {
+      document.getElementById('loginBtn').style.display = 'block';
+    }
+  });
+
+  function showAccountInfo() {
+    FB.api('/me?fields=name,picture', function(response) {
+      Log.info('API response', response);
+      document.getElementById('accountInfo').innerHTML = ('<img src="' + response.picture.data.url + '"> ' + response.name);
+    });
+    document.getElementById('loginBtn').style.display = 'none';
+  }
+</script>
+
+<h3>Related Guides</h3>
+
+<p>Read <a href="https://developers.facebook.com/docs/facebook-login/login-flow-for-web/">our guide to using the JavaScript SDK for Facebook Login</a> to learn more about this process.</p>
