@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/daaku/go.fbapi"
-	"github.com/daaku/go.fbapp"
+	"github.com/facebookgo/fbapi"
+	"github.com/facebookgo/fbapp"
 )
 
 var (

@@ -10,11 +10,6 @@ import (
 	"time"
 
 	"github.com/daaku/go.browserid"
-	"github.com/daaku/go.fbapi"
-	"github.com/daaku/go.fbapp"
-	"github.com/daaku/go.flagconfig"
-	"github.com/daaku/go.grace/gracehttp"
-	"github.com/daaku/go.httpcontrol"
 	"github.com/daaku/go.redis"
 	"github.com/daaku/go.redis/bytecache"
 	"github.com/daaku/go.redis/bytestore"
@@ -22,6 +17,11 @@ import (
 	"github.com/daaku/go.stats/stathat"
 	"github.com/daaku/go.subcache"
 	"github.com/daaku/go.xsrf"
+	"github.com/facebookgo/fbapi"
+	"github.com/facebookgo/fbapp"
+	"github.com/facebookgo/flagconfig"
+	"github.com/facebookgo/grace/gracehttp"
+	"github.com/facebookgo/httpcontrol"
 
 	"github.com/daaku/rell/collector"
 	"github.com/daaku/rell/context"

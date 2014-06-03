@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/daaku/go.counting"
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
@@ -25,6 +24,7 @@ import (
 	"github.com/daaku/go.stats"
 	"github.com/daaku/go.xsrf"
 	"github.com/daaku/sortutil"
+	"github.com/facebookgo/counting"
 
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
