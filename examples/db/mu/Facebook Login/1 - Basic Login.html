@@ -1,0 +1,27 @@
+<h1>Basic Login</h1>
+
+<p>These examples show the bare minimum required to get Facebook Login operational in a couple of different ways. You'll still want to add more to your code to get it to an ideal state, so try more of our more complex examples or read <a href="https://developers.facebook.com/docs/facebook-login/login-flow-for-web/">our guide to using the JavaScript SDK for Facebook Login.</a></p>
+
+<h2>Using an SDK function</h2>
+<p>This example makes the link below trigger <code>FB.login()</code> and prompts you with the Login Dialog if you're not already logged in:</p>
+
+<a href="#" id="login-btn">Log in with Facebook</a>
+
+<script type="text/javascript">
+document.getElementById('login-btn').onclick = function() {
+  FB.login(function(response) {
+    Log.info('FB.login response', response);
+  });
+  return false;
+}
+</script>
+
+<h2>Using the Login Button</h2>
+
+<p>You can also use the <a href="https://developers.facebook.com/docs/plugins/login-button/">Login Button social plugin</a> to initiate Facebook Login:</p>
+
+<div class="fb-login-button" data-max-rows="1" data-size="medium" data-auto-logout-link="false"></div>
+
+<h3>Related Guides</h3>
+
+<p>Read <a href="https://developers.facebook.com/docs/facebook-login/login-flow-for-web/">our guide to using the JavaScript SDK for Facebook Login</a> to see the best way to use Facebook Login.</p>
