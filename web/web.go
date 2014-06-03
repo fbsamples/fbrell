@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/daaku/go.browserify"
-	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.httpgzip"
 	"github.com/daaku/go.httpstats"
@@ -16,6 +15,7 @@ import (
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats"
 	"github.com/daaku/go.viewvar"
+	"github.com/facebookgo/fbapp"
 
 	"github.com/daaku/rell/context/viewcontext"
 	"github.com/daaku/rell/examples/viewexamples"

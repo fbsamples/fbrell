@@ -12,10 +12,10 @@ import (
 	"strconv"
 
 	"github.com/daaku/go.browserid"
-	"github.com/daaku/go.fbapp"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.static"
+	"github.com/facebookgo/fbapp"
 
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/view"
