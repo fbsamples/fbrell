@@ -18,10 +18,15 @@ import (
 
 // Some categories are hidden from the listing.
 var hidden = map[string]bool{
+	"auth":   true,
 	"bugs":   true,
+	"fb.api": true,
+	"fb.ui":  true,
 	"hidden": true,
 	"secret": true,
 	"tests":  true,
+	"xfbml":  true,
+	"canvas": true,
 }
 
 type ByteStore interface {

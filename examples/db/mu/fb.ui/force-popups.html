@@ -1,0 +1,27 @@
+<h1>Force Popups</h1>
+<p>
+FB.ui() will use <em>iframe dialogs</em> when the user is connected with your
+site, and <em>window popups</em> otherwise. This is a security restriction. In
+certain scenarios, you may <strong>always</strong> want to use <em>window
+popups</em>. This can be achieved by passing <strong>display=popup</strong>
+to the FB.ui() call as demonstrated here.
+</p>
+
+<script>
+var publish = {
+  method: 'stream.publish',
+  display: 'popup', // force popup mode
+  attachment: {
+    name: 'Connect',
+    caption: 'The Facebook Connect JavaScript SDK',
+    description: (
+      'A small JavaScript library that allows you to harness ' +
+      'the power of Facebook, bringing the user\'s identity, ' +
+      'social graph and distribution power to your site.'
+    ),
+    href: 'http://www.fbrell.com/'
+  }
+};
+
+FB.ui(publish, Log.info.bind('stream.publish callback'));
+</script>

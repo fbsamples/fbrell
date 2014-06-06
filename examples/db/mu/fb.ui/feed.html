@@ -1,0 +1,27 @@
+<h1>feed</h1>
+<p>
+Publishing to the stream is easy, as all the fields are optional. Just specify
+what you need, and leave the rest out.
+</p>
+
+<script>
+var publish = {
+  method: 'feed',
+  message: 'getting educated about Facebook Connect',
+  name: 'Connect',
+  caption: 'The Facebook Connect JavaScript SDK',
+  description: (
+      'A small JavaScript library that allows you to harness ' +
+      'the power of Facebook, bringing the user\'s identity, ' +
+      'social graph and distribution power to your site.'
+  ),
+  link: 'http://www.fbrell.com/',
+  picture: 'http://www.fbrell.com/public/f8.jpg',
+  actions: [
+    { name: 'fbrell', link: 'http://www.fbrell.com/' }
+  ],
+  user_message_prompt: 'Share your thoughts about RELL'
+};
+
+FB.ui(publish, Log.info.bind('feed callback'));
+</script>

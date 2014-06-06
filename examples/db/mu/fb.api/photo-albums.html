@@ -1,0 +1,24 @@
+<fb:login-button scope="user_photos,friends_photos,user_photo_video_tags,friends_photo_video_tags"
+                 onlogin="getAlbums()">
+  Grant Permissions to Allow access to Photos and Albums
+</fb:login-button>
+<ul id="albums"></ul>
+
+<script>
+window.getAlbums = function() {
+  FB.api('/me/albums', function(resp) {
+    Log.info('Albums', resp);
+    var ul = document.getElementById('albums');
+    for (var i=0, l=resp.data.length; i<l; i++) {
+      var
+        album = resp.data[i],
+        li = document.createElement('li'),
+        a = document.createElement('a');
+      a.innerHTML = album.name;
+      a.href = album.link;
+      li.appendChild(a);
+      ul.appendChild(li);
+    }
+  });
+};
+</script>

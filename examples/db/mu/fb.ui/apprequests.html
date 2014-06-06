@@ -1,0 +1,65 @@
+<h1>requests</h1>
+<button class="btn" id="send-to-many">Send to Many</button>
+<button class="btn" id="custom-filters">Custom Filters</button>
+<button class="btn" id="send-to-one">Send to One</button>
+<button class="btn" id="send-app-to-user">Send App-to-User</button>
+<button class="btn" id="list-pending">List Pending</button>
+<button class="btn" id="clear-pending">Clear Pending</button>
+<button class="btn" id="clear-prompted">Clear Prompted</button>
+
+<script>
+document.getElementById('send-to-many').onclick = function() {
+  FB.ui({
+    method: 'apprequests',
+    message: 'You should learn more about the Platform.'
+  }, Log.info.bind('send-to-many callback'));
+}
+
+document.getElementById('custom-filters').onclick = function() {
+  FB.ui({
+    method: 'apprequests',
+    message: 'Have you heard about Rell?',
+    data: 'invite-to-rell-42',
+    filters: [{name: 'Daaku', user_ids: ['1677846385']}, 'app_non_users', {name: 'Games People', user_ids: [703, 6203644]}]
+  }, Log.info.bind('send-to-many callback'));
+}
+
+document.getElementById('send-to-one').onclick = function() {
+  FB.ui({
+    method: 'apprequests',
+    message: 'A request especially for Daaku.',
+    to: '1677846385',
+    data: 'send-to-one-42'
+  }, Log.info.bind('send-to-one callback'));
+}
+
+document.getElementById('send-app-to-user').onclick = function() {
+  FB.api(
+    '/me/apprequests',
+    { message: 'From the app to the user.' },
+    'POST',
+    Log.info.bind('sent app-to-user request'));
+}
+
+document.getElementById('list-pending').onclick = function() {
+  FB.api('/me/apprequests', Log.info.bind('pending requests'));
+}
+
+document.getElementById('clear-pending').onclick = function() {
+  FB.api('/me/apprequests', function(response) {
+    var ids = [];
+    for (var i=0, l=response.data.length; i<l; i++) {
+      FB.api('/' + response.data[i].id, 'DELETE', Log.info.bind('clear requests'));
+    }
+  });
+}
+
+document.getElementById('clear-prompted').onclick = function() {
+  var id = prompt('Enter the ID of the request to delete:')
+  if (!id) return
+  FB.api(
+    id,
+    'DELETE',
+    Log.info.bind('delete request'));
+}
+</script>
