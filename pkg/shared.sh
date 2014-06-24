@@ -33,8 +33,8 @@ build() {
   cp -r $gitabs/examples/db/old $pkgdir/usr/share/$pkgname/examples
 
   msg "Installing systemd service & socket"
-  install -D $srcdir/../$pkgname.service $pkgdir/usr/lib/systemd/system/$pkgname.service
-  install -D $srcdir/../$pkgname.socket $pkgdir/usr/lib/systemd/system/$pkgname.socket
+  install -D -m 644 $srcdir/../$pkgname.service $pkgdir/usr/lib/systemd/system/$pkgname.service
+  install -D -m 644 $srcdir/../$pkgname.socket $pkgdir/usr/lib/systemd/system/$pkgname.socket
 
   msg "Creating static resources"
   cd $gitabs/js
