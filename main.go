@@ -37,6 +37,7 @@ import (
 )
 
 func main() {
+	logger := log.New(os.Stderr, "", log.LstdFlags)
 	mainapp := fbapp.Flag("fbapp")
 	bid := browserid.CookieFlag("browserid")
 	sh := stathat.ClientFlag("rell.stats")
@@ -48,7 +49,7 @@ func main() {
 	byteStore := bytestore.New(redis)
 	httpTransport := httpcontrol.TransportFlag("rell.transport")
 	fbApiClient := fbapi.ClientFlag("rell.fbapi")
-	logger := log.New(os.Stderr, "", log.LstdFlags)
+	bid.Logger = logger
 	collector := &collector.Collector{
 		Stats:  sh,
 		Logger: logger,
