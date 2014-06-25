@@ -97,7 +97,7 @@ func (p *Parser) Default() *Context {
 // Create a context from a HTTP request.
 func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 	err := r.ParseMultipartForm(defaultMaxMemory)
-	if err != nil {
+	if err != nil && err != http.ErrNotMultipart {
 		return nil, err
 	}
 	if id := r.FormValue("client_id"); id != "" {
