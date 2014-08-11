@@ -20,6 +20,7 @@ import (
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
 	"github.com/facebookgo/flagconfig"
+	"github.com/facebookgo/flagenv"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/facebookgo/httpcontrol"
 
@@ -134,6 +135,7 @@ func main() {
 
 	flag.Usage = flagconfig.Usage
 	flag.Parse()
+	flagenv.Parse()
 	flagconfig.Parse()
 	runtime.GOMAXPROCS(*goMaxProcs)
 
