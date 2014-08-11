@@ -1,0 +1,4 @@
+FROM daaku/goruntime
+ADD rell /usr/bin/rell
+ADD usr/ /usr/
+CMD ["/usr/bin/rell"]
