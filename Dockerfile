@@ -1,6 +1,7 @@
 FROM base/archlinux
 MAINTAINER Naitik Shah "n@daaku.org"
 
+# build system
 RUN pacman --sync --refresh --sysupgrade --noconfirm
 RUN pacman --sync --noconfirm \
   ca-certificates \
@@ -11,8 +12,8 @@ RUN pacman --sync --noconfirm \
   mercurial \
   nodejs
 
+# add local source
 ENV GOPATH /gopath
-ENV GO_LDFLAGS "-X github.com/daaku/rell/context/viewcontext.version docker-1"
 ADD . /gopath/src/github.com/daaku/rell/
 
 # add static resources & examples
@@ -25,8 +26,7 @@ RUN npm install
 RUN ./node_modules/.bin/browserify -e rell.js --exports require > /gopath/bin/usr/share/rell/browserify.js
 
 # build go
-RUN go get -v -d github.com/daaku/rell
-RUN go build -ldflags="$GO_LDFLAGS" -o=/gopath/bin/rell github.com/daaku/rell
+RUN go get -v github.com/daaku/rell
 
 # build image
 ADD Dockerfile.runtime /gopath/bin/Dockerfile
