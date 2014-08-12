@@ -25,3 +25,17 @@ cd $(go list -f '{{.Dir}}' github.com/daaku/rell)/js
 npm install
 rell -h
 ```
+
+Docker
+------
+
+Deployment is done via [Docker](https://www.docker.com/). Included is a
+`Dockerfile` that builds the runtime container image. To run it:
+
+```sh
+docker build -t daaku/make-rell . &&
+docker run \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /usr/bin/docker:/usr/bin/docker \
+  -t daaku/make-rell
+```
