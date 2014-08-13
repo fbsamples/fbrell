@@ -2,8 +2,10 @@
 package web
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/pprof"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -48,6 +50,7 @@ func (a *App) AdminHandler(w http.ResponseWriter, r *http.Request) {
 		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 		mux.HandleFunc("/vars/", viewvar.Json)
+		mux.HandleFunc("/env/", a.envHandler)
 		a.adminHandler = mux
 	})
 	a.adminHandler.ServeHTTP(w, r)
@@ -104,4 +107,10 @@ func (a *App) staticFile(mux *http.ServeMux, name string) {
 	mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, abs)
 	})
+}
+
+func (a *App) envHandler(w http.ResponseWriter, r *http.Request) {
+	for _, s := range os.Environ() {
+		fmt.Fprintln(w, s)
+	}
 }
