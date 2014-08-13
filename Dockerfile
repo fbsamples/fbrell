@@ -1,8 +1,7 @@
-FROM base/archlinux
+FROM daaku/arch
 MAINTAINER Naitik Shah "n@daaku.org"
 
 # build system
-RUN pacman --sync --refresh --sysupgrade --noconfirm
 RUN pacman --sync --noconfirm \
   ca-certificates \
   docker \
