@@ -33,9 +33,40 @@ Deployment is done via [Docker](https://www.docker.com/). Included is a
 `Dockerfile` that builds the runtime container image. To run it:
 
 ```sh
-docker build -t daaku/make-rell . &&
+docker build --tag make-rell . &&
 docker run \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v /usr/bin/docker:/usr/bin/docker \
-  -t daaku/make-rell
+  --rm \
+  --tty \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  --volume /usr/bin/docker:/usr/bin/docker
+  make-rell
+```
+
+Running with Docker
+-------------------
+
+First run the
+[redis container](https://github.com/daaku/dockerfiles/tree/master/redis):
+
+```sh
+/usr/bin/docker run --name=redis --volume=/var/lib/redis:/data daaku/redis
+```
+
+Put your configuration in a file, for example:
+
+```sh
+cat > config <<EOF
+FBAPP_ID=<app-id>
+FBAPP_NAMESPACE=<canvas-namespace>
+FBAPP_SECRET=<app-secret>
+RELL_BROWSERIFY_OVERRIDE=/usr/share/rell/browserify.js
+RELL_EXAMPLES_NEW=/usr/share/rell/examples/mu
+RELL_STATIC_DISK_PATH=/usr/share/rell/public
+EOF
+```
+
+Then start the `rell` container:
+
+```sh
+/usr/bin/docker run --link redis:redis --env-file=config daaku/rell
 ```
