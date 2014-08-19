@@ -335,6 +335,10 @@ func (d *Deploy) DeployTag(tag string, prod bool) error {
 		return err
 	}
 
+	if err := d.infoCheck(tag); err != nil {
+		return err
+	}
+
 	if prod {
 		if err := d.switchProd(tag); err != nil {
 			return err
@@ -342,10 +346,6 @@ func (d *Deploy) DeployTag(tag string, prod bool) error {
 	}
 
 	if err := d.hupNginx(); err != nil {
-		return err
-	}
-
-	if err := d.infoCheck(tag); err != nil {
 		return err
 	}
 
