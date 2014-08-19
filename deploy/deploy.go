@@ -155,7 +155,11 @@ func (d *Deploy) rellEnv() ([]string, error) {
 	lines := bytes.Split(contents, []byte("\n"))
 	env := make([]string, 0, len(lines))
 	for _, l := range lines {
-		env = append(env, string(l))
+		str := strings.TrimSpace(string(l))
+		if str == "" {
+			continue
+		}
+		env = append(env, str)
 	}
 	return env, nil
 }
