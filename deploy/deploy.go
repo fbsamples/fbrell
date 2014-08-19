@@ -23,6 +23,7 @@ import (
 const (
 	infoCheckMaxWait        = time.Minute
 	infoCheckSleep          = 25 * time.Millisecond
+	lastDeployTagFile       = "/var/lib/rell/production-tag"
 	nginxConfDir            = "/etc/nginx/server"
 	nginxPidFile            = "/run/nginx.pid"
 	prodNginxConfFile       = "prod.conf"
@@ -218,9 +219,10 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 	return nil
 }
 
-func (d *Deploy) genProdNginxConf(tag string) error {
+func (d *Deploy) switchProd(tag string) error {
 	containerName := containerNameForTag(tag)
 
+	// rewrite the prod config
 	filename := filepath.Join(nginxConfDir, prodNginxConfFile)
 	f, err := os.Create(filename)
 	if err != nil {
@@ -241,6 +243,21 @@ func (d *Deploy) genProdNginxConf(tag string) error {
 	if err = prodNginxConf.Execute(f, data); err != nil {
 		f.Close()
 		os.Remove(filename)
+		return stackerr.Wrap(err)
+	}
+
+	if err := f.Close(); err != nil {
+		return stackerr.Wrap(err)
+	}
+
+	// update the last deploy tag file
+	os.MkdirAll(filepath.Dir(lastDeployTagFile), os.FileMode(0755))
+	f, err = os.Create(lastDeployTagFile)
+	if err != nil {
+		return stackerr.Wrap(err)
+	}
+
+	if _, err := fmt.Fprint(f, tag); err != nil {
 		return stackerr.Wrap(err)
 	}
 
@@ -305,7 +322,7 @@ func (d *Deploy) infoCheck(tag string) error {
 	return nil
 }
 
-func (d *Deploy) DeployTag(tag string) error {
+func (d *Deploy) DeployTag(tag string, prod bool) error {
 	if err := d.startRedis(); err != nil {
 		return err
 	}
@@ -318,8 +335,10 @@ func (d *Deploy) DeployTag(tag string) error {
 		return err
 	}
 
-	if err := d.genProdNginxConf(tag); err != nil {
-		return err
+	if prod {
+		if err := d.switchProd(tag); err != nil {
+			return err
+		}
 	}
 
 	if err := d.hupNginx(); err != nil {
@@ -353,7 +372,7 @@ func main() {
 		CertFile:     getenv("CERT_FILE", "/etc/nginx/cert/star-minetti-cert.pem"),
 		KeyFile:      getenv("KEY_FILE", "/etc/nginx/cert/star-minetti-key.pem"),
 	}
-	err := d.DeployTag(getenv("TAG", "latest"))
+	err := d.DeployTag(getenv("TAG", "latest"), true)
 	if err != nil {
 		log.Fatal(err)
 	}
