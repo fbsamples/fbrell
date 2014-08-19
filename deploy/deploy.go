@@ -16,6 +16,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/facebookgo/stackerr"
 	"github.com/samalba/dockerclient"
 )
@@ -26,16 +27,17 @@ const (
 	lastDeployTagFile       = "/var/lib/rell/production-tag"
 	nginxConfDir            = "/etc/nginx/server"
 	nginxPidFile            = "/run/nginx.pid"
-	prodNginxConfFile       = "prod.conf"
+	prodNginxConfFile       = "rell-prod.conf"
 	redisContainerLink      = "redis:redis"
 	redisContainerName      = "redis"
 	redisDataBind           = "/var/lib/redis:/data"
 	redisImage              = "daaku/redis"
-	rellContainerNamePrefix = "rell"
+	rellContainerNamePrefix = "rell-"
 	rellEnvFile             = "/etc/conf.d/rell"
 	rellImage               = "daaku/rell"
 	rellPort                = 43600
 	rellUser                = "15151"
+	stopTimeout             = 30 * time.Second
 )
 
 type Deploy struct {
@@ -185,7 +187,7 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 		return stackerr.Wrap(err)
 	}
 
-	filename := filepath.Join(nginxConfDir, containerName+".conf")
+	filename := d.containerNginxConfPath(containerName)
 	f, err := os.Create(filename)
 	if err != nil {
 		return stackerr.Wrap(err)
@@ -322,6 +324,57 @@ func (d *Deploy) infoCheck(tag string) error {
 	return nil
 }
 
+func (d *Deploy) killExcept(tag string) error {
+	docker, err := d.docker()
+	if err != nil {
+		return err
+	}
+
+	containers, err := docker.ListContainers(true)
+	if err != nil {
+		return stackerr.Wrap(err)
+	}
+
+	var errs multiError
+	for _, c := range containers {
+		// check if its our container
+		if !strings.HasPrefix(c.Image, rellImage+":") {
+			continue
+		}
+
+		cTag := tagFromNames(c.Names)
+		spew.Dump(c.Names)
+		spew.Dump(cTag)
+
+		// dont kill the production container
+		if cTag == tag {
+			continue
+		}
+
+		// remove nginx config file
+		cName := containerNameForTag(cTag)
+		os.Remove(d.containerNginxConfPath(cName))
+
+		// stop it, ignoring errors
+		docker.StopContainer(c.Id, int(stopTimeout.Seconds()))
+
+		// remove it
+		if err := docker.RemoveContainer(c.Id); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	if len(errs) == 1 {
+		return stackerr.Wrap(errs[0])
+	}
+
+	return stackerr.Wrap(errs)
+}
+
 func (d *Deploy) DeployTag(tag string, prod bool) error {
 	if err := d.startRedis(); err != nil {
 		return err
@@ -349,11 +402,31 @@ func (d *Deploy) DeployTag(tag string, prod bool) error {
 		return err
 	}
 
+	if prod {
+		if err := d.killExcept(tag); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
+func (d *Deploy) containerNginxConfPath(containerName string) string {
+	return filepath.Join(nginxConfDir, containerName+".conf")
+}
+
+func tagFromNames(names []string) string {
+	for _, name := range names {
+		name = name[1:] // drop the leading /
+		if strings.HasPrefix(name, rellContainerNamePrefix) {
+			return name[len(rellContainerNamePrefix):]
+		}
+	}
+	return ""
+}
+
 func containerNameForTag(tag string) string {
-	return fmt.Sprintf("%s-%s", rellContainerNamePrefix, tag)
+	return fmt.Sprintf("%s%s", rellContainerNamePrefix, tag)
 }
 
 // getenv is like os.Getenv, but returns def if the variable is empty.
@@ -363,6 +436,16 @@ func getenv(key, def string) string {
 		return def
 	}
 	return v
+}
+
+type multiError []error
+
+func (m multiError) Error() string {
+	parts := make([]string, 0, len(m))
+	for _, e := range m {
+		parts = append(parts, e.Error())
+	}
+	return "multiple errors: " + strings.Join(parts, " | ")
 }
 
 func main() {
