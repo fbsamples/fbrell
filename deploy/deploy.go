@@ -16,7 +16,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/facebookgo/stackerr"
 	"github.com/samalba/dockerclient"
 )
@@ -343,8 +342,6 @@ func (d *Deploy) killExcept(tag string) error {
 		}
 
 		cTag := tagFromNames(c.Names)
-		spew.Dump(c.Names)
-		spew.Dump(cTag)
 
 		// dont kill the production container
 		if cTag == tag {
