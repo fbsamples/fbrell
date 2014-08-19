@@ -40,6 +40,8 @@ const (
 type Deploy struct {
 	DockerURL    string
 	ServerSuffix string
+	CertFile     string
+	KeyFile      string
 
 	client     *dockerclient.DockerClient
 	clientErr  error
@@ -193,11 +195,15 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 		ServerName  string
 		IpAddress   string
 		Port        int
+		CertFile    string
+		KeyFile     string
 	}{
 		BackendName: containerName,
 		ServerName:  fmt.Sprintf("%s.%s", tag, d.ServerSuffix),
 		IpAddress:   ci.NetworkSettings.IpAddress,
 		Port:        rellPort,
+		CertFile:    d.CertFile,
+		KeyFile:     d.KeyFile,
 	}
 	if err = tagNginxConf.Execute(f, data); err != nil {
 		f.Close()
@@ -224,9 +230,13 @@ func (d *Deploy) genProdNginxConf(tag string) error {
 	data := struct {
 		ServerSuffix string
 		BackendName  string
+		CertFile     string
+		KeyFile      string
 	}{
 		ServerSuffix: d.ServerSuffix,
 		BackendName:  containerName,
+		CertFile:     d.CertFile,
+		KeyFile:      d.KeyFile,
 	}
 	if err = prodNginxConf.Execute(f, data); err != nil {
 		f.Close()
@@ -340,6 +350,8 @@ func main() {
 	d := Deploy{
 		DockerURL:    getenv("DOCKER_HOST", "unix:///var/run/docker.sock"),
 		ServerSuffix: getenv("SERVER_SUFFIX", "minetti.fbrell.com"),
+		CertFile:     getenv("CERT_FILE", "/etc/nginx/cert/star-minetti-cert.pem"),
+		KeyFile:      getenv("KEY_FILE", "/etc/nginx/cert/star-minetti-key.pem"),
 	}
 	err := d.DeployTag(getenv("TAG", "latest"))
 	if err != nil {
@@ -368,8 +380,8 @@ server {
   listen               [::]:443;
   server_name          {{.ServerName}};
   ssl                  on;
-  ssl_certificate      /etc/nginx/cert/star-minetti-cert.pem;
-  ssl_certificate_key  /etc/nginx/cert/star-minetti-key.pem;
+  ssl_certificate      {{.CertFile}};
+  ssl_certificate_key  {{.KeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
   ssl_session_cache    shared:SSL:10m;
@@ -403,8 +415,8 @@ server {
   listen               [::]:443;
   server_name          {{.ServerSuffix}};
   ssl                  on;
-  ssl_certificate      /etc/nginx/cert/star-minetti-cert.pem;
-  ssl_certificate_key  /etc/nginx/cert/star-minetti-key.pem;
+  ssl_certificate      {{.CertFile}};
+  ssl_certificate_key  {{.KeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
 
@@ -429,8 +441,8 @@ server {
   listen               [::]:443 ssl spdy ipv6only=off;
   server_name          www.{{.ServerSuffix}};
   ssl                  on;
-  ssl_certificate      /etc/nginx/cert/star-minetti-cert.pem;
-  ssl_certificate_key  /etc/nginx/cert/star-minetti-key.pem;
+  ssl_certificate      {{.CertFile}};
+  ssl_certificate_key  {{.KeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
   ssl_session_cache    shared:SSL:10m;
