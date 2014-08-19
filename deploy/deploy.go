@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -225,6 +226,28 @@ func (d *Deploy) hupNginx() error {
 	return nil
 }
 
+func (d *Deploy) infoCheck(tag string) error {
+	docker, err := d.docker()
+	if err != nil {
+		return err
+	}
+
+	containerName := containerNameForTag(tag)
+	ci, err := docker.InspectContainer(containerName)
+	if err != nil {
+		return stackerr.Wrap(err)
+	}
+
+	u := fmt.Sprintf("http://%s/info/", ci.NetworkSettings.IpAddress)
+	res, err := http.Head(u)
+	if err != nil {
+		return stackerr.Wrap(err)
+	}
+	res.Body.Close()
+
+	return nil
+}
+
 func (d *Deploy) DeployTag(tag string) error {
 	if err := d.startRedis(); err != nil {
 		return err
@@ -239,6 +262,10 @@ func (d *Deploy) DeployTag(tag string) error {
 	}
 
 	if err := d.hupNginx(); err != nil {
+		return err
+	}
+
+	if err := d.infoCheck(tag); err != nil {
 		return err
 	}
 
