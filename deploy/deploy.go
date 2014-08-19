@@ -307,7 +307,7 @@ func main() {
 		DockerURL:    getenv("DOCKER_HOST", "unix:///var/run/docker.sock"),
 		ServerSuffix: getenv("SERVER_SUFFIX", ".minetti.fbrell.com"),
 	}
-	err := d.DeployTag("latest")
+	err := d.DeployTag(getenv("TAG", "latest"))
 	if err != nil {
 		log.Fatal(err)
 	}
