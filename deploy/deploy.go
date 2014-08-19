@@ -14,12 +14,15 @@ import (
 	"sync"
 	"syscall"
 	"text/template"
+	"time"
 
 	"github.com/facebookgo/stackerr"
 	"github.com/samalba/dockerclient"
 )
 
 const (
+	infoCheckMaxWait        = time.Minute
+	infoCheckSleep          = 25 * time.Millisecond
 	nginxConfDir            = "/etc/nginx/server"
 	nginxPidFile            = "/run/nginx.pid"
 	redisContainerLink      = "redis:redis"
@@ -29,6 +32,7 @@ const (
 	rellContainerNamePrefix = "rell"
 	rellEnvFile             = "/etc/conf.d/rell"
 	rellImage               = "daaku/rell"
+	rellPort                = 43600
 	rellUser                = "15151"
 )
 
@@ -184,10 +188,15 @@ func (d *Deploy) genNingxConf(tag string) error {
 	}
 
 	data := struct {
-		ServerName, IpAddress string
+		BackendName string
+		ServerName  string
+		IpAddress   string
+		Port        int
 	}{
-		ServerName: tag + d.ServerSuffix,
-		IpAddress:  ci.NetworkSettings.IpAddress,
+		BackendName: containerName,
+		ServerName:  tag + d.ServerSuffix,
+		IpAddress:   ci.NetworkSettings.IpAddress,
+		Port:        rellPort,
 	}
 	if err = nginxConf.Execute(f, data); err != nil {
 		f.Close()
@@ -238,12 +247,20 @@ func (d *Deploy) infoCheck(tag string) error {
 		return stackerr.Wrap(err)
 	}
 
-	u := fmt.Sprintf("http://%s/info/", ci.NetworkSettings.IpAddress)
-	res, err := http.Head(u)
-	if err != nil {
-		return stackerr.Wrap(err)
+	u := fmt.Sprintf("http://%s:%d/info/", ci.NetworkSettings.IpAddress, rellPort)
+	until := time.Now().Add(infoCheckMaxWait)
+	for {
+		res, err := http.Head(u)
+		if err != nil {
+			if time.Now().After(until) {
+				return stackerr.Wrap(err)
+			}
+			time.Sleep(infoCheckSleep)
+			continue
+		}
+		res.Body.Close()
+		break
 	}
-	res.Body.Close()
 
 	return nil
 }
@@ -297,14 +314,17 @@ func main() {
 }
 
 var nginxConf = template.Must(template.New("nginx").Parse(
-	`server {
+	`upstream {{.BackendName}} {
+  server               {{.IpAddress}}:{{.Port}};
+}
+server {
   listen               [::]:80;
   server_name          {{.ServerName}};
   charset              utf-8;
   access_log           off;
 
   location / {
-    proxy_pass         http://{{.IpAddress}}:43600;
+    proxy_pass         http://{{.BackendName}};
     proxy_set_header   X-Forwarded-For         $remote_addr;
     proxy_set_header   X-Forwarded-Proto       http;
     proxy_set_header   X-Forwarded-Host        $host;
@@ -328,7 +348,7 @@ server {
   access_log           off;
 
   location / {
-    proxy_pass         http://{{.IpAddress}}:43600;
+    proxy_pass         http://{{.BackendName}};
     proxy_set_header   X-Forwarded-For         $remote_addr;
     proxy_set_header   X-Forwarded-Proto       https;
     proxy_set_header   X-Forwarded-Host        $host;
