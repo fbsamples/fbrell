@@ -21,11 +21,11 @@ import (
 )
 
 const (
-	prodNginxConfFile       = "prod.conf"
 	infoCheckMaxWait        = time.Minute
 	infoCheckSleep          = 25 * time.Millisecond
 	nginxConfDir            = "/etc/nginx/server"
 	nginxPidFile            = "/run/nginx.pid"
+	prodNginxConfFile       = "prod.conf"
 	redisContainerLink      = "redis:redis"
 	redisContainerName      = "redis"
 	redisDataBind           = "/var/lib/redis:/data"
