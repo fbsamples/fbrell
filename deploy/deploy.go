@@ -142,7 +142,19 @@ func (d *Deploy) startRell(tag string) error {
 	}
 	id, err := docker.CreateContainer(&containerConfig, containerName)
 	if err != nil {
-		return stackerr.Wrap(err)
+		if err != dockerclient.ErrNotFound {
+			return stackerr.Wrap(err)
+		}
+
+		// pull the image
+		if err := docker.PullImage(rellImage, tag); err != nil {
+			return stackerr.Wrap(err)
+		}
+
+		id, err = docker.CreateContainer(&containerConfig, containerName)
+		if err != nil {
+			return stackerr.Wrap(err)
+		}
 	}
 
 	hostConfig := dockerclient.HostConfig{
