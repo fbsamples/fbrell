@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,34 +17,33 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/facebookgo/flagconfig"
+	"github.com/facebookgo/flagenv"
 	"github.com/facebookgo/stackerr"
 	"github.com/samalba/dockerclient"
 )
 
-const (
-	infoCheckMaxWait        = time.Minute
-	infoCheckSleep          = 25 * time.Millisecond
-	lastDeployTagFile       = "/var/lib/rell/production-tag"
-	nginxConfDir            = "/etc/nginx/server"
-	nginxPidFile            = "/run/nginx.pid"
-	prodNginxConfFile       = "rell-prod.conf"
-	redisContainerLink      = "redis:redis"
-	redisContainerName      = "redis"
-	redisDataBind           = "/var/lib/redis:/data"
-	redisImage              = "daaku/redis"
-	rellContainerNamePrefix = "rell-"
-	rellEnvFile             = "/etc/conf.d/rell"
-	rellImage               = "daaku/rell"
-	rellPort                = 43600
-	rellUser                = "15151"
-	stopTimeout             = 30 * time.Second
-)
-
 type Deploy struct {
-	DockerURL    string
-	ServerSuffix string
-	CertFile     string
-	KeyFile      string
+	DockerURL               string
+	ServerSuffix            string
+	CertFile                string
+	KeyFile                 string
+	InfoCheckMaxWait        time.Duration
+	InfoCheckSleep          time.Duration
+	LastDeployTagFile       string
+	NginxConfDir            string
+	NginxPidFile            string
+	ProdNginxConfFile       string
+	RedisContainerLink      string
+	RedisContainerName      string
+	RedisDataBind           string
+	RedisImage              string
+	RellContainerNamePrefix string
+	RellEnvFile             string
+	RellImage               string
+	RellPort                int
+	RellUser                string
+	StopTimeout             time.Duration
 
 	client     *dockerclient.DockerClient
 	clientErr  error
@@ -63,7 +63,7 @@ func (d *Deploy) startRedis() error {
 		return err
 	}
 
-	ci, err := docker.InspectContainer(redisContainerName)
+	ci, err := docker.InspectContainer(d.RedisContainerName)
 
 	// already running, we're set
 	if err == nil && ci.State.Running {
@@ -77,22 +77,22 @@ func (d *Deploy) startRedis() error {
 
 	// exists but not running, remove it and start fresh
 	if err == nil {
-		if err := docker.RemoveContainer(redisContainerName); err != nil {
+		if err := docker.RemoveContainer(d.RedisContainerName); err != nil {
 			return stackerr.Wrap(err)
 		}
 	}
 
 	// need to create the container and start it
 	containerConfig := dockerclient.ContainerConfig{
-		Image: redisImage,
+		Image: d.RedisImage,
 	}
-	id, err := docker.CreateContainer(&containerConfig, redisContainerName)
+	id, err := docker.CreateContainer(&containerConfig, d.RedisContainerName)
 	if err != nil {
 		return stackerr.Wrap(err)
 	}
 
 	hostConfig := dockerclient.HostConfig{
-		Binds: []string{redisDataBind},
+		Binds: []string{d.RedisDataBind},
 	}
 	err = docker.StartContainer(id, &hostConfig)
 	if err != nil {
@@ -108,7 +108,7 @@ func (d *Deploy) startRell(tag string) error {
 		return err
 	}
 
-	containerName := containerNameForTag(tag)
+	containerName := d.containerNameForTag(tag)
 	ci, err := docker.InspectContainer(containerName)
 
 	// already running, we're set
@@ -136,8 +136,8 @@ func (d *Deploy) startRell(tag string) error {
 
 	// need to create the container and start it
 	containerConfig := dockerclient.ContainerConfig{
-		User:  rellUser,
-		Image: fmt.Sprintf("%s:%s", rellImage, tag),
+		User:  d.RellUser,
+		Image: fmt.Sprintf("%s:%s", d.RellImage, tag),
 		Env:   env,
 	}
 	id, err := docker.CreateContainer(&containerConfig, containerName)
@@ -147,7 +147,7 @@ func (d *Deploy) startRell(tag string) error {
 		}
 
 		// pull the image
-		if err := docker.PullImage(rellImage, tag); err != nil {
+		if err := docker.PullImage(d.RellImage, tag); err != nil {
 			return stackerr.Wrap(err)
 		}
 
@@ -158,7 +158,7 @@ func (d *Deploy) startRell(tag string) error {
 	}
 
 	hostConfig := dockerclient.HostConfig{
-		Links: []string{redisContainerLink},
+		Links: []string{d.RedisContainerLink},
 	}
 	err = docker.StartContainer(id, &hostConfig)
 	if err != nil {
@@ -169,7 +169,7 @@ func (d *Deploy) startRell(tag string) error {
 }
 
 func (d *Deploy) rellEnv() ([]string, error) {
-	contents, err := ioutil.ReadFile(rellEnvFile)
+	contents, err := ioutil.ReadFile(d.RellEnvFile)
 	if err != nil {
 		return nil, stackerr.Wrap(err)
 	}
@@ -192,7 +192,7 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 		return err
 	}
 
-	containerName := containerNameForTag(tag)
+	containerName := d.containerNameForTag(tag)
 	ci, err := docker.InspectContainer(containerName)
 	if err != nil {
 		return stackerr.Wrap(err)
@@ -215,7 +215,7 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 		BackendName: containerName,
 		ServerName:  fmt.Sprintf("%s.%s", tag, d.ServerSuffix),
 		IpAddress:   ci.NetworkSettings.IpAddress,
-		Port:        rellPort,
+		Port:        d.RellPort,
 		CertFile:    d.CertFile,
 		KeyFile:     d.KeyFile,
 	}
@@ -233,10 +233,10 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 }
 
 func (d *Deploy) switchProd(tag string) error {
-	containerName := containerNameForTag(tag)
+	containerName := d.containerNameForTag(tag)
 
 	// rewrite the prod config
-	filename := filepath.Join(nginxConfDir, prodNginxConfFile)
+	filename := filepath.Join(d.NginxConfDir, d.ProdNginxConfFile)
 	f, err := os.Create(filename)
 	if err != nil {
 		return stackerr.Wrap(err)
@@ -264,8 +264,8 @@ func (d *Deploy) switchProd(tag string) error {
 	}
 
 	// update the last deploy tag file
-	os.MkdirAll(filepath.Dir(lastDeployTagFile), os.FileMode(0755))
-	f, err = os.Create(lastDeployTagFile)
+	os.MkdirAll(filepath.Dir(d.LastDeployTagFile), os.FileMode(0755))
+	f, err = os.Create(d.LastDeployTagFile)
 	if err != nil {
 		return stackerr.Wrap(err)
 	}
@@ -282,7 +282,7 @@ func (d *Deploy) switchProd(tag string) error {
 }
 
 func (d *Deploy) hupNginx() error {
-	pidStr, err := ioutil.ReadFile(nginxPidFile)
+	pidStr, err := ioutil.ReadFile(d.NginxPidFile)
 	if err != nil {
 		return stackerr.Wrap(err)
 	}
@@ -311,21 +311,21 @@ func (d *Deploy) infoCheck(tag string) error {
 		return err
 	}
 
-	containerName := containerNameForTag(tag)
+	containerName := d.containerNameForTag(tag)
 	ci, err := docker.InspectContainer(containerName)
 	if err != nil {
 		return stackerr.Wrap(err)
 	}
 
-	u := fmt.Sprintf("http://%s:%d/info/", ci.NetworkSettings.IpAddress, rellPort)
-	until := time.Now().Add(infoCheckMaxWait)
+	u := fmt.Sprintf("http://%s:%d/info/", ci.NetworkSettings.IpAddress, d.RellPort)
+	until := time.Now().Add(d.InfoCheckMaxWait)
 	for {
 		res, err := http.Head(u)
 		if err != nil {
 			if time.Now().After(until) {
 				return stackerr.Wrap(err)
 			}
-			time.Sleep(infoCheckSleep)
+			time.Sleep(d.InfoCheckSleep)
 			continue
 		}
 		res.Body.Close()
@@ -349,11 +349,11 @@ func (d *Deploy) killExcept(tag string) error {
 	var errs multiError
 	for _, c := range containers {
 		// check if its our container
-		if !strings.HasPrefix(c.Image, rellImage+":") {
+		if !strings.HasPrefix(c.Image, d.RellImage+":") {
 			continue
 		}
 
-		cTag := tagFromNames(c.Names)
+		cTag := d.tagFromNames(c.Names)
 
 		// dont kill the production container
 		if cTag == tag {
@@ -361,11 +361,11 @@ func (d *Deploy) killExcept(tag string) error {
 		}
 
 		// remove nginx config file
-		cName := containerNameForTag(cTag)
+		cName := d.containerNameForTag(cTag)
 		os.Remove(d.containerNginxConfPath(cName))
 
 		// stop it, ignoring errors
-		docker.StopContainer(c.Id, int(stopTimeout.Seconds()))
+		docker.StopContainer(c.Id, int(d.StopTimeout.Seconds()))
 
 		// remove it
 		if err := docker.RemoveContainer(c.Id); err != nil {
@@ -421,21 +421,21 @@ func (d *Deploy) DeployTag(tag string, prod bool) error {
 }
 
 func (d *Deploy) containerNginxConfPath(containerName string) string {
-	return filepath.Join(nginxConfDir, containerName+".conf")
+	return filepath.Join(d.NginxConfDir, containerName+".conf")
 }
 
-func tagFromNames(names []string) string {
+func (d *Deploy) tagFromNames(names []string) string {
 	for _, name := range names {
 		name = name[1:] // drop the leading /
-		if strings.HasPrefix(name, rellContainerNamePrefix) {
-			return name[len(rellContainerNamePrefix):]
+		if strings.HasPrefix(name, d.RellContainerNamePrefix) {
+			return name[len(d.RellContainerNamePrefix):]
 		}
 	}
 	return ""
 }
 
-func containerNameForTag(tag string) string {
-	return fmt.Sprintf("%s%s", rellContainerNamePrefix, tag)
+func (d *Deploy) containerNameForTag(tag string) string {
+	return fmt.Sprintf("%s%s", d.RellContainerNamePrefix, tag)
 }
 
 // getenv is like os.Getenv, but returns def if the variable is empty.
@@ -458,13 +458,59 @@ func (m multiError) Error() string {
 }
 
 func main() {
-	d := Deploy{
-		DockerURL:    getenv("DOCKER_HOST", "unix:///var/run/docker.sock"),
-		ServerSuffix: getenv("SERVER_SUFFIX", "minetti.fbrell.com"),
-		CertFile:     getenv("CERT_FILE", "/etc/nginx/cert/star-minetti-cert.pem"),
-		KeyFile:      getenv("KEY_FILE", "/etc/nginx/cert/star-minetti-key.pem"),
-	}
-	err := d.DeployTag(getenv("TAG", "latest"), true)
+	var d Deploy
+
+	flag.StringVar(
+		&d.DockerURL,
+		"docker_host",
+		"unix:///var/run/docker.sock",
+		"docker url",
+	)
+	flag.StringVar(
+		&d.ServerSuffix,
+		"server_suffix",
+		"minetti.fbrell.com",
+		"server suffix",
+	)
+	flag.StringVar(
+		&d.CertFile,
+		"cert_file",
+		"/etc/nginx/cert/star-minetti-cert.pem",
+		"ssl cert file",
+	)
+	flag.StringVar(
+		&d.KeyFile,
+		"key_file",
+		"/etc/nginx/cert/star-minetti-key.pem",
+		"ssl key file",
+	)
+
+	d.InfoCheckMaxWait = time.Minute
+	d.InfoCheckSleep = 25 * time.Millisecond
+	d.LastDeployTagFile = "/var/lib/rell/production-tag"
+	d.NginxConfDir = "/etc/nginx/server"
+	d.NginxPidFile = "/run/nginx.pid"
+	d.ProdNginxConfFile = "rell-prod.conf"
+	d.RedisContainerLink = "redis:redis"
+	d.RedisContainerName = "redis"
+	d.RedisDataBind = "/var/lib/redis:/data"
+	d.RedisImage = "daaku/redis"
+	d.RellContainerNamePrefix = "rell-"
+	d.RellEnvFile = "/etc/conf.d/rell"
+	d.RellImage = "daaku/rell"
+	d.RellPort = 43600
+	d.RellUser = "15151"
+	d.StopTimeout = 30 * time.Second
+
+	tag := flag.String("tag", "latest", "default tag to deploy")
+	switchProd := flag.Bool("prod", false, "switch prod to specified tag")
+
+	flagenv.UseUpperCaseFlagNames = true
+	flag.Parse()
+	flagenv.Parse()
+	flagconfig.Parse()
+
+	err := d.DeployTag(*tag, *switchProd)
 	if err != nil {
 		log.Fatal(err)
 	}
