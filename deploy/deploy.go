@@ -408,7 +408,7 @@ func (d *Deploy) DeployTag(tag string, prod bool) error {
 	}
 
 	if err := d.hupNginx(); err != nil {
-		return err
+		log.Printf("failed to hup nginx: %s\n", err)
 	}
 
 	if prod {
@@ -458,6 +458,8 @@ func (m multiError) Error() string {
 }
 
 func main() {
+	log.SetFlags(log.Lshortfile)
+
 	var d Deploy
 
 	flag.StringVar(
