@@ -502,7 +502,7 @@ func main() {
 	d.RellUser = "15151"
 	d.StopTimeout = 30 * time.Second
 
-	tag := flag.String("tag", "latest", "default tag to deploy")
+	tag := flag.String("tag", defaultTag(d.LastDeployTagFile), "default tag to deploy")
 	switchProd := flag.Bool("prod", false, "switch prod to specified tag")
 
 	flagenv.UseUpperCaseFlagNames = true
@@ -514,6 +514,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func defaultTag(lastDeployTagFile string) string {
+	b, _ := ioutil.ReadFile(lastDeployTagFile)
+	if len(b) > 0 {
+		return string(b)
+	}
+	return "latest"
 }
 
 var tagNginxConf = template.Must(template.New("tag").Parse(
