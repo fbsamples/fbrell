@@ -477,13 +477,13 @@ func main() {
 	flag.StringVar(
 		&d.CertFile,
 		"cert_file",
-		"/etc/nginx/cert/star-minetti-cert.pem",
+		"/etc/nginx/cert/rell.pem",
 		"ssl cert file",
 	)
 	flag.StringVar(
 		&d.KeyFile,
 		"key_file",
-		"/etc/nginx/cert/star-minetti-key.pem",
+		"/etc/nginx/cert/rell.key",
 		"ssl key file",
 	)
 
