@@ -88,7 +88,19 @@ func (d *Deploy) startRedis() error {
 	}
 	id, err := docker.CreateContainer(&containerConfig, d.RedisContainerName)
 	if err != nil {
-		return stackerr.Wrap(err)
+		if err != dockerclient.ErrNotFound {
+			return stackerr.Wrap(err)
+		}
+
+		// pull the image
+		if err := docker.PullImage(d.RedisImage, "latest"); err != nil {
+			return stackerr.Wrap(err)
+		}
+
+		id, err = docker.CreateContainer(&containerConfig, d.RedisContainerName)
+		if err != nil {
+			return stackerr.Wrap(err)
+		}
 	}
 
 	hostConfig := dockerclient.HostConfig{
