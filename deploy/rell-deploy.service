@@ -1,0 +1,12 @@
+[Unit]
+Description=Rell Deploy Service
+Requires=nginx.service docker.service
+After=docker.service
+Before=nginx.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rell-deploy -prod
+
+[Install]
+WantedBy=multi-user.target

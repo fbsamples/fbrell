@@ -1,0 +1,27 @@
+pkgname=rell-deploy
+pkgver=4
+pkgrel=1
+pkgdesc='rell deploy service'
+arch=(any)
+license=(custom)
+source=(
+  archdiff-ignore
+  rell-deploy.service
+)
+md5sums=($(md5sum ${source[*]} | sed -e 's/ .*//' | tr '\n' ' '))
+depends=(
+  docker
+  etc-conf-nginx
+)
+
+build() {
+  unset GIT_DIR # this can interefere with "go get"
+  (cd ${srcdir}/.. && go get -v)
+  bindir=$pkgdir/usr/bin
+  install -d $bindir
+  go build -o=$bindir/$pkgname github.com/daaku/rell/deploy
+  install -d $pkgdir/usr/lib/systemd/system
+  install -D -m 644 $srcdir/rell-deploy.service $pkgdir/usr/lib/systemd/system/rell-deploy.service
+  install -d $pkgdir/etc/archdiff/ignore
+  install -D -m 644 $srcdir/archdiff-ignore $pkgdir/etc/archdiff/ignore/rell-deploy
+}
