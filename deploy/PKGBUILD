@@ -1,5 +1,5 @@
 pkgname=rell-deploy
-pkgver=5
+pkgver=6
 pkgrel=1
 pkgdesc='rell deploy service'
 arch=(any)

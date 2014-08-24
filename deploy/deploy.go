@@ -25,7 +25,8 @@ import (
 
 type Deploy struct {
 	DockerURL               string
-	ServerSuffix            string
+	VersionHost             string
+	ProdHost                string
 	CertFile                string
 	KeyFile                 string
 	InfoCheckMaxWait        time.Duration
@@ -225,7 +226,7 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 		KeyFile     string
 	}{
 		BackendName: containerName,
-		ServerName:  fmt.Sprintf("%s.%s", tag, d.ServerSuffix),
+		ServerName:  fmt.Sprintf("%s.%s", tag, d.VersionHost),
 		IpAddress:   ci.NetworkSettings.IpAddress,
 		Port:        d.RellPort,
 		CertFile:    d.CertFile,
@@ -255,15 +256,15 @@ func (d *Deploy) switchProd(tag string) error {
 	}
 
 	data := struct {
-		ServerSuffix string
-		BackendName  string
-		CertFile     string
-		KeyFile      string
+		ProdHost    string
+		BackendName string
+		CertFile    string
+		KeyFile     string
 	}{
-		ServerSuffix: d.ServerSuffix,
-		BackendName:  containerName,
-		CertFile:     d.CertFile,
-		KeyFile:      d.KeyFile,
+		ProdHost:    d.ProdHost,
+		BackendName: containerName,
+		CertFile:    d.CertFile,
+		KeyFile:     d.KeyFile,
 	}
 	if err = prodNginxConf.Execute(f, data); err != nil {
 		f.Close()
@@ -481,10 +482,16 @@ func main() {
 		"docker url",
 	)
 	flag.StringVar(
-		&d.ServerSuffix,
-		"server_suffix",
-		"minetti.fbrell.com",
-		"server suffix",
+		&d.ProdHost,
+		"prod_host",
+		"fbrell.com",
+		"prod hostname",
+	)
+	flag.StringVar(
+		&d.VersionHost,
+		"version_host",
+		"version.fbrell.com",
+		"version host",
 	)
 	flag.StringVar(
 		&d.CertFile,
@@ -584,15 +591,15 @@ server {
 var prodNginxConf = template.Must(template.New("prod").Parse(
 	`server {
   listen               [::]:80;
-  server_name          {{.ServerSuffix}};
+  server_name          {{.ProdHost}};
 
   location / {
-    rewrite (.*) http://www.{{.ServerSuffix}}$1 permanent;
+    rewrite (.*) http://www.{{.ProdHost}}$1 permanent;
   }
 }
 server {
   listen               [::]:443;
-  server_name          {{.ServerSuffix}};
+  server_name          {{.ProdHost}};
   ssl                  on;
   ssl_certificate      {{.CertFile}};
   ssl_certificate_key  {{.KeyFile}};
@@ -600,12 +607,12 @@ server {
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
 
   location / {
-    rewrite (.*) https://www.{{.ServerSuffix}}$1 permanent;
+    rewrite (.*) https://www.{{.ProdHost}}$1 permanent;
   }
 }
 server {
   listen               [::]:80;
-  server_name          www.{{.ServerSuffix}};
+  server_name          www.{{.ProdHost}};
   charset              utf-8;
   access_log           off;
 
@@ -618,7 +625,7 @@ server {
 }
 server {
   listen               [::]:443 ssl spdy ipv6only=off;
-  server_name          www.{{.ServerSuffix}};
+  server_name          www.{{.ProdHost}};
   ssl                  on;
   ssl_certificate      {{.CertFile}};
   ssl_certificate_key  {{.KeyFile}};
