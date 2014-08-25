@@ -25,9 +25,9 @@ import (
 
 type Deploy struct {
 	DockerURL               string
-	VersionHost             string
-	VersionCertFile         string
-	VersionKeyFile          string
+	TagHost                 string
+	TagCertFile             string
+	TagKeyFile              string
 	ProdHost                string
 	ProdCertFile            string
 	ProdKeyFile             string
@@ -220,19 +220,19 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 	}
 
 	data := struct {
-		BackendName     string
-		ServerName      string
-		IpAddress       string
-		Port            int
-		VersionCertFile string
-		VersionKeyFile  string
+		BackendName string
+		ServerName  string
+		IpAddress   string
+		Port        int
+		TagCertFile string
+		TagKeyFile  string
 	}{
-		BackendName:     containerName,
-		ServerName:      fmt.Sprintf("%s.%s", tag, d.VersionHost),
-		IpAddress:       ci.NetworkSettings.IpAddress,
-		Port:            d.RellPort,
-		VersionCertFile: d.VersionCertFile,
-		VersionKeyFile:  d.VersionKeyFile,
+		BackendName: containerName,
+		ServerName:  fmt.Sprintf("%s.%s", tag, d.TagHost),
+		IpAddress:   ci.NetworkSettings.IpAddress,
+		Port:        d.RellPort,
+		TagCertFile: d.TagCertFile,
+		TagKeyFile:  d.TagKeyFile,
 	}
 	if err = tagNginxConf.Execute(f, data); err != nil {
 		f.Close()
@@ -502,22 +502,22 @@ func main() {
 		"prod ssl key file",
 	)
 	flag.StringVar(
-		&d.VersionHost,
-		"version_host",
-		"version.fbrell.com",
-		"version host",
+		&d.TagHost,
+		"tag_host",
+		"tag.fbrell.com",
+		"tag host",
 	)
 	flag.StringVar(
-		&d.VersionCertFile,
-		"version_cert_file",
-		"/etc/nginx/cert/rell-version.pem",
-		"version ssl cert file",
+		&d.TagCertFile,
+		"tag_cert_file",
+		"/etc/nginx/cert/rell-tag.pem",
+		"tag ssl cert file",
 	)
 	flag.StringVar(
-		&d.VersionKeyFile,
-		"version_key_file",
-		"/etc/nginx/cert/rell-version.key",
-		"version ssl key file",
+		&d.TagKeyFile,
+		"tag_key_file",
+		"/etc/nginx/cert/rell-tag.key",
+		"tag ssl key file",
 	)
 
 	d.InfoCheckMaxWait = time.Minute
@@ -580,8 +580,8 @@ server {
   listen               [::]:443;
   server_name          {{.ServerName}};
   ssl                  on;
-  ssl_certificate      {{.VersionCertFile}};
-  ssl_certificate_key  {{.VersionKeyFile}};
+  ssl_certificate      {{.TagCertFile}};
+  ssl_certificate_key  {{.TagKeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
   ssl_session_cache    shared:SSL:10m;
