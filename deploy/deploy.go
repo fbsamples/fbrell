@@ -26,9 +26,11 @@ import (
 type Deploy struct {
 	DockerURL               string
 	VersionHost             string
+	VersionCertFile         string
+	VersionKeyFile          string
 	ProdHost                string
-	CertFile                string
-	KeyFile                 string
+	ProdCertFile            string
+	ProdKeyFile             string
 	InfoCheckMaxWait        time.Duration
 	InfoCheckSleep          time.Duration
 	LastDeployTagFile       string
@@ -218,19 +220,19 @@ func (d *Deploy) genTagNginxConf(tag string) error {
 	}
 
 	data := struct {
-		BackendName string
-		ServerName  string
-		IpAddress   string
-		Port        int
-		CertFile    string
-		KeyFile     string
+		BackendName     string
+		ServerName      string
+		IpAddress       string
+		Port            int
+		VersionCertFile string
+		VersionKeyFile  string
 	}{
-		BackendName: containerName,
-		ServerName:  fmt.Sprintf("%s.%s", tag, d.VersionHost),
-		IpAddress:   ci.NetworkSettings.IpAddress,
-		Port:        d.RellPort,
-		CertFile:    d.CertFile,
-		KeyFile:     d.KeyFile,
+		BackendName:     containerName,
+		ServerName:      fmt.Sprintf("%s.%s", tag, d.VersionHost),
+		IpAddress:       ci.NetworkSettings.IpAddress,
+		Port:            d.RellPort,
+		VersionCertFile: d.VersionCertFile,
+		VersionKeyFile:  d.VersionKeyFile,
 	}
 	if err = tagNginxConf.Execute(f, data); err != nil {
 		f.Close()
@@ -256,15 +258,15 @@ func (d *Deploy) switchProd(tag string) error {
 	}
 
 	data := struct {
-		ProdHost    string
-		BackendName string
-		CertFile    string
-		KeyFile     string
+		ProdHost     string
+		BackendName  string
+		ProdCertFile string
+		ProdKeyFile  string
 	}{
-		ProdHost:    d.ProdHost,
-		BackendName: containerName,
-		CertFile:    d.CertFile,
-		KeyFile:     d.KeyFile,
+		ProdHost:     d.ProdHost,
+		BackendName:  containerName,
+		ProdCertFile: d.ProdCertFile,
+		ProdKeyFile:  d.ProdKeyFile,
 	}
 	if err = prodNginxConf.Execute(f, data); err != nil {
 		f.Close()
@@ -488,22 +490,34 @@ func main() {
 		"prod hostname",
 	)
 	flag.StringVar(
+		&d.ProdCertFile,
+		"prod_cert_file",
+		"/etc/nginx/cert/rell.pem",
+		"prod ssl cert file",
+	)
+	flag.StringVar(
+		&d.ProdKeyFile,
+		"prod_key_file",
+		"/etc/nginx/cert/rell.key",
+		"prod ssl key file",
+	)
+	flag.StringVar(
 		&d.VersionHost,
 		"version_host",
 		"version.fbrell.com",
 		"version host",
 	)
 	flag.StringVar(
-		&d.CertFile,
-		"cert_file",
-		"/etc/nginx/cert/rell.pem",
-		"ssl cert file",
+		&d.VersionCertFile,
+		"version_cert_file",
+		"/etc/nginx/cert/rell-version.pem",
+		"version ssl cert file",
 	)
 	flag.StringVar(
-		&d.KeyFile,
-		"key_file",
-		"/etc/nginx/cert/rell.key",
-		"ssl key file",
+		&d.VersionKeyFile,
+		"version_key_file",
+		"/etc/nginx/cert/rell-version.key",
+		"version ssl key file",
 	)
 
 	d.InfoCheckMaxWait = time.Minute
@@ -566,8 +580,8 @@ server {
   listen               [::]:443;
   server_name          {{.ServerName}};
   ssl                  on;
-  ssl_certificate      {{.CertFile}};
-  ssl_certificate_key  {{.KeyFile}};
+  ssl_certificate      {{.VersionCertFile}};
+  ssl_certificate_key  {{.VersionKeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
   ssl_session_cache    shared:SSL:10m;
@@ -601,8 +615,8 @@ server {
   listen               [::]:443;
   server_name          {{.ProdHost}};
   ssl                  on;
-  ssl_certificate      {{.CertFile}};
-  ssl_certificate_key  {{.KeyFile}};
+  ssl_certificate      {{.ProdCertFile}};
+  ssl_certificate_key  {{.ProdKeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
 
@@ -627,8 +641,8 @@ server {
   listen               [::]:443 ssl spdy ipv6only=off;
   server_name          www.{{.ProdHost}};
   ssl                  on;
-  ssl_certificate      {{.CertFile}};
-  ssl_certificate_key  {{.KeyFile}};
+  ssl_certificate      {{.ProdCertFile}};
+  ssl_certificate_key  {{.ProdKeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
   ssl_session_cache    shared:SSL:10m;
