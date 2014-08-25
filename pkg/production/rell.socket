@@ -1,9 +1,0 @@
-[Unit]
-Description=Rell Socket
-
-[Socket]
-ListenStream=0.0.0.0:43800
-ListenStream=0.0.0.0:43801
-
-[Install]
-WantedBy=sockets.target

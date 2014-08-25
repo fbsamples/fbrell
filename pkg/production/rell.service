@@ -1,8 +1,0 @@
-[Unit]
-Description=Rell Server
-Wants=redis-socket.service
-
-[Service]
-User=rell
-ExecStart=/usr/bin/rell -c /etc/conf.d/rell
-Restart=always
