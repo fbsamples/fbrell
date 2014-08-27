@@ -39,8 +39,10 @@ type Deploy struct {
 	ProdNginxConfFile       string
 	RedisContainerLink      string
 	RedisContainerName      string
-	RedisDataBind           string
+	RedisDataDir            string
 	RedisImage              string
+	RedisUser               int
+	RedisVolumeDir          string
 	RellContainerNamePrefix string
 	RellEnvFile             string
 	RellImage               string
@@ -88,6 +90,7 @@ func (d *Deploy) startRedis() error {
 	// need to create the container and start it
 	containerConfig := dockerclient.ContainerConfig{
 		Image: d.RedisImage,
+		User:  fmt.Sprint(d.RedisUser),
 	}
 	id, err := docker.CreateContainer(&containerConfig, d.RedisContainerName)
 	if err != nil {
@@ -106,8 +109,28 @@ func (d *Deploy) startRedis() error {
 		}
 	}
 
+	// ensure redis data ownership
+	if err := os.Chown(d.RedisDataDir, d.RedisUser, 0); err != nil {
+		return stackerr.Wrap(err)
+	}
+	err = filepath.Walk(
+		d.RedisDataDir,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return stackerr.Wrap(err)
+			}
+			if err := os.Chown(path, d.RedisUser, 0); err != nil {
+				return stackerr.Wrap(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return err
+	}
+
 	hostConfig := dockerclient.HostConfig{
-		Binds: []string{d.RedisDataBind},
+		Binds: []string{fmt.Sprintf("%s:%s", d.RedisDataDir, d.RedisVolumeDir)},
 	}
 	err = docker.StartContainer(id, &hostConfig)
 	if err != nil {
@@ -528,8 +551,10 @@ func main() {
 	d.ProdNginxConfFile = "rell-prod.conf"
 	d.RedisContainerLink = "redis:redis"
 	d.RedisContainerName = "redis"
-	d.RedisDataBind = "/var/lib/redis:/data"
+	d.RedisDataDir = "/var/lib/redis"
+	d.RedisVolumeDir = "/var/lib/redis"
 	d.RedisImage = "daaku/redis"
+	d.RedisUser = 14141
 	d.RellContainerNamePrefix = "rell-"
 	d.RellEnvFile = "/etc/conf.d/rell"
 	d.RellImage = "daaku/rell"
