@@ -176,7 +176,7 @@ func (c *Context) CanvasURL(name string) string {
 	}
 
 	url := fburl.URL{
-		Scheme:    c.Scheme,
+		Scheme:    "https",
 		SubDomain: fburl.DApps,
 		Env:       c.Env,
 		Path:      name,
