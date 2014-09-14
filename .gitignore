@@ -5,7 +5,6 @@
 /etc/ssl.crt
 /etc/sub.class1.server.ca.pem
 /examples/db/mu/secret/
-/js/node_modules/
 /js/npm-debug.log
 /pkg/*/*.xz
 /pkg/*/pkg/
