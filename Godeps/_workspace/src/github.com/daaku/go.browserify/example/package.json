@@ -1,0 +1,12 @@
+{
+  "name": "go-browserify-example",
+  "version": "0.0.1",
+  "author": "Naitik Shah <n@daaku.org>",
+  "dependencies": {
+    "dotaccess": "1.0.x"
+  },
+  "devDependencies": {
+    "browserify": "1.10.x"
+  },
+  "engines": { "node": "0.6.x" }
+}

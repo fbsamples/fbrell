@@ -1,0 +1,276 @@
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package sortutil
+
+import (
+	"sort"
+	"testing"
+)
+
+func TestByteSlice(t *testing.T) {
+	const N = 1e4
+	s := make(ByteSlice, N)
+	for i := range s {
+		s[i] = byte(i) ^ 0x55
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchBytes(t *testing.T) {
+	const N = 1e1
+	s := make(ByteSlice, N)
+	for i := range s {
+		s[i] = byte(2 * i)
+	}
+	if g, e := SearchBytes(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestFloat32Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Float32Slice, N)
+	for i := range s {
+		s[i] = float32(i ^ 0x55aa55aa)
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchFloat32s(t *testing.T) {
+	const N = 1e4
+	s := make(Float32Slice, N)
+	for i := range s {
+		s[i] = float32(2 * i)
+	}
+	if g, e := SearchFloat32s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestInt8Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Int8Slice, N)
+	for i := range s {
+		s[i] = int8(i) ^ 0x55
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchInt8s(t *testing.T) {
+	const N = 1e1
+	s := make(Int8Slice, N)
+	for i := range s {
+		s[i] = int8(2 * i)
+	}
+	if g, e := SearchInt8s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestInt16Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Int16Slice, N)
+	for i := range s {
+		s[i] = int16(i) ^ 0x55aa
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchInt16s(t *testing.T) {
+	const N = 1e4
+	s := make(Int16Slice, N)
+	for i := range s {
+		s[i] = int16(2 * i)
+	}
+	if g, e := SearchInt16s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestInt32Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Int32Slice, N)
+	for i := range s {
+		s[i] = int32(i) ^ 0x55aa55aa
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchInt32s(t *testing.T) {
+	const N = 1e4
+	s := make(Int32Slice, N)
+	for i := range s {
+		s[i] = int32(2 * i)
+	}
+	if g, e := SearchInt32s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestInt64Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Int64Slice, N)
+	for i := range s {
+		s[i] = int64(i) ^ 0x55aa55aa55aa55aa
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchInt64s(t *testing.T) {
+	const N = 1e4
+	s := make(Int64Slice, N)
+	for i := range s {
+		s[i] = int64(2 * i)
+	}
+	if g, e := SearchInt64s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestUintSlice(t *testing.T) {
+	const N = 1e4
+	s := make(UintSlice, N)
+	for i := range s {
+		s[i] = uint(i) ^ 0x55aa55aa
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchUints(t *testing.T) {
+	const N = 1e4
+	s := make(UintSlice, N)
+	for i := range s {
+		s[i] = uint(2 * i)
+	}
+	if g, e := SearchUints(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestUint16Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Uint16Slice, N)
+	for i := range s {
+		s[i] = uint16(i) ^ 0x55aa
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchUint16s(t *testing.T) {
+	const N = 1e4
+	s := make(Uint16Slice, N)
+	for i := range s {
+		s[i] = uint16(2 * i)
+	}
+	if g, e := SearchUint16s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestUint32Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Uint32Slice, N)
+	for i := range s {
+		s[i] = uint32(i) ^ 0x55aa55aa
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchUint32s(t *testing.T) {
+	const N = 1e4
+	s := make(Uint32Slice, N)
+	for i := range s {
+		s[i] = uint32(2 * i)
+	}
+	if g, e := SearchUint32s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestUint64Slice(t *testing.T) {
+	const N = 1e4
+	s := make(Uint64Slice, N)
+	for i := range s {
+		s[i] = uint64(i) ^ 0x55aa55aa55aa55aa
+	}
+	s.Sort()
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestSearchUint64s(t *testing.T) {
+	const N = 1e4
+	s := make(Uint64Slice, N)
+	for i := range s {
+		s[i] = uint64(2 * i)
+	}
+	if g, e := SearchUint64s(s, 12), 6; g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestStringMapByValue(t *testing.T) {
+	r := map[string]string{
+		"baz": "zoo",
+		"foo": "bar",
+	}
+	s := StringMapByValue(r)
+	if len(s) != 2 {
+		t.Fatal("expected 2 pairs")
+	}
+	first, second := s[0], s[1]
+	if first.Key != "foo" || first.Value != "bar" || second.Key != "baz" || second.Value != "zoo" {
+		t.Fatal("not as expected")
+	}
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
+
+func TestStringMapByKey(t *testing.T) {
+	r := map[string]string{
+		"baz": "zoo",
+		"foo": "bar",
+	}
+	s := StringMapByKey(r)
+	if len(s) != 2 {
+		t.Fatal("expected 2 pairs")
+	}
+	first, second := s[0], s[1]
+	if first.Key != "baz" || first.Value != "zoo" || second.Key != "foo" || second.Value != "bar" {
+		t.Fatal("not as expected")
+	}
+	if !sort.IsSorted(s) {
+		t.Fatal("not as expected")
+	}
+}
