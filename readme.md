@@ -38,7 +38,6 @@ docker run \
   --rm \
   --tty \
   --volume /var/run/docker.sock:/var/run/docker.sock \
-  --volume /usr/bin/docker:/usr/bin/docker
   make-rell
 ```
 
@@ -49,7 +48,7 @@ First run the
 [redis container](https://github.com/daaku/dockerfiles/tree/master/redis):
 
 ```sh
-/usr/bin/docker run --name=redis --volume=/var/lib/redis:/data daaku/redis
+docker run --name=rell-redis daaku/redis
 ```
 
 Put your configuration in a file, for example:
@@ -68,5 +67,5 @@ EOF
 Then start the `rell` container:
 
 ```sh
-/usr/bin/docker run --link redis:redis --env-file=config daaku/rell
+docker run --link rell-redis:redis --env-file=config daaku/rell
 ```
