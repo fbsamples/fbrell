@@ -1,5 +1,5 @@
 pkgname=rell-deploy
-pkgver=12
+pkgver=13
 pkgrel=1
 pkgdesc='rell deploy service'
 arch=(any)
@@ -14,7 +14,7 @@ depends=(
   etc-conf-nginx
 )
 
-build() {
+package() {
   unset GIT_DIR # this can interefere with "go get"
   (cd ${srcdir}/.. && go get -v)
   bindir=$pkgdir/usr/bin

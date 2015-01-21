@@ -82,7 +82,7 @@ func (d *Deploy) startRedis() error {
 
 	// exists but not running, remove it and start fresh
 	if err == nil {
-		if err := docker.RemoveContainer(d.RedisContainerName); err != nil {
+		if err := docker.RemoveContainer(d.RedisContainerName, true); err != nil {
 			return stackerr.Wrap(err)
 		}
 	}
@@ -99,7 +99,7 @@ func (d *Deploy) startRedis() error {
 		}
 
 		// pull the image
-		if err := docker.PullImage(d.RedisImage, "latest"); err != nil {
+		if err := docker.PullImage(fmt.Sprintf("%s:latest", d.RedisImage), nil); err != nil {
 			return stackerr.Wrap(err)
 		}
 
@@ -161,7 +161,7 @@ func (d *Deploy) startRell(tag string) error {
 
 	// exists but not running, remove it and start fresh
 	if err == nil {
-		if err := docker.RemoveContainer(containerName); err != nil {
+		if err := docker.RemoveContainer(containerName, false); err != nil {
 			return stackerr.Wrap(err)
 		}
 	}
@@ -185,7 +185,7 @@ func (d *Deploy) startRell(tag string) error {
 		}
 
 		// pull the image
-		if err := docker.PullImage(d.RellImage, tag); err != nil {
+		if err := docker.PullImage(fmt.Sprintf("%s:%s", d.RellImage, tag), nil); err != nil {
 			return stackerr.Wrap(err)
 		}
 
@@ -379,7 +379,7 @@ func (d *Deploy) killExcept(tag string) error {
 		return err
 	}
 
-	containers, err := docker.ListContainers(true)
+	containers, err := docker.ListContainers(true, false, "")
 	if err != nil {
 		return stackerr.Wrap(err)
 	}
@@ -406,7 +406,7 @@ func (d *Deploy) killExcept(tag string) error {
 		docker.StopContainer(c.Id, int(d.StopTimeout.Seconds()))
 
 		// remove it
-		if err := docker.RemoveContainer(c.Id); err != nil {
+		if err := docker.RemoveContainer(c.Id, true); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -565,7 +565,6 @@ func main() {
 	tag := flag.String("tag", defaultTag(d.LastDeployTagFile), "default tag to deploy")
 	switchProd := flag.Bool("prod", false, "switch prod to specified tag")
 
-	flagenv.UseUpperCaseFlagNames = true
 	flag.Parse()
 	flagenv.Parse()
 	flagconfig.Parse()
@@ -609,10 +608,7 @@ server {
   ssl_certificate_key  {{.TagKeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
-  ssl_session_cache    shared:SSL:10m;
-  ssl_session_timeout  10m;
   keepalive_timeout    70;
-  ssl_buffer_size      1400;
   spdy_headers_comp    0;
 
   charset              utf-8;
@@ -670,10 +666,7 @@ server {
   ssl_certificate_key  {{.ProdKeyFile}};
   ssl_prefer_server_ciphers on;
   ssl_ciphers 'kEECDH+ECDSA+AES128 kEECDH+ECDSA+AES256 kEECDH+AES128 kEECDH+AES256 kEDH+AES128 kEDH+AES256 DES-CBC3-SHA +SHA !aNULL !eNULL !LOW !MD5 !EXP !DSS !PSK !SRP !kECDH !CAMELLIA !RC4 !SEED';
-  ssl_session_cache    shared:SSL:10m;
-  ssl_session_timeout  10m;
   keepalive_timeout    70;
-  ssl_buffer_size      1400;
   spdy_headers_comp    0;
 
   charset              utf-8;
