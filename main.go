@@ -134,8 +134,6 @@ func main() {
 		"Maximum processes to use.",
 	)
 
-	flagenv.UseUpperCaseFlagNames = true
-
 	flag.Usage = flagconfig.Usage
 	flag.Parse()
 	flagenv.Parse()
