@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -16,7 +15,6 @@ import (
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
-	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/go.static"
@@ -135,63 +133,6 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 			Xsrf:          a.Xsrf,
 		})
 	}
-}
-
-func (a *Handler) Raw(w http.ResponseWriter, r *http.Request) {
-	context, example, err := a.parse(r)
-	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
-	}
-	if !example.AutoRun {
-		view.Error(
-			w, r, a.Static, errors.New("Not allowed to view this example in raw mode."))
-		return
-	}
-	h.WriteResponse(w, r, &exampleContent{
-		ContextParser: a.ContextParser,
-		Context:       context,
-		Example:       example,
-	})
-}
-
-func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
-	context, example, err := a.parse(r)
-	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
-	}
-	if !example.AutoRun {
-		view.Error(
-			w, r, a.Static, errors.New("Not allowed to view this example in simple mode."))
-		return
-	}
-	h.WriteResponse(w, r, &h.Document{
-		Inner: &h.Frag{
-			&h.Head{
-				Inner: &h.Frag{
-					&h.Meta{Charset: "utf-8"},
-					&h.Title{h.String(example.Title)},
-				},
-			},
-			&h.Body{
-				Inner: &h.Frag{
-					&fb.Init{
-						AppID: context.AppID,
-						URL:   context.SdkURL(),
-					},
-					&h.Div{
-						ID: "example",
-						Inner: &exampleContent{
-							ContextParser: a.ContextParser,
-							Context:       context,
-							Example:       example,
-						},
-					},
-				},
-			},
-		},
-	})
 }
 
 func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
