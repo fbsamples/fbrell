@@ -11,11 +11,9 @@ import (
 
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.redis"
-	"github.com/daaku/go.redis/bytecache"
 	"github.com/daaku/go.redis/bytestore"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats/stathat"
-	"github.com/daaku/go.subcache"
 	"github.com/daaku/go.xsrf"
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
@@ -23,8 +21,8 @@ import (
 	"github.com/facebookgo/flagenv"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/facebookgo/httpcontrol"
+	"github.com/golang/groupcache/lru"
 
-	"github.com/daaku/rell/collector"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/context/appns"
 	"github.com/daaku/rell/context/empcheck"
@@ -54,7 +52,6 @@ func main() {
 		SumLen:    10,
 	}
 	static := static.HandlerFlag("rell.static")
-	byteCache := bytecache.New(redis)
 	byteStore := bytestore.New(redis)
 	httpTransport := &httpcontrol.Transport{
 		MaxIdleConnsPerHost:   http.DefaultMaxIdleConnsPerHost,
@@ -65,33 +62,18 @@ func main() {
 	fbApiClient := &fbapi.Client{
 		Redact: true,
 	}
-	collector := &collector.Collector{
-		Stats:  sh,
-		Logger: logger,
-	}
+	lruCache := lru.New(10000)
 	empChecker := &empcheck.Checker{
-		FbApiClient:  fbApiClient,
-		App:          fbapp.Flag("empcheck"),
-		Logger:       logger,
-		CacheTimeout: 24 * 90 * time.Hour,
-		Cache: &subcache.Client{
-			Prefix:      "is_employee",
-			ByteCache:   byteCache,
-			ErrorLogger: logger,
-			Stats:       collector.SubCacheStats,
-		},
+		FbApiClient: fbApiClient,
+		App:         fbapp.Flag("empcheck"),
+		Logger:      logger,
+		Cache:       lruCache,
 	}
 	appNSFetcher := &appns.Fetcher{
-		Apps:         []fbapp.App{mainapp},
-		FbApiClient:  fbApiClient,
-		Logger:       logger,
-		CacheTimeout: 60 * 24 * time.Hour,
-		Cache: &subcache.Client{
-			Prefix:      "appns",
-			ByteCache:   byteCache,
-			Stats:       collector.SubCacheStats,
-			ErrorLogger: logger,
-		},
+		Apps:        []fbapp.App{mainapp},
+		FbApiClient: fbApiClient,
+		Logger:      logger,
+		Cache:       lruCache,
 	}
 	exampleStore := &examples.Store{ByteStore: byteStore}
 	contextParser := &context.Parser{

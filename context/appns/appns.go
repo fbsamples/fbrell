@@ -6,27 +6,23 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
+	"github.com/golang/groupcache/lru"
 )
+
+type cacheKey uint64
 
 type Logger interface {
 	Printf(format string, v ...interface{})
 }
 
-type Cache interface {
-	Get(key string) ([]byte, error)
-	Store(key string, val []byte, timeout time.Duration) error
-}
-
 type Fetcher struct {
-	FbApiClient  *fbapi.Client
-	Apps         []fbapp.App
-	Logger       Logger
-	Cache        Cache
-	CacheTimeout time.Duration
+	FbApiClient *fbapi.Client
+	Apps        []fbapp.App
+	Logger      Logger
+	Cache       *lru.Cache
 }
 
 // Get the App Namespace, fetching it using the Graph API if necessary.
@@ -37,20 +33,21 @@ func (c *Fetcher) Get(id uint64) string {
 		}
 	}
 
-	ids := strconv.FormatUint(id, 10)
-	ns, _ := c.Cache.Get(ids)
-	if ns != nil {
-		return string(ns)
+	if ns, ok := c.Cache.Get(cacheKey(id)); ok {
+		return ns.(string)
 	}
 
 	res := struct{ Namespace string }{""}
-	req := http.Request{Method: "GET", URL: &url.URL{Path: ids}}
+	req := http.Request{
+		Method: "GET",
+		URL:    &url.URL{Path: strconv.FormatUint(id, 10)},
+	}
 	_, err := c.FbApiClient.Do(&req, &res)
 	if err != nil {
 		c.Logger.Printf("Ignoring error API call for AppNamespace: %s", err)
 		return ""
 	}
 
-	c.Cache.Store(ids, []byte(res.Namespace), c.CacheTimeout)
+	c.Cache.Add(cacheKey(id), res.Namespace)
 	return res.Namespace
 }
