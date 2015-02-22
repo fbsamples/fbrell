@@ -5,7 +5,6 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"runtime"
 	"time"
@@ -139,8 +138,6 @@ func main() {
 	flagenv.Parse()
 	flagconfig.Parse()
 
-	redisFromDockerEnv(redis)
-
 	runtime.GOMAXPROCS(*goMaxProcs)
 
 	sh.Transport = httpTransport
@@ -168,17 +165,4 @@ func main() {
 	if err := sh.Stop(); err != nil {
 		logger.Fatal(err)
 	}
-}
-
-func redisFromDockerEnv(r *redis.Client) {
-	v := os.Getenv("REDIS_PORT")
-	if v == "" {
-		return
-	}
-	u, err := url.Parse(v)
-	if err != nil {
-		panic(err)
-	}
-	r.Proto = u.Scheme
-	r.Addr = u.Host
 }
