@@ -62,7 +62,9 @@ func main() {
 		ResponseHeaderTimeout: 3 * time.Second,
 		RequestTimeout:        30 * time.Second,
 	}
-	fbApiClient := fbapi.ClientFlag("rell.fbapi")
+	fbApiClient := &fbapi.Client{
+		Redact: true,
+	}
 	collector := &collector.Collector{
 		Stats:  sh,
 		Logger: logger,
@@ -130,19 +132,14 @@ func main() {
 	}
 
 	mainAddress := flag.String(
-		"rell.address",
+		"addr",
 		":43600",
 		"Server address to bind to.",
 	)
 	adminAddress := flag.String(
-		"rell.admin.address",
+		"admin-addr",
 		":43601",
 		"Admin http server address.",
-	)
-	goMaxProcs := flag.Int(
-		"rell.gomaxprocs",
-		runtime.NumCPU(),
-		"Maximum processes to use.",
 	)
 
 	flag.Usage = flagconfig.Usage
@@ -150,7 +147,7 @@ func main() {
 	flagenv.Parse()
 	flagconfig.Parse()
 
-	runtime.GOMAXPROCS(*goMaxProcs)
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	sh.Transport = httpTransport
 	fbApiClient.Transport = httpTransport
