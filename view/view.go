@@ -27,6 +27,8 @@ var DefaultPageConfig = &PageConfig{
 	Script: []string{
 		"js/jquery-1.8.2.min.js",
 		"js/bootstrap.min.js",
+		"js/log.js",
+		"js/rell.js",
 	},
 }
 

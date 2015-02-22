@@ -1,23 +1,3 @@
-var $ = window.$
-
-function safeJSON(v) {
-  try {
-    return JSON.stringify(v, null, '  ')
-  } catch (e) {
-    return 'error: ' + e
-  }
-}
-
-function safe(str) {
-  var div = document.createElement('div')
-  if ('innerText' in div) {
-    div.innerText = str
-  } else {
-    div.textContent = str
-  }
-  return div.innerHTML.replace(/"/g, '&quot;').replace(/'/, '&#039;')
-}
-
 var Log = {
   levels: ['error', 'info', 'debug'],
   root: null,
@@ -27,6 +7,24 @@ var Log = {
     return function() {
       Log.write(level, Array.prototype.slice.apply(arguments))
     }
+  },
+
+  safeJSON: function(v) {
+    try {
+      return JSON.stringify(v, null, '  ')
+    } catch (e) {
+      return 'error: ' + e
+    }
+  },
+
+  safe: function(str) {
+    var div = document.createElement('div')
+    if ('innerText' in div) {
+      div.innerText = str
+    } else {
+      div.textContent = str
+    }
+    return div.innerHTML.replace(/"/g, '&quot;').replace(/'/, '&#039;')
   },
 
   write: function(level, args) {
@@ -44,7 +42,7 @@ var Log = {
       if (bd) {
         bd += '<hr>'
       }
-      bd += '<pre>' + safe(safeJSON(args[i])) + '</pre>'
+      bd += '<pre>' + Log.safe(Log.safeJSON(args[i])) + '</pre>'
     }
 
     return bd
@@ -126,5 +124,3 @@ var Log = {
     Log.info(decodeURIComponent(title), decodeURIComponent(obj))
   }
 }
-
-if (typeof module !== 'undefined') module.exports = Log

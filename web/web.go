@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/daaku/go.browserify"
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.httpgzip"
 	"github.com/daaku/go.httpstats"
@@ -71,7 +70,6 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 			http.StripPrefix(
 				public, http.FileServer(http.Dir(a.Static.DiskPath))))
 
-		mux.HandleFunc(browserify.Path, browserify.Handle)
 		mux.HandleFunc("/not_a_real_webpage", http.NotFound)
 		mux.Handle("/info/", a.ContextHandler)
 		mux.HandleFunc("/examples/", a.ExamplesHandler.List)

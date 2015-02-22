@@ -1,6 +1,3 @@
-var Log = require('./log')
-  , $ = window.$
-
 // stolen from prototypejs
 // used to set innerHTML and execute any contained <scripts>
 var ScriptSoup ={
@@ -142,5 +139,3 @@ var Rell = {
     return false
   }
 }
-
-if (typeof module !== 'undefined') module.exports = Rell
