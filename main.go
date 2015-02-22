@@ -44,6 +44,7 @@ func main() {
 		Name:   "z",
 		MaxAge: time.Hour * 24 * 365 * 10, // 10 years
 		Length: 16,
+		Logger: logger,
 	}
 	sh := stathat.ClientFlag("rell.stats")
 	redis := redis.ClientFlag("rell.redis")
@@ -62,7 +63,6 @@ func main() {
 		RequestTimeout:        30 * time.Second,
 	}
 	fbApiClient := fbapi.ClientFlag("rell.fbapi")
-	bid.Logger = logger
 	collector := &collector.Collector{
 		Stats:  sh,
 		Logger: logger,
