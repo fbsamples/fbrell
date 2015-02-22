@@ -15,7 +15,6 @@ import (
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.signedrequest/fbsr"
-	"github.com/daaku/go.stats"
 	"github.com/daaku/go.trustforward"
 	"github.com/facebookgo/fbapp"
 	"github.com/gorilla/schema"
@@ -82,7 +81,6 @@ type Parser struct {
 	EmpChecker   *empcheck.Checker
 	AppNSFetcher *appns.Fetcher
 	App          fbapp.App
-	Stats        stats.Backend
 }
 
 // Create a default context.

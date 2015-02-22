@@ -13,7 +13,6 @@ import (
 	"github.com/daaku/go.redis"
 	"github.com/daaku/go.redis/bytestore"
 	"github.com/daaku/go.static"
-	"github.com/daaku/go.stats/stathat"
 	"github.com/daaku/go.xsrf"
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
@@ -44,7 +43,6 @@ func main() {
 		Length: 16,
 		Logger: logger,
 	}
-	sh := stathat.ClientFlag("rell.stats")
 	redis := redis.ClientFlag("rell.redis")
 	xsrf := &xsrf.Provider{
 		BrowserID: bid,
@@ -60,7 +58,8 @@ func main() {
 		RequestTimeout:        30 * time.Second,
 	}
 	fbApiClient := &fbapi.Client{
-		Redact: true,
+		Redact:    true,
+		Transport: httpTransport,
 	}
 	lruCache := lru.New(10000)
 	empChecker := &empcheck.Checker{
@@ -80,11 +79,9 @@ func main() {
 		App:          mainapp,
 		EmpChecker:   empChecker,
 		AppNSFetcher: appNSFetcher,
-		Stats:        sh,
 	}
 
 	app := &web.App{
-		Stats:  sh,
 		Static: static,
 		App:    mainapp,
 		ContextHandler: &viewcontext.Handler{
@@ -94,13 +91,11 @@ func main() {
 		ExamplesHandler: &viewexamples.Handler{
 			ContextParser: contextParser,
 			ExampleStore:  exampleStore,
-			Stats:         sh,
 			Xsrf:          xsrf,
 			Static:        static,
 		},
 		OgHandler: &viewog.Handler{
 			ContextParser: contextParser,
-			Stats:         sh,
 			Static:        static,
 			ObjectParser:  &og.Parser{Static: static},
 		},
@@ -131,14 +126,6 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	sh.Transport = httpTransport
-	fbApiClient.Transport = httpTransport
-	redis.Stats = sh
-
-	if err := sh.Start(); err != nil {
-		logger.Fatal(err)
-	}
-
 	// for systemd started servers we can skip the date/time since journald
 	// already shows it
 	if os.Getppid() == 1 {
@@ -150,10 +137,6 @@ func main() {
 		&http.Server{Addr: *adminAddress, Handler: http.HandlerFunc(app.AdminHandler)},
 	)
 	if err != nil {
-		logger.Fatal(err)
-	}
-
-	if err := sh.Stop(); err != nil {
 		logger.Fatal(err)
 	}
 }

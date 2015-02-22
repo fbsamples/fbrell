@@ -20,7 +20,6 @@ import (
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/go.static"
-	"github.com/daaku/go.stats"
 	"github.com/daaku/go.xsrf"
 	"github.com/daaku/sortutil"
 	"github.com/facebookgo/counting"
@@ -60,7 +59,6 @@ type Handler struct {
 	ContextParser *context.Parser
 	ExampleStore  *examples.Store
 	Static        *static.Handler
-	Stats         stats.Backend
 	Xsrf          *xsrf.Provider
 }
 
@@ -83,7 +81,6 @@ func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, a.Static, err)
 		return
 	}
-	a.Stats.Count("viewed examples listing", 1)
 	h.WriteResponse(w, r, &examplesList{
 		Context: context,
 		Static:  a.Static,
@@ -99,12 +96,10 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !c.IsEmployee {
-			a.Stats.Count("save disallowed", 1)
 			view.Error(w, r, a.Static, errSaveDisabled)
 			return
 		}
 		if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
-			a.Stats.Count(savedPath+" xsrf failure", 1)
 			view.Error(w, r, a.Static, errTokenMismatch)
 			return
 		}
@@ -122,7 +117,6 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, a.Static, err)
 			return
 		}
-		a.Stats.Count("saved example", 1)
 		http.Redirect(w, r, c.ViewURL(savedPath+id), 302)
 		return
 	} else {
@@ -131,7 +125,6 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, a.Static, err)
 			return
 		}
-		a.Stats.Count("viewed saved example", 1)
 		h.WriteResponse(w, r, &page{
 			Writer:        w,
 			Request:       r,
@@ -155,7 +148,6 @@ func (a *Handler) Raw(w http.ResponseWriter, r *http.Request) {
 			w, r, a.Static, errors.New("Not allowed to view this example in raw mode."))
 		return
 	}
-	a.Stats.Count("viewed example in raw mode", 1)
 	h.WriteResponse(w, r, &exampleContent{
 		ContextParser: a.ContextParser,
 		Context:       context,
@@ -174,7 +166,6 @@ func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
 			w, r, a.Static, errors.New("Not allowed to view this example in simple mode."))
 		return
 	}
-	a.Stats.Count("viewed example in simple mode", 1)
 	h.WriteResponse(w, r, &h.Document{
 		Inner: &h.Frag{
 			&h.Head{
@@ -209,7 +200,6 @@ func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, a.Static, err)
 		return
 	}
-	a.Stats.Count("viewed stock example", 1)
 	h.WriteResponse(w, r, &page{
 		Writer:        w,
 		Request:       r,

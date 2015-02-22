@@ -11,7 +11,6 @@ import (
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.static"
-	"github.com/daaku/go.stats"
 
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/og"
@@ -21,7 +20,6 @@ import (
 type Handler struct {
 	ContextParser *context.Parser
 	Static        *static.Handler
-	Stats         stats.Backend
 	ObjectParser  *og.Parser
 }
 
@@ -50,7 +48,6 @@ func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, a.Static, err)
 		return
 	}
-	a.Stats.Count("viewed og", 1)
 	h.WriteResponse(w, r, renderObject(context, a.Static, object))
 }
 
@@ -72,7 +69,6 @@ func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, a.Static, err)
 		return
 	}
-	a.Stats.Count("viewed rog", 1)
 	h.WriteResponse(w, r, renderObject(context, a.Static, object))
 }
 
@@ -98,7 +94,6 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 		view.Error(w, r, h.Static, err)
 		return
 	}
-	h.Stats.Count("rog-redirect request", 1)
 	if count == 0 {
 		http.Redirect(
 			w, r, context.AbsoluteURL("/rog/"+parts[4]).String(), status)

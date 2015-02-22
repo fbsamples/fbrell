@@ -11,10 +11,8 @@ import (
 
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.httpgzip"
-	"github.com/daaku/go.httpstats"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.static"
-	"github.com/daaku/go.stats"
 	"github.com/daaku/go.viewvar"
 	"github.com/facebookgo/fbapp"
 
@@ -30,7 +28,6 @@ type App struct {
 	ExamplesHandler *viewexamples.Handler
 	OgHandler       *viewog.Handler
 	OauthHandler    *oauth.Handler
-	Stats           stats.Backend
 	Static          *static.Handler
 	App             fbapp.App
 
@@ -84,13 +81,8 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 		mux.HandleFunc("/sleep/", httpdev.Sleep)
 
 		var handler http.Handler
-		handler = &httpstats.Handler{
-			Name:    "web",
-			Handler: mux,
-			Stats:   a.Stats,
-		}
 		handler = &appdata.Handler{
-			Handler: handler,
+			Handler: mux,
 			Secret:  a.App.SecretByte(),
 		}
 		handler = httpgzip.NewHandler(handler)
