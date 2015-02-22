@@ -17,7 +17,6 @@ import (
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
-	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/go.static"
@@ -186,13 +185,9 @@ func (a *Handler) Simple(w http.ResponseWriter, r *http.Request) {
 			},
 			&h.Body{
 				Inner: &h.Frag{
-					&loader.HTML{
-						Resource: []loader.Resource{
-							&fb.Init{
-								AppID: context.AppID,
-								URL:   context.SdkURL(),
-							},
-						},
+					&fb.Init{
+						AppID: context.AppID,
+						URL:   context.SdkURL(),
 					},
 					&h.Div{
 						ID: "example",
@@ -242,10 +237,6 @@ func (p *page) HTML() (h.HTML, error) {
 		Static:  p.Static,
 		Title:   p.Example.Title,
 		Class:   "main",
-		Resource: []loader.Resource{&js.Init{
-			Context: p.Context,
-			Example: p.Example,
-		}},
 		Body: &h.Div{
 			Class: "container-fluid",
 			Inner: &h.Frag{
@@ -289,6 +280,10 @@ func (p *page) HTML() (h.HTML, error) {
 						Class: "span12",
 						Inner: &editorOutput{},
 					},
+				},
+				&js.Init{
+					Context: p.Context,
+					Example: p.Example,
 				},
 			},
 		},

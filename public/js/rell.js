@@ -29,17 +29,19 @@ var Rell = {
   /**
    * go go go
    */
-  init: function(config, example) {
-    window.location.hash = ''
-    Rell.config = config
-    Rell.config.autoRun = example ? example.autoRun : false
-    Log.init($('#log')[0], Rell.config.level)
-    Log.debug('Configuration', Rell.config);
-
-    if (!window.FB) {
-      Log.error('SDK failed to load.')
+  init: function() {
+    // Ensure we run once FB SDK has loaded.
+    if (!('FB' in window)) {
+      window.fbAsyncInit = Rell.init
       return
     }
+
+    var example = window.rellExample
+
+    window.location.hash = ''
+    window.rellConfig.autoRun = example ? example.autoRun : false
+    Log.init($('#log')[0], window.rellConfig.level)
+    Log.debug('Configuration', window.rellConfig);
 
     FB.Event.subscribe('fb.log', Log.info.bind('fb.log'))
     FB.Event.subscribe('auth.login', function(response) {
@@ -47,15 +49,15 @@ var Rell = {
     })
     FB.Event.subscribe('auth.statusChange', Rell.onStatusChange)
 
-    if (!Rell.config.init) {
+    if (!window.rellConfig.init) {
       return;
     }
 
     var options = {
-      appId : Rell.config.appID,
+      appId : window.rellConfig.appID,
       cookie: true,
-      status: Rell.config.status,
-      frictionlessRequests: Rell.config.frictionlessRequests
+      status: window.rellConfig.status,
+      frictionlessRequests: window.rellConfig.frictionlessRequests
     }
 
     FB.init(options)
@@ -63,7 +65,7 @@ var Rell = {
       FB.Canvas.setAutoGrow(true)
     }
 
-    if (!Rell.config.status) {
+    if (!window.rellConfig.status) {
       Rell.autoRunCode()
     } else {
       FB.getLoginStatus(function() { Rell.autoRunCode() })
@@ -88,7 +90,7 @@ var Rell = {
   },
 
   autoRunCode: function() {
-    if (Rell.config.autoRun) Rell.runCode()
+    if (window.rellConfig.autoRun) Rell.runCode()
   },
 
   /**
@@ -139,3 +141,5 @@ var Rell = {
     return false
   }
 }
+
+Rell.init()

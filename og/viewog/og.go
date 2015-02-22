@@ -10,7 +10,6 @@ import (
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
-	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.stats"
 
@@ -189,14 +188,10 @@ func renderObject(context *context.Context, s *static.Handler, o *og.Object) h.H
 				Class: "container",
 				Inner: &h.Frag{
 					&h.Div{ID: "fb-root"},
-					&loader.HTML{
-						Resource: []loader.Resource{
-							view.DefaultPageConfig.GA,
-							&fb.Init{
-								URL:   context.SdkURL(),
-								AppID: context.AppID,
-							},
-						},
+					view.DefaultPageConfig.GA,
+					&fb.Init{
+						URL:   context.SdkURL(),
+						AppID: context.AppID,
 					},
 					&h.Div{
 						Class: "row",

@@ -4,31 +4,40 @@ package js
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
+	"github.com/daaku/go.h"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
 )
 
-// Represents configuration for initializing the rell
-// module. Essentiall does a "require("./rell").init(x...)" call.
+// Represents configuration for initializing the rell module. Sets up a couple
+// of globals.
 type Init struct {
 	Context *context.Context
 	Example *examples.Example
 }
 
-func (i *Init) URLs() []string {
-	return []string{i.Context.SdkURL()}
-}
-
-func (i *Init) Script() string {
+func (i *Init) HTML() (h.HTML, error) {
 	encodedContext, err := json.Marshal(i.Context)
 	if err != nil {
-		log.Fatalf("Failed to json.Marshal context: %s", err)
+		return nil, fmt.Errorf("Failed to json.Marshal context: %s", err)
 	}
 	encodedExample, err := json.Marshal(i.Example)
 	if err != nil {
-		log.Fatalf("Failed to json.Marshal example: %s", err)
+		return nil, fmt.Errorf("Failed to json.Marshal example: %s", err)
 	}
-	return fmt.Sprintf("Rell.init(%s, %s)", encodedContext, encodedExample)
+	return &h.Frag{
+		&h.Script{
+			Src:   i.Context.SdkURL(),
+			Async: true,
+		},
+		&h.Script{
+			Inner: &h.Frag{
+				h.Unsafe("window.rellConfig="),
+				h.UnsafeBytes(encodedContext),
+				h.Unsafe(";window.rellExample="),
+				h.UnsafeBytes(encodedExample),
+			},
+		},
+	}, nil
 }

@@ -5,7 +5,6 @@ package view
 import (
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.ga"
-	"github.com/daaku/go.h.js.loader"
 	"github.com/daaku/go.static"
 
 	"github.com/daaku/rell/context"
@@ -34,14 +33,13 @@ var DefaultPageConfig = &PageConfig{
 
 // A minimal standard page with no visible body.
 type Page struct {
-	Config   *PageConfig
-	Context  *context.Context
-	Static   *static.Handler
-	Class    string
-	Head     h.HTML
-	Body     h.HTML
-	Title    string
-	Resource []loader.Resource
+	Config  *PageConfig
+	Context *context.Context
+	Static  *static.Handler
+	Class   string
+	Head    h.HTML
+	Body    h.HTML
+	Title   string
 }
 
 func (p *Page) viewport() h.HTML {
@@ -89,9 +87,7 @@ func (p *Page) HTML() (h.HTML, error) {
 					&static.Script{
 						Handler: p.Static,
 						Src:     p.config().Script,
-					},
-					&loader.HTML{
-						Resource: p.Resource,
+						Async:   true,
 					},
 					p.config().GA,
 				},
