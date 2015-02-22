@@ -1,5 +1,12 @@
-var jsDump = require('jsDump')
-  , $ = window.$
+var $ = window.$
+
+function safeJSON(v) {
+  try {
+    return JSON.stringify(v, null, '  ')
+  } catch (e) {
+    return 'error: ' + e
+  }
+}
 
 function safe(str) {
   var div = document.createElement('div')
@@ -37,7 +44,7 @@ var Log = {
       if (bd) {
         bd += '<hr>'
       }
-      bd += '<pre>' + safe(jsDump.parse(args[i])) + '</pre>'
+      bd += '<pre>' + safe(safeJSON(args[i])) + '</pre>'
     }
 
     return bd
