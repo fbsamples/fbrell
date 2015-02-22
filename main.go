@@ -40,15 +40,27 @@ import (
 func main() {
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 	mainapp := fbapp.Flag("fbapp")
-	bid := browserid.CookieFlag("browserid")
+	bid := &browserid.Cookie{
+		Name:   "z",
+		MaxAge: time.Hour * 24 * 365 * 10, // 10 years
+		Length: 16,
+	}
 	sh := stathat.ClientFlag("rell.stats")
 	redis := redis.ClientFlag("rell.redis")
-	xsrf := xsrf.ProviderFlag("xsrf")
-	xsrf.BrowserID = bid
+	xsrf := &xsrf.Provider{
+		BrowserID: bid,
+		MaxAge:    time.Hour * 24,
+		SumLen:    10,
+	}
 	static := static.HandlerFlag("rell.static")
 	byteCache := bytecache.New(redis)
 	byteStore := bytestore.New(redis)
-	httpTransport := httpcontrol.TransportFlag("rell.transport")
+	httpTransport := &httpcontrol.Transport{
+		MaxIdleConnsPerHost:   http.DefaultMaxIdleConnsPerHost,
+		DialTimeout:           2 * time.Second,
+		ResponseHeaderTimeout: 3 * time.Second,
+		RequestTimeout:        30 * time.Second,
+	}
 	fbApiClient := fbapi.ClientFlag("rell.fbapi")
 	bid.Logger = logger
 	collector := &collector.Collector{
