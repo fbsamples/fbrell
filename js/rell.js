@@ -1,5 +1,4 @@
 var Log = require('./log')
-  , Tracer = require('./tracer')
   , $ = window.$
 
 // stolen from prototypejs
@@ -50,10 +49,6 @@ var Rell = {
       Log.info('auth.login event', response)
     })
     FB.Event.subscribe('auth.statusChange', Rell.onStatusChange)
-
-    if (Rell.config.trace) {
-      Tracer.instrument('FB', FB)
-    }
 
     if (!Rell.config.init) {
       return;

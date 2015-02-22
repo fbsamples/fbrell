@@ -48,7 +48,6 @@ type Context struct {
 	Level                string              `schema:"level"`
 	Locale               string              `schema:"locale"`
 	Env                  string              `schema:"server"`
-	Trace                bool                `schema:"trace"`
 	Status               bool                `schema:"status"`
 	FrictionlessRequests bool                `schema:"frictionlessRequests"`
 	Host                 string              `schema:"-"`
@@ -256,7 +255,6 @@ func (c *Context) MarshalJSON() ([]byte, error) {
 	data := map[string]interface{}{
 		"appID":                strconv.FormatUint(c.AppID, 10),
 		"level":                c.Level,
-		"trace":                c.Trace,
 		"status":               c.Status,
 		"frictionlessRequests": c.FrictionlessRequests,
 		"signedRequest":        c.SignedRequest,
