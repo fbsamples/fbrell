@@ -80,7 +80,10 @@ func main() {
 		Logger:      logger,
 		Cache:       lruCache,
 	}
-	exampleStore := &examples.Store{ByteStore: byteStore}
+	exampleStore := &examples.Store{
+		ByteStore: byteStore,
+		DB:        examples.MustMakeDB(rice.MustFindBox("examples/db")),
+	}
 	contextParser := &context.Parser{
 		App:          mainapp,
 		EmpChecker:   empChecker,

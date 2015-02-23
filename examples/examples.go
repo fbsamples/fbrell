@@ -35,6 +35,7 @@ type ByteStore interface {
 }
 
 type Store struct {
+	DB        *DB
 	ByteStore ByteStore
 }
 
@@ -57,15 +58,11 @@ type DB struct {
 	Reverse  map[string]*Example
 }
 
-var (
-	mu = mustLoadBox(rice.MustFindBox("db"))
+// Stock response for the index page.
+var emptyExample = &Example{Title: "Welcome", URL: "/", AutoRun: true}
 
-	// Stock response for the index page.
-	emptyExample = &Example{Title: "Welcome", URL: "/", AutoRun: true}
-)
-
-func mustLoadBox(box *rice.Box) *DB {
-	db, err := loadBox(box)
+func MustMakeDB(box *rice.Box) *DB {
+	db, err := MakeDB(box)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,7 +70,7 @@ func mustLoadBox(box *rice.Box) *DB {
 }
 
 // Loads a specific examples directory.
-func loadBox(box *rice.Box) (*DB, error) {
+func MakeDB(box *rice.Box) (*DB, error) {
 	db := &DB{
 		Category: make(map[string]*Category),
 		Reverse:  make(map[string]*Example),
@@ -148,7 +145,7 @@ func (s *Store) Load(path string) (*Example, error) {
 			URL:     path,
 		}, nil
 	}
-	category := GetDB().FindCategory(parts[1])
+	category := s.DB.FindCategory(parts[1])
 	if category == nil {
 		return nil, errcode.New(http.StatusNotFound, "Could not find category: %s", parts[1])
 	}
@@ -157,11 +154,6 @@ func (s *Store) Load(path string) (*Example, error) {
 		return nil, errcode.New(http.StatusNotFound, "Could not find example: %s", parts[2])
 	}
 	return example, nil
-}
-
-// Get the DB for a given SDK Version.
-func GetDB() *DB {
-	return mu
 }
 
 // Find a category by it's name.

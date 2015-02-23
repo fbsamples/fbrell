@@ -82,7 +82,7 @@ func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
 	h.WriteResponse(w, r, &examplesList{
 		Context: context,
 		Static:  a.Static,
-		DB:      examples.GetDB(),
+		DB:      a.ExampleStore.DB,
 	})
 }
 
@@ -104,7 +104,7 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 		content := bytes.TrimSpace([]byte(r.FormValue("code")))
 		content = bytes.Replace(content, []byte{13}, nil, -1) // remove CR
 		id := examples.ContentID(content)
-		db := examples.GetDB()
+		db := a.ExampleStore.DB
 		example, ok := db.Reverse[id]
 		if ok {
 			http.Redirect(w, r, c.ViewURL(example.URL), 302)
