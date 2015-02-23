@@ -5,15 +5,15 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/GeertJohan/go.rice"
 	"github.com/daaku/go.errcode"
-	"github.com/daaku/go.flag.pkgpath"
 )
 
 // Some categories are hidden from the listing.
@@ -53,61 +53,59 @@ type Category struct {
 }
 
 type DB struct {
-	Category []*Category
+	Category map[string]*Category
 	Reverse  map[string]*Example
 }
 
 var (
-	newExamplesDir = pkgpath.Dir(
-		"rell.examples.new",
-		"github.com/daaku/rell/examples/db/mu",
-		"The directory containing examples for the new SDK.",
-	)
-
-	mu *DB
+	mu = mustLoadBox(rice.MustFindBox("db"))
 
 	// Stock response for the index page.
 	emptyExample = &Example{Title: "Welcome", URL: "/", AutoRun: true}
 )
 
-// Loads a specific examples directory.
-func loadDir(name string) (*DB, error) {
-	categories, err := ioutil.ReadDir(name)
+func mustLoadBox(box *rice.Box) *DB {
+	db, err := loadBox(box)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read directory %s: %s", name, err)
+		log.Fatal(err)
 	}
+	return db
+}
+
+// Loads a specific examples directory.
+func loadBox(box *rice.Box) (*DB, error) {
 	db := &DB{
-		Category: make([]*Category, 0, len(categories)),
+		Category: make(map[string]*Category),
 		Reverse:  make(map[string]*Example),
 	}
 	db.Reverse[ContentID(emptyExample.Content)] = emptyExample
-	for _, categoryFileInfo := range categories {
-		categoryName := categoryFileInfo.Name()
-		if !categoryFileInfo.IsDir() {
-			log.Printf(
-				"Got unexpected file instead of directory for category: %s",
-				categoryName)
-			continue
-		}
-		category := &Category{
-			Name:   categoryName,
-			Hidden: hidden[categoryName],
-		}
-		categoryDir := filepath.Join(name, categoryName)
-		examples, err := ioutil.ReadDir(categoryDir)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to read category %s: %s", categoryDir, err)
-		}
-		category.Example = make([]*Example, 0, len(examples))
-		for _, exampleFileInfo := range examples {
-			exampleName := exampleFileInfo.Name()
-			exampleFile := filepath.Join(categoryDir, exampleName)
-			content, err := ioutil.ReadFile(exampleFile)
+
+	err := box.Walk(
+		"",
+		func(exampleFile string, info os.FileInfo, err error) error {
 			if err != nil {
-				return nil, fmt.Errorf(
-					"Failed to read example %s: %s", exampleFile, err)
+				return err
 			}
-			cleanName := exampleName[:len(exampleName)-5]
+			if info.IsDir() {
+				return nil
+			}
+			categoryName := filepath.Base(filepath.Dir(exampleFile))
+			exampleName := filepath.Base(exampleFile)
+
+			category := db.Category[categoryName]
+			if category == nil {
+				category = &Category{
+					Name:   categoryName,
+					Hidden: hidden[categoryName],
+				}
+				db.Category[categoryName] = category
+			}
+
+			content, err := box.Bytes(exampleFile)
+			if err != nil {
+				return fmt.Errorf("Failed to read example %s: %s", exampleFile, err)
+			}
+			cleanName := exampleName[:len(exampleName)-5] // drop .html
 			example := &Example{
 				Name:    cleanName,
 				Content: content,
@@ -117,8 +115,11 @@ func loadDir(name string) (*DB, error) {
 			}
 			category.Example = append(category.Example, example)
 			db.Reverse[ContentID(bytes.TrimSpace(content))] = example
-		}
-		db.Category = append(db.Category, category)
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
 	return db, nil
 }
@@ -165,13 +166,6 @@ func (s *Store) Load(path string) (*Example, error) {
 
 // Get the DB for a given SDK Version.
 func GetDB() *DB {
-	var err error
-	if mu == nil {
-		mu, err = loadDir(*newExamplesDir)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 	return mu
 }
 
