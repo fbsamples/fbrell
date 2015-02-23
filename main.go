@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/GeertJohan/go.rice"
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.redis"
 	"github.com/daaku/go.redis/bytestore"
@@ -49,7 +50,12 @@ func main() {
 		MaxAge:    time.Hour * 24,
 		SumLen:    10,
 	}
-	static := static.HandlerFlag("rell.static")
+	static := &static.Handler{
+		HttpPath:    "/static/",
+		MaxAge:      time.Hour * 24 * 365,
+		MemoryCache: true,
+		Box:         rice.MustFindBox("public"),
+	}
 	byteStore := bytestore.New(redis)
 	httpTransport := &httpcontrol.Transport{
 		MaxIdleConnsPerHost:   http.DefaultMaxIdleConnsPerHost,

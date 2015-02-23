@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/daaku/go.httpdev"
@@ -57,16 +56,14 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 	a.mainHandlerOnce.Do(func() {
 		const public = "/public/"
 
+		fileserver := http.FileServer(a.Static.Box.HTTPBox())
+
 		mux := http.NewServeMux()
 		mux.Handle(a.Static.HttpPath, a.Static)
-
-		a.staticFile(mux, "/favicon.ico")
-		a.staticFile(mux, "/f8.jpg")
-		a.staticFile(mux, "/robots.txt")
-		mux.Handle(public,
-			http.StripPrefix(
-				public, http.FileServer(http.Dir(a.Static.DiskPath))))
-
+		mux.Handle("/favicon.ico", fileserver)
+		mux.Handle("/f8.jpg", fileserver)
+		mux.Handle("/robots.txt", fileserver)
+		mux.Handle(public, http.StripPrefix(public, fileserver))
 		mux.HandleFunc("/not_a_real_webpage", http.NotFound)
 		mux.Handle("/info/", a.ContextHandler)
 		mux.HandleFunc("/examples/", a.ExamplesHandler.List)
@@ -87,14 +84,6 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 		a.mainHandler = handler
 	})
 	a.mainHandler.ServeHTTP(w, r)
-}
-
-// binds a path to a single file
-func (a *App) staticFile(mux *http.ServeMux, name string) {
-	abs := filepath.Join(a.Static.DiskPath, name)
-	mux.HandleFunc(name, func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, abs)
-	})
 }
 
 func (a *App) envHandler(w http.ResponseWriter, r *http.Request) {
