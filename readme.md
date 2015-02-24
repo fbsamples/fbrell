@@ -10,10 +10,10 @@ Facebook Connect JavaScript SDK. The SDK is available
 Development Environment
 -----------------------
 
-You'll need [Go](http://golang.org/) to work on rell. Once you have it:
+You'll need [Go](https://golang.org/) to work on rell. Once you have it:
 
 ```sh
-go get -u github.com/daaku/rell
+go get github.com/daaku/rell
 ```
 
 Put your configuration in the default location:
