@@ -11,8 +11,6 @@ import (
 
 	"github.com/GeertJohan/go.rice"
 	"github.com/daaku/go.browserid"
-	"github.com/daaku/go.redis"
-	"github.com/daaku/go.redis/bytestore"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.xsrf"
 	"github.com/facebookgo/fbapi"
@@ -21,6 +19,7 @@ import (
 	"github.com/facebookgo/flagenv"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/facebookgo/httpcontrol"
+	"github.com/facebookgo/parse"
 	"github.com/golang/groupcache/lru"
 
 	"github.com/daaku/rell/context"
@@ -35,16 +34,55 @@ import (
 	"github.com/daaku/rell/web"
 )
 
+type flags struct {
+	Addr                string
+	AdminAddr           string
+	FacebookAppID       uint64
+	FacebookAppSecret   string
+	FacebookAppNS       string
+	EmpCheckerAppID     uint64
+	EmpCheckerAppSecret string
+	ParseAppID          string
+	ParseRestAPIKey     string
+}
+
+func globalFlags() flags {
+	// TODO: switch to a local flagset and patch flagenv & flagconfig to allow
+	// taking in a FlagSet.
+
+	var f flags
+	flag.StringVar(&f.Addr, "addr", ":43600", "server address to bind to")
+	flag.StringVar(&f.AdminAddr, "admin-addr", ":43601", "admin http server address")
+	flag.Uint64Var(&f.FacebookAppID, "fb-app-id", 0, "facebook application id")
+	flag.StringVar(&f.FacebookAppSecret, "fb-app-secret", "", "facebook application secret")
+	flag.StringVar(&f.FacebookAppNS, "fb-app-ns", "", "facebook application namespace")
+	flag.Uint64Var(&f.EmpCheckerAppID, "empcheck-app-id", 0, "empcheck application id")
+	flag.StringVar(&f.EmpCheckerAppSecret, "empcheck-app-secret", "", "empcheck application secret")
+	flag.StringVar(&f.ParseAppID, "parse-app-id", "", "parse application id")
+	flag.StringVar(&f.ParseRestAPIKey, "parse-rest-api-key", "", "parse rest api key")
+
+	flag.Usage = flagconfig.Usage
+	flag.Parse()
+	flagenv.Parse()
+	flagconfig.Parse()
+
+	return f
+}
+
 func main() {
+	flags := globalFlags()
 	logger := log.New(os.Stderr, "", log.LstdFlags)
-	mainapp := fbapp.Flag("fbapp")
+	mainapp := fbapp.New(
+		flags.FacebookAppID,
+		flags.FacebookAppSecret,
+		flags.FacebookAppNS,
+	)
 	bid := &browserid.Cookie{
 		Name:   "z",
 		MaxAge: time.Hour * 24 * 365 * 10, // 10 years
 		Length: 16,
 		Logger: logger,
 	}
-	redis := redis.ClientFlag("rell.redis")
 	xsrf := &xsrf.Provider{
 		BrowserID: bid,
 		MaxAge:    time.Hour * 24,
@@ -56,12 +94,16 @@ func main() {
 		MemoryCache: true,
 		Box:         rice.MustFindBox("public"),
 	}
-	byteStore := bytestore.New(redis)
 	httpTransport := &httpcontrol.Transport{
 		MaxIdleConnsPerHost:   http.DefaultMaxIdleConnsPerHost,
 		DialTimeout:           2 * time.Second,
 		ResponseHeaderTimeout: 3 * time.Second,
 		RequestTimeout:        30 * time.Second,
+	}
+	parseClient := &parse.Client{
+		Transport:     httpTransport,
+		ApplicationID: flags.ParseAppID,
+		Credentials:   parse.RestAPIKey(flags.ParseRestAPIKey),
 	}
 	fbApiClient := &fbapi.Client{
 		Redact:    true,
@@ -70,7 +112,7 @@ func main() {
 	lruCache := lru.New(10000)
 	empChecker := &empcheck.Checker{
 		FbApiClient: fbApiClient,
-		App:         fbapp.Flag("empcheck"),
+		App:         fbapp.New(flags.EmpCheckerAppID, flags.EmpCheckerAppSecret, ""),
 		Logger:      logger,
 		Cache:       lruCache,
 	}
@@ -81,8 +123,9 @@ func main() {
 		Cache:       lruCache,
 	}
 	exampleStore := &examples.Store{
-		ByteStore: byteStore,
-		DB:        examples.MustMakeDB(rice.MustFindBox("examples/db")),
+		Parse: parseClient,
+		DB:    examples.MustMakeDB(rice.MustFindBox("examples/db")),
+		Cache: lruCache,
 	}
 	contextParser := &context.Parser{
 		App:          mainapp,
@@ -117,22 +160,6 @@ func main() {
 		},
 	}
 
-	mainAddress := flag.String(
-		"addr",
-		":43600",
-		"Server address to bind to.",
-	)
-	adminAddress := flag.String(
-		"admin-addr",
-		":43601",
-		"Admin http server address.",
-	)
-
-	flag.Usage = flagconfig.Usage
-	flag.Parse()
-	flagenv.Parse()
-	flagconfig.Parse()
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// for systemd started servers we can skip the date/time since journald
@@ -142,8 +169,8 @@ func main() {
 	}
 
 	err := gracehttp.Serve(
-		&http.Server{Addr: *mainAddress, Handler: http.HandlerFunc(app.MainHandler)},
-		&http.Server{Addr: *adminAddress, Handler: http.HandlerFunc(app.AdminHandler)},
+		&http.Server{Addr: flags.Addr, Handler: http.HandlerFunc(app.MainHandler)},
+		&http.Server{Addr: flags.AdminAddr, Handler: http.HandlerFunc(app.AdminHandler)},
 	)
 	if err != nil {
 		logger.Fatal(err)

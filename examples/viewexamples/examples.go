@@ -2,7 +2,6 @@
 package viewexamples
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -11,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.fburl"
@@ -101,8 +101,8 @@ func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
 			view.Error(w, r, a.Static, errTokenMismatch)
 			return
 		}
-		content := bytes.TrimSpace([]byte(r.FormValue("code")))
-		content = bytes.Replace(content, []byte{13}, nil, -1) // remove CR
+		content := strings.TrimSpace(r.FormValue("code"))
+		content = strings.Replace(content, "\x13", "", -1) // remove CR
 		id := examples.ContentID(content)
 		db := a.ExampleStore.DB
 		example, ok := db.Reverse[id]
@@ -664,7 +664,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 	tpl, err := template.New("example-" + e.URL).Parse(string(e.Content))
 	if err != nil {
 		// if template parsing fails, we ignore it. it's probably malformed html
-		return w.Write(e.Content)
+		return fmt.Fprint(w, e.Content)
 	}
 	countingW := counting.NewWriter(w)
 	err = tpl.Execute(countingW,
@@ -681,7 +681,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 		})
 	if err != nil {
 		// if template execution fails, we ignore it. it's probably malformed html
-		return w.Write(e.Content)
+		return fmt.Fprint(w, e.Content)
 	}
 	return countingW.Count(), err
 }

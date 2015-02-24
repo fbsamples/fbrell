@@ -2,11 +2,12 @@
 package examples
 
 import (
-	"bytes"
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -14,6 +15,8 @@ import (
 
 	"github.com/GeertJohan/go.rice"
 	"github.com/daaku/go.errcode"
+	"github.com/facebookgo/parse"
+	"github.com/golang/groupcache/lru"
 )
 
 // Some categories are hidden from the listing.
@@ -29,19 +32,15 @@ var hidden = map[string]bool{
 	"canvas": true,
 }
 
-type ByteStore interface {
-	Store(key string, value []byte) error
-	Get(key string) ([]byte, error)
-}
-
 type Store struct {
-	DB        *DB
-	ByteStore ByteStore
+	Parse *parse.Client
+	DB    *DB
+	Cache *lru.Cache
 }
 
 type Example struct {
 	Name    string `json:"-"`
-	Content []byte `json:"-"`
+	Content string `json:"-"`
 	AutoRun bool   `json:"autoRun"`
 	Title   string `json:"-"`
 	URL     string `json:"-"`
@@ -58,8 +57,16 @@ type DB struct {
 	Reverse  map[string]*Example
 }
 
-// Stock response for the index page.
-var emptyExample = &Example{Title: "Welcome", URL: "/", AutoRun: true}
+type parseExample struct {
+	Content string `json:"content,omitempty"`
+	Hash    string `json:"hash,omitempty"`
+}
+
+var (
+	// Stock response for the index page.
+	emptyExample = &Example{Title: "Welcome", URL: "/", AutoRun: true}
+	classExample = &url.URL{Path: "classes/Example"}
+)
 
 func MustMakeDB(box *rice.Box) *DB {
 	db, err := MakeDB(box)
@@ -98,7 +105,7 @@ func MakeDB(box *rice.Box) (*DB, error) {
 				db.Category[categoryName] = category
 			}
 
-			content, err := box.Bytes(exampleFile)
+			content, err := box.String(exampleFile)
 			if err != nil {
 				return fmt.Errorf("Failed to read example %s: %s", exampleFile, err)
 			}
@@ -111,7 +118,7 @@ func MakeDB(box *rice.Box) (*DB, error) {
 				URL:     path.Join("/", categoryName, cleanName),
 			}
 			category.Example = append(category.Example, example)
-			db.Reverse[ContentID(bytes.TrimSpace(content))] = example
+			db.Reverse[ContentID(strings.TrimSpace(content))] = example
 			return nil
 		},
 	)
@@ -119,6 +126,41 @@ func MakeDB(box *rice.Box) (*DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+type cacheKey string
+
+func (s *Store) loadFromParse(hash string) (*Example, error) {
+	if ex, ok := s.Cache.Get(cacheKey(hash)); ok {
+		return ex.(*Example), nil
+	}
+	j, err := json.Marshal(map[string]string{"hash": hash})
+	if err != nil {
+		return nil, err
+	}
+	v := make(url.Values)
+	v.Set("where", string(j))
+	u := &url.URL{
+		Path:     classExample.Path,
+		RawQuery: v.Encode(),
+	}
+	var res struct {
+		Results []parseExample `json:"results"`
+	}
+	if _, err := s.Parse.Get(u, &res); err != nil {
+		return nil, err
+	}
+	if len(res.Results) == 0 {
+		return nil, errcode.New(
+			http.StatusNotFound, "Example not found: %s", hash)
+	}
+	ex := &Example{
+		Content: res.Results[0].Content,
+		Title:   "Stored Example",
+		URL:     path.Join("/saved", hash),
+	}
+	s.Cache.Add(cacheKey(hash), ex)
+	return ex, nil
 }
 
 // Load an Example for a given version and path.
@@ -131,19 +173,7 @@ func (s *Store) Load(path string) (*Example, error) {
 	}
 
 	if parts[1] == "saved" {
-		content, err := s.ByteStore.Get(makeKey(parts[2]))
-		if err != nil {
-			return nil, err
-		}
-		if content == nil {
-			return nil, errcode.New(
-				http.StatusNotFound, "Example not found: %s", path)
-		}
-		return &Example{
-			Content: content,
-			Title:   "Stored Example",
-			URL:     path,
-		}, nil
+		return s.loadFromParse(parts[2])
 	}
 	category := s.DB.FindCategory(parts[1])
 	if category == nil {
@@ -177,26 +207,38 @@ func (c *Category) FindExample(name string) *Example {
 }
 
 // Save an Example.
-func (s *Store) Save(id string, content []byte) error {
+func (s *Store) Save(hash string, content string) error {
 	if len(content) > 10240 {
 		return errcode.New(
 			http.StatusRequestEntityTooLarge,
 			"Maximum allowed size is 10 kilobytes.")
 	}
-	err := s.ByteStore.Store(makeKey(id), content)
-	if err != nil {
-		log.Printf("Error in ByteStore.Store: %s", err)
+
+	if _, err := s.loadFromParse(hash); err == nil {
+		return nil // it already exists
 	}
-	return err
+
+	pe := &parseExample{
+		Content: content,
+		Hash:    hash,
+	}
+	if _, err := s.Parse.Post(classExample, pe, nil); err != nil {
+		return err
+	}
+
+	ex := &Example{
+		Content: content,
+		Title:   "Stored Example",
+		URL:     path.Join("/saved", hash),
+	}
+	s.Cache.Add(cacheKey(hash), ex)
+
+	return nil
 }
 
-func makeKey(id string) string {
-	return "fbrell_examples:" + id
-}
-
-func ContentID(content []byte) string {
+func ContentID(content string) string {
 	h := md5.New()
-	_, err := h.Write(content)
+	_, err := fmt.Fprint(h, content)
 	if err != nil {
 		log.Fatalf("Error comupting md5 sum: %s", err)
 	}

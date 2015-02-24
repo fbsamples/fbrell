@@ -14,21 +14,7 @@ You'll need [Go](https://golang.org/) to work on rell. Once you have it:
 
 ```sh
 go get github.com/daaku/rell
+rell --fb-app-id=<app-id>
 ```
 
-Put your configuration in the default location:
-
-```sh
-mkdir -p ~/.config/rell
-cat > ~/.config/rell/config <<EOF
-fbapp_id=<app-id>
-fbapp_namespace=<canvas-namespace>
-fbapp_secret=<app-secret>
-EOF
-```
-
-Then start the server:
-
-```sh
-rell
-```
+Look at the help text from `rell -h` to see what other options are available.
