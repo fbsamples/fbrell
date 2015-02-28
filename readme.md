@@ -17,8 +17,8 @@ go get github.com/daaku/rell
 rell
 ```
 
-Then go to http://localhost:43600/. Look at the help text from `rell -h` to see
-what other options are available. You'll need your own
-[Facebook Application](https://developers.facebook.com/) and
+Then go to [http://localhost:43600/](http://localhost:43600/). Look at the help
+text from `rell -h` to see what other options are available. You'll need your
+own [Facebook Application](https://developers.facebook.com/) and
 a [Parse Application](https://parse.com/) to make some of the features
 available.
