@@ -13,6 +13,7 @@ import (
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.xsrf"
+	"github.com/facebookgo/devrestarter"
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
 	"github.com/facebookgo/flagconfig"
@@ -70,6 +71,10 @@ func globalFlags() flags {
 }
 
 func main() {
+	if runtime.GOOS != "linux" || os.Getenv("RELL_DEV") == "1" {
+		devrestarter.Init()
+	}
+
 	flags := globalFlags()
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 	mainapp := fbapp.New(
