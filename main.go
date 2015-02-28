@@ -53,7 +53,7 @@ func globalFlags() flags {
 	var f flags
 	flag.StringVar(&f.Addr, "addr", ":43600", "server address to bind to")
 	flag.StringVar(&f.AdminAddr, "admin-addr", ":43601", "admin http server address")
-	flag.Uint64Var(&f.FacebookAppID, "fb-app-id", 0, "facebook application id")
+	flag.Uint64Var(&f.FacebookAppID, "fb-app-id", 342526215814610, "facebook application id")
 	flag.StringVar(&f.FacebookAppSecret, "fb-app-secret", "", "facebook application secret")
 	flag.StringVar(&f.FacebookAppNS, "fb-app-ns", "", "facebook application namespace")
 	flag.Uint64Var(&f.EmpCheckerAppID, "empcheck-app-id", 0, "empcheck application id")
