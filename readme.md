@@ -1,4 +1,4 @@
-rell
+rell [![Build Status](https://secure.travis-ci.org/daaku/rell.svg)](https://travis-ci.org/daaku/rell)
 ====
 
 Facebook Read Eval Log Loop is an interactive environment for exploring the
