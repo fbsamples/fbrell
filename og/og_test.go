@@ -3,9 +3,28 @@ package og
 import (
 	"net/url"
 	"testing"
+	"time"
 
+	"github.com/GeertJohan/go.rice"
+	"github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
+	"github.com/facebookgo/fbapp"
 )
+
+var defaultContext = (&context.Parser{
+	App: fbapp.New(0, "", ""),
+}).Default()
+
+func defaultParser() *Parser {
+	return &Parser{
+		Static: &static.Handler{
+			HttpPath:    "/static/",
+			MaxAge:      time.Hour * 24 * 365,
+			MemoryCache: true,
+			Box:         rice.MustFindBox("../public"),
+		},
+	}
+}
 
 // Order insensitive pairs matching. This isn't fully accurate as OG
 // is order sensitive. But since query parameters are not, we use this
@@ -33,11 +52,11 @@ func TestParseBase64(t *testing.T) {
 		{"og:title", "song1"},
 		{"og:type", "song"},
 		{"og:url", "http://www.fbrell.com/rog/" + song1},
-		{"og:image", "http://www.fbrell.com/public/images/" + stockImages[8]},
+		{"og:image", "http://www.fbrell.com/static/17d19f450d/taxi_rotia_2806339125.jpg"},
 		{"og:description", stockDescriptions[0]},
 	}}
 
-	object, err := NewFromBase64(context.Default(), song1)
+	object, err := defaultParser().FromBase64(defaultContext, song1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,11 +74,11 @@ func TestParseValues(t *testing.T) {
 		{"og:type", ogType},
 		{"og:title", ogTitle},
 		{"og:url", "http://www.fbrell.com/og/" + ogType + "/" + ogTitle},
-		{"og:image", "http://www.fbrell.com/public/images/" + stockImages[8]},
+		{"og:image", "http://www.fbrell.com/static/17d19f450d/taxi_rotia_2806339125.jpg"},
 		{"og:description", stockDescriptions[6]},
 	}}
 
-	object, err := NewFromValues(context.Default(), values)
+	object, err := defaultParser().FromValues(defaultContext, values)
 	if err != nil {
 		t.Fatal(err)
 	}
