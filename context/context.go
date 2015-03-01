@@ -18,9 +18,6 @@ import (
 	"github.com/daaku/go.trustforward"
 	"github.com/facebookgo/fbapp"
 	"github.com/gorilla/schema"
-
-	"github.com/daaku/rell/context/appns"
-	"github.com/daaku/rell/context/empcheck"
 )
 
 var envRegexp = regexp.MustCompile(`^[a-zA-Z0-9-_.]*$`)
@@ -73,13 +70,19 @@ var defaultContext = &Context{
 	Init:                 true,
 }
 
-var (
-	schemaDecoder = schema.NewDecoder()
-)
+var schemaDecoder = schema.NewDecoder()
+
+type EmpChecker interface {
+	Check(uid uint64) bool
+}
+
+type AppNSFetcher interface {
+	Get(id uint64) string
+}
 
 type Parser struct {
-	EmpChecker   *empcheck.Checker
-	AppNSFetcher *appns.Fetcher
+	EmpChecker   EmpChecker
+	AppNSFetcher AppNSFetcher
 	App          fbapp.App
 }
 
