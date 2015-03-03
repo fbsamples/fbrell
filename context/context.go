@@ -11,6 +11,7 @@ import (
 	"path"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.signedrequest/appdata"
@@ -81,9 +82,10 @@ type AppNSFetcher interface {
 }
 
 type Parser struct {
-	EmpChecker   EmpChecker
-	AppNSFetcher AppNSFetcher
-	App          fbapp.App
+	EmpChecker          EmpChecker
+	AppNSFetcher        AppNSFetcher
+	App                 fbapp.App
+	SignedRequestMaxAge time.Duration
 }
 
 // Create a default context.
@@ -109,7 +111,10 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
 		context.SignedRequest, err = fbsr.Unmarshal(
-			[]byte(rawSr), p.App.SecretByte())
+			[]byte(rawSr),
+			p.App.SecretByte(),
+			p.SignedRequestMaxAge,
+		)
 		if err == nil {
 			if context.SignedRequest.Page != nil {
 				context.ViewMode = PageTab
@@ -121,7 +126,10 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", context.AppID))
 		if cookie != nil {
 			context.SignedRequest, err = fbsr.Unmarshal(
-				[]byte(cookie.Value), p.App.SecretByte())
+				[]byte(cookie.Value),
+				p.App.SecretByte(),
+				p.SignedRequestMaxAge,
+			)
 		}
 	}
 	context.Host = trustforward.Host(r)

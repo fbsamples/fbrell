@@ -75,6 +75,10 @@ func main() {
 		devrestarter.Init()
 	}
 
+	const (
+		signedRequestMaxAge = time.Hour * 24
+	)
+
 	flags := globalFlags()
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 	mainapp := fbapp.New(
@@ -133,9 +137,10 @@ func main() {
 		Cache: lruCache,
 	}
 	contextParser := &context.Parser{
-		App:          mainapp,
-		EmpChecker:   empChecker,
-		AppNSFetcher: appNSFetcher,
+		App:                 mainapp,
+		EmpChecker:          empChecker,
+		AppNSFetcher:        appNSFetcher,
+		SignedRequestMaxAge: signedRequestMaxAge,
 	}
 
 	app := &web.App{
@@ -163,6 +168,7 @@ func main() {
 			HttpTransport: httpTransport,
 			Static:        static,
 		},
+		SignedRequestMaxAge: signedRequestMaxAge,
 	}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())

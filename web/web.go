@@ -7,6 +7,7 @@ import (
 	"net/http/pprof"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.httpgzip"
@@ -23,12 +24,13 @@ import (
 
 // The rell web application.
 type App struct {
-	ContextHandler  *viewcontext.Handler
-	ExamplesHandler *viewexamples.Handler
-	OgHandler       *viewog.Handler
-	OauthHandler    *oauth.Handler
-	Static          *static.Handler
-	App             fbapp.App
+	ContextHandler      *viewcontext.Handler
+	ExamplesHandler     *viewexamples.Handler
+	OgHandler           *viewog.Handler
+	OauthHandler        *oauth.Handler
+	Static              *static.Handler
+	App                 fbapp.App
+	SignedRequestMaxAge time.Duration
 
 	adminHandler     http.Handler
 	adminHandlerOnce sync.Once
@@ -79,6 +81,7 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 		handler = &appdata.Handler{
 			Handler: mux,
 			Secret:  a.App.SecretByte(),
+			MaxAge:  a.SignedRequestMaxAge,
 		}
 		handler = httpgzip.NewHandler(handler)
 		a.mainHandler = handler
