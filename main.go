@@ -110,9 +110,11 @@ func main() {
 		RequestTimeout:        30 * time.Second,
 	}
 	parseClient := &parse.Client{
-		Transport:     httpTransport,
-		ApplicationID: flags.ParseAppID,
-		Credentials:   parse.RestAPIKey(flags.ParseRestAPIKey),
+		Transport: httpTransport,
+		Credentials: parse.RestAPIKey{
+			ApplicationID: flags.ParseAppID,
+			RestAPIKey:    flags.ParseRestAPIKey,
+		},
 	}
 	fbApiClient := &fbapi.Client{
 		Redact:    true,
