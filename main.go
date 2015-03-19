@@ -88,11 +88,15 @@ func main() {
 		flags.FacebookAppSecret,
 		flags.FacebookAppNS,
 	)
+	forwarded := &trustforward.Forwarded{
+		X: true,
+	}
 	bid := &browserid.Cookie{
-		Name:   "z",
-		MaxAge: time.Hour * 24 * 365 * 10, // 10 years
-		Length: 16,
-		Logger: logger,
+		Name:      "z",
+		MaxAge:    time.Hour * 24 * 365 * 10, // 10 years
+		Length:    16,
+		Logger:    logger,
+		Forwarded: forwarded,
 	}
 	xsrf := &xsrf.Provider{
 		BrowserID: bid,
@@ -145,9 +149,7 @@ func main() {
 		EmpChecker:          empChecker,
 		AppNSFetcher:        appNSFetcher,
 		SignedRequestMaxAge: signedRequestMaxAge,
-		Forwarded: &trustforward.Forwarded{
-			X: true,
-		},
+		Forwarded:           forwarded,
 	}
 
 	app := &web.App{
