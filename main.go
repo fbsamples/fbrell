@@ -38,6 +38,7 @@ import (
 )
 
 type flags struct {
+	Dev                 bool
 	Addr                string
 	AdminAddr           string
 	FacebookAppID       uint64
@@ -53,6 +54,7 @@ func globalFlags() flags {
 	set := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ExitOnError)
 	f := flags{}
 
+	set.BoolVar(&f.Dev, "dev", runtime.GOOS != "linux", "development mode")
 	set.StringVar(&f.Addr, "addr", ":43600", "server address to bind to")
 	set.StringVar(&f.AdminAddr, "admin-addr", ":43601", "admin http server address")
 	set.Uint64Var(&f.FacebookAppID, "fb-app-id", 342526215814610, "facebook application id")
@@ -73,15 +75,13 @@ func globalFlags() flags {
 }
 
 func main() {
-	if runtime.GOOS != "linux" || os.Getenv("RELL_DEV") == "1" {
+	const signedRequestMaxAge = time.Hour * 24
+	flags := globalFlags()
+
+	if flags.Dev {
 		devrestarter.Init()
 	}
 
-	const (
-		signedRequestMaxAge = time.Hour * 24
-	)
-
-	flags := globalFlags()
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 	mainapp := fbapp.New(
 		flags.FacebookAppID,
