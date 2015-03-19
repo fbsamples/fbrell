@@ -3,9 +3,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -17,7 +19,6 @@ import (
 	"github.com/facebookgo/devrestarter"
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
-	"github.com/facebookgo/flagconfig"
 	"github.com/facebookgo/flagenv"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/facebookgo/httpcontrol"
@@ -49,24 +50,24 @@ type flags struct {
 }
 
 func globalFlags() flags {
-	// TODO: switch to a local flagset and patch flagenv & flagconfig to allow
-	// taking in a FlagSet.
+	set := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ExitOnError)
+	f := flags{}
 
-	var f flags
-	flag.StringVar(&f.Addr, "addr", ":43600", "server address to bind to")
-	flag.StringVar(&f.AdminAddr, "admin-addr", ":43601", "admin http server address")
-	flag.Uint64Var(&f.FacebookAppID, "fb-app-id", 342526215814610, "facebook application id")
-	flag.StringVar(&f.FacebookAppSecret, "fb-app-secret", "", "facebook application secret")
-	flag.StringVar(&f.FacebookAppNS, "fb-app-ns", "", "facebook application namespace")
-	flag.Uint64Var(&f.EmpCheckerAppID, "empcheck-app-id", 0, "empcheck application id")
-	flag.StringVar(&f.EmpCheckerAppSecret, "empcheck-app-secret", "", "empcheck application secret")
-	flag.StringVar(&f.ParseAppID, "parse-app-id", "", "parse application id")
-	flag.StringVar(&f.ParseRestAPIKey, "parse-rest-api-key", "", "parse rest api key")
+	set.StringVar(&f.Addr, "addr", ":43600", "server address to bind to")
+	set.StringVar(&f.AdminAddr, "admin-addr", ":43601", "admin http server address")
+	set.Uint64Var(&f.FacebookAppID, "fb-app-id", 342526215814610, "facebook application id")
+	set.StringVar(&f.FacebookAppSecret, "fb-app-secret", "", "facebook application secret")
+	set.StringVar(&f.FacebookAppNS, "fb-app-ns", "", "facebook application namespace")
+	set.Uint64Var(&f.EmpCheckerAppID, "empcheck-app-id", 0, "empcheck application id")
+	set.StringVar(&f.EmpCheckerAppSecret, "empcheck-app-secret", "", "empcheck application secret")
+	set.StringVar(&f.ParseAppID, "parse-app-id", "", "parse application id")
+	set.StringVar(&f.ParseRestAPIKey, "parse-rest-api-key", "", "parse rest api key")
 
-	flag.Usage = flagconfig.Usage
-	flag.Parse()
-	flagenv.Parse()
-	flagconfig.Parse()
+	set.Parse(os.Args[1:])
+	if err := flagenv.ParseSet("RELL_", set); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(2)
+	}
 
 	return f
 }

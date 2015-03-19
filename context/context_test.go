@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/context"
 	"github.com/facebookgo/ensure"
 	"github.com/facebookgo/fbapp"
@@ -33,6 +34,7 @@ func defaultParser() *context.Parser {
 		EmpChecker:   funcEmpChecker(func(uint64) bool { return true }),
 		AppNSFetcher: funcAppNSFetcher(func(uint64) string { return defaultAppNS }),
 		App:          fbapp.New(defaultFacebookAppID, "", ""),
+		Forwarded:    &trustforward.Forwarded{},
 	}
 }
 
