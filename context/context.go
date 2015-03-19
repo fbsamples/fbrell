@@ -86,6 +86,7 @@ type Parser struct {
 	AppNSFetcher        AppNSFetcher
 	App                 fbapp.App
 	SignedRequestMaxAge time.Duration
+	Forwarded           *trustforward.Forwarded
 }
 
 // Create a default context.
@@ -132,8 +133,8 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 			)
 		}
 	}
-	context.Host = trustforward.Host(r)
-	context.Scheme = trustforward.Scheme(r)
+	context.Host = p.Forwarded.Host(r)
+	context.Scheme = p.Forwarded.Scheme(r)
 	if context.SignedRequest != nil && context.SignedRequest.UserID != 0 {
 		context.IsEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
 	}

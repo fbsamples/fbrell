@@ -12,6 +12,7 @@ import (
 	"github.com/GeertJohan/go.rice"
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.static"
+	"github.com/daaku/go.trustforward"
 	"github.com/daaku/go.xsrf"
 	"github.com/facebookgo/devrestarter"
 	"github.com/facebookgo/fbapi"
@@ -143,6 +144,9 @@ func main() {
 		EmpChecker:          empChecker,
 		AppNSFetcher:        appNSFetcher,
 		SignedRequestMaxAge: signedRequestMaxAge,
+		Forwarded: &trustforward.Forwarded{
+			X: true,
+		},
 	}
 
 	app := &web.App{
