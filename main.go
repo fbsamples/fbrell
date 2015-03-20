@@ -75,6 +75,8 @@ func globalFlags() flags {
 }
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	const signedRequestMaxAge = time.Hour * 24
 	flags := globalFlags()
 
@@ -83,6 +85,12 @@ func main() {
 	}
 
 	logger := log.New(os.Stderr, "", log.LstdFlags)
+	// for systemd started servers we can skip the date/time since journald
+	// already shows it
+	if os.Getppid() == 1 {
+		logger.SetFlags(0)
+	}
+
 	mainapp := fbapp.New(
 		flags.FacebookAppID,
 		flags.FacebookAppSecret,
@@ -178,14 +186,6 @@ func main() {
 			Static:        static,
 		},
 		SignedRequestMaxAge: signedRequestMaxAge,
-	}
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	// for systemd started servers we can skip the date/time since journald
-	// already shows it
-	if os.Getppid() == 1 {
-		logger.SetFlags(0)
 	}
 
 	err := gracehttp.Serve(
