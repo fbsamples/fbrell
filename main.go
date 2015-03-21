@@ -37,50 +37,29 @@ import (
 	"github.com/daaku/rell/web"
 )
 
-type flags struct {
-	Dev                 bool
-	Addr                string
-	AdminAddr           string
-	FacebookAppID       uint64
-	FacebookAppSecret   string
-	FacebookAppNS       string
-	EmpCheckerAppID     uint64
-	EmpCheckerAppSecret string
-	ParseAppID          string
-	ParseRestAPIKey     string
-}
+func main() {
+	const signedRequestMaxAge = time.Hour * 24
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
-func globalFlags() flags {
-	set := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ExitOnError)
-	f := flags{}
+	flagSet := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ExitOnError)
+	dev := flagSet.Bool("dev", runtime.GOOS != "linux", "development mode")
+	addr := flagSet.String("addr", ":43600", "server address to bind to")
+	adminAddr := flagSet.String("admin-addr", ":43601", "admin http server address")
+	facebookAppID := flagSet.Uint64("fb-app-id", 342526215814610, "facebook application id")
+	facebookAppSecret := flagSet.String("fb-app-secret", "", "facebook application secret")
+	facebookAppNS := flagSet.String("fb-app-ns", "", "facebook application namespace")
+	empCheckerAppID := flagSet.Uint64("empcheck-app-id", 0, "empcheck application id")
+	empCheckerAppSecret := flagSet.String("empcheck-app-secret", "", "empcheck application secret")
+	parseAppID := flagSet.String("parse-app-id", "", "parse application id")
+	parseRestAPIKey := flagSet.String("parse-rest-api-key", "", "parse rest api key")
 
-	set.BoolVar(&f.Dev, "dev", runtime.GOOS != "linux", "development mode")
-	set.StringVar(&f.Addr, "addr", ":43600", "server address to bind to")
-	set.StringVar(&f.AdminAddr, "admin-addr", ":43601", "admin http server address")
-	set.Uint64Var(&f.FacebookAppID, "fb-app-id", 342526215814610, "facebook application id")
-	set.StringVar(&f.FacebookAppSecret, "fb-app-secret", "", "facebook application secret")
-	set.StringVar(&f.FacebookAppNS, "fb-app-ns", "", "facebook application namespace")
-	set.Uint64Var(&f.EmpCheckerAppID, "empcheck-app-id", 0, "empcheck application id")
-	set.StringVar(&f.EmpCheckerAppSecret, "empcheck-app-secret", "", "empcheck application secret")
-	set.StringVar(&f.ParseAppID, "parse-app-id", "", "parse application id")
-	set.StringVar(&f.ParseRestAPIKey, "parse-rest-api-key", "", "parse rest api key")
-
-	set.Parse(os.Args[1:])
-	if err := flagenv.ParseSet("RELL_", set); err != nil {
+	flagSet.Parse(os.Args[1:])
+	if err := flagenv.ParseSet("RELL_", flagSet); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
 	}
 
-	return f
-}
-
-func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	const signedRequestMaxAge = time.Hour * 24
-	flags := globalFlags()
-
-	if flags.Dev {
+	if *dev {
 		devrestarter.Init()
 	}
 
@@ -92,9 +71,9 @@ func main() {
 	}
 
 	fbApp := fbapp.New(
-		flags.FacebookAppID,
-		flags.FacebookAppSecret,
-		flags.FacebookAppNS,
+		*facebookAppID,
+		*facebookAppSecret,
+		*facebookAppNS,
 	)
 	forwarded := &trustforward.Forwarded{
 		X: true,
@@ -126,8 +105,8 @@ func main() {
 	parseClient := &parse.Client{
 		Transport: httpTransport,
 		Credentials: parse.RestAPIKey{
-			ApplicationID: flags.ParseAppID,
-			RestAPIKey:    flags.ParseRestAPIKey,
+			ApplicationID: *parseAppID,
+			RestAPIKey:    *parseRestAPIKey,
 		},
 	}
 	fbApiClient := &fbapi.Client{
@@ -137,7 +116,7 @@ func main() {
 	lruCache := lru.New(10000)
 	empChecker := &empcheck.Checker{
 		FbApiClient: fbApiClient,
-		App:         fbapp.New(flags.EmpCheckerAppID, flags.EmpCheckerAppSecret, ""),
+		App:         fbapp.New(*empCheckerAppID, *empCheckerAppSecret, ""),
 		Logger:      logger,
 		Cache:       lruCache,
 	}
@@ -189,8 +168,8 @@ func main() {
 	}
 
 	err := gracehttp.Serve(
-		&http.Server{Addr: flags.Addr, Handler: http.HandlerFunc(app.MainHandler)},
-		&http.Server{Addr: flags.AdminAddr, Handler: http.HandlerFunc(app.AdminHandler)},
+		&http.Server{Addr: *addr, Handler: http.HandlerFunc(app.MainHandler)},
+		&http.Server{Addr: *adminAddr, Handler: http.HandlerFunc(app.AdminHandler)},
 	)
 	if err != nil {
 		logger.Fatal(err)
