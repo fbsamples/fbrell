@@ -91,7 +91,7 @@ func main() {
 		logger.SetFlags(0)
 	}
 
-	mainapp := fbapp.New(
+	fbApp := fbapp.New(
 		flags.FacebookAppID,
 		flags.FacebookAppSecret,
 		flags.FacebookAppNS,
@@ -142,7 +142,7 @@ func main() {
 		Cache:       lruCache,
 	}
 	appNSFetcher := &appns.Fetcher{
-		Apps:        []fbapp.App{mainapp},
+		Apps:        []fbapp.App{fbApp},
 		FbApiClient: fbApiClient,
 		Logger:      logger,
 		Cache:       lruCache,
@@ -153,7 +153,7 @@ func main() {
 		Cache: lruCache,
 	}
 	contextParser := &context.Parser{
-		App:                 mainapp,
+		App:                 fbApp,
 		EmpChecker:          empChecker,
 		AppNSFetcher:        appNSFetcher,
 		SignedRequestMaxAge: signedRequestMaxAge,
@@ -162,7 +162,7 @@ func main() {
 
 	app := &web.App{
 		Static: static,
-		App:    mainapp,
+		App:    fbApp,
 		ContextHandler: &viewcontext.Handler{
 			ContextParser: contextParser,
 			Static:        static,
@@ -180,7 +180,7 @@ func main() {
 		},
 		OauthHandler: &oauth.Handler{
 			BrowserID:     bid,
-			App:           mainapp,
+			App:           fbApp,
 			ContextParser: contextParser,
 			HttpTransport: httpTransport,
 			Static:        static,
