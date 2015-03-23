@@ -3,10 +3,9 @@
 package view
 
 import (
-	"github.com/daaku/go.h"
-	"github.com/daaku/go.h.js.ga"
-	"github.com/daaku/go.static"
-
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h.js.ga"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
 )
 

@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GeertJohan/go.rice"
-	"github.com/daaku/go.static"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/GeertJohan/go.rice"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/context"
-	"github.com/facebookgo/fbapp"
 )
 
 var defaultContext = (&context.Parser{

@@ -1,0 +1,178 @@
+{
+	"ImportPath": "github.com/daaku/rell",
+	"GoVersion": "go1.4.2",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/GeertJohan/go.rice",
+			"Rev": "b4a18af231435326dd7995d2dd0f3ee31b81f212"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.browserid",
+			"Rev": "b9bd71b767c8b90fb996a03015794c6f4b1dbe5a"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.errcode",
+			"Rev": "670926bd7e8be32b587bd87401631b4d9cd6371a"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.fburl",
+			"Rev": "4b680987341b534c5140d5805687581fd40ff56a"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.h",
+			"Rev": "89da3d4b45979a8cdebe02de14c6c396034cd17a"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.h.js.fb",
+			"Rev": "739371daacc5a516540c6cda94056ec37775fa34"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.h.js.ga",
+			"Rev": "1b832a5f760a71e606259b03badeed4115026040"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.h.ui",
+			"Rev": "79346cacce95d68d450c22af606a4a31b78233bc"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.htmlwriter",
+			"Rev": "86039f29ab21cc504ce338749037c598849416ee"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.httpdev",
+			"Rev": "20aeb886058b3d15e1fbf0f8a4aef7ceb854f46f"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.httpgzip",
+			"Rev": "a336c4bfd42faf5b18b9d90dcdfe3b4fc13a8fa5"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.signedrequest",
+			"Rev": "4727901abbda2eddb6762a2dda37bd26c46a60b9"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.static",
+			"Rev": "1632b4fb8756dd09ad70da2a02862983eb318081"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.trustforward",
+			"Rev": "54ecc813bfdfefd6c0fa870745204e14b64aec4b"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.viewvar",
+			"Rev": "4f967f8d66409a371a41fb71b07c3ae0da07ce29"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.xsrf",
+			"Rev": "ffe8cb0243d5485d427686d046673a263a52841c"
+		},
+		{
+			"ImportPath": "github.com/daaku/go.zipexe",
+			"Rev": "4de5c18ca1fc5294fee64721094ca90c46d26405"
+		},
+		{
+			"ImportPath": "github.com/daaku/sortutil",
+			"Rev": "68154d48a9849fad3acc452ce55685d3c6e1f524"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "83f84dc933714d51504ceed59f43ead21d096fe7"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/clock",
+			"Rev": "41df9c4b742349146d28ac5d8caa45161209f3fc"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/counting",
+			"Rev": "0f3846f780cadb7682ce04da0ee105a65fd49de5"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/devrestarter",
+			"Rev": "26bcfa550c07e080abfa6d8cc8bf535e359eb1e5"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/ensure",
+			"Rev": "5d4168fb937c5e898f44d002a04c40da694a6c14"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/fbapi",
+			"Rev": "7ceb1a64cdcff225fd435793f6a296cd5a1a13b6"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/fbapp",
+			"Rev": "f5df70d69441df6a9b6042a2dc4629117cef35ad"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/flagenv",
+			"Rev": "f7e073f8584bf287827d243aa73abb3498361ec5"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/grace/gracehttp",
+			"Rev": "1b0609c25d1f0d6aefdd5404eaa710a16daca9d6"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/grace/gracenet",
+			"Rev": "1b0609c25d1f0d6aefdd5404eaa710a16daca9d6"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/httpcontrol",
+			"Rev": "bbe22583cc42d4a142ff7d0dd901e7304ac30599"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/httpdown",
+			"Rev": "1c143bb4362a4f297f9cabd74bf0d05ee2b4f5dc"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/httperr",
+			"Rev": "e4ae192fbdf2de619f916e8c5c7a87ee6c7f2e0c"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/parse",
+			"Rev": "53f1eebc34b04b3d3b0efb8ed60b530fdc42682d"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/pqueue",
+			"Rev": "3e4c2d4610def82da897964a0e70f89322a9da41"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/stack",
+			"Rev": "6c824be2ba589917fb264589f99aab11b98fea5f"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/stackerr",
+			"Rev": "2b3dd9a9859e213410d0e6e3b26c5f693c5f2964"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/stats",
+			"Rev": "a8126df93b2406675168d2930b6d3db46ffb805c"
+		},
+		{
+			"ImportPath": "github.com/facebookgo/subset",
+			"Rev": "7306dc4f3e403eabb0b1bbd4b5499a3f1d3a1e2e"
+		},
+		{
+			"ImportPath": "github.com/go-fsnotify/fsnotify",
+			"Comment": "v1.1.0-11-g8f4d598",
+			"Rev": "8f4d59892a7165d85442ef9d4d701ef80c4466df"
+		},
+		{
+			"ImportPath": "github.com/golang/groupcache/lru",
+			"Rev": "604ed5785183e59ae2789449d89e73f3a2a77987"
+		},
+		{
+			"ImportPath": "github.com/gorilla/schema",
+			"Rev": "c8422571edf3131506bab7df27e18980fe2598d5"
+		},
+		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "583b4a4ef520a1b8492b014b23956643080c8d54"
+		},
+		{
+			"ImportPath": "golang.org/x/net/publicsuffix",
+			"Rev": "8b2d0ae1f4c3b83c10ff17e89a89ff04cc0903c3"
+		}
+	]
+}

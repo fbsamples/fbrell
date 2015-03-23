@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/daaku/go.errcode"
-	"github.com/daaku/go.h"
-	"github.com/daaku/go.static"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.errcode"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 )
 
-// HTTP Coded Error.
-type ErrorCode interface {
+type ErrorCode interface // HTTP Coded Error.
+{
 	error
 	Code() int
 }

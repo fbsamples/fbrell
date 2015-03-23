@@ -7,11 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/daaku/go.errcode"
-	"github.com/daaku/go.h"
-	"github.com/daaku/go.h.js.fb"
-	"github.com/daaku/go.static"
-
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.errcode"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h.js.fb"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/view"

@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/daaku/go.trustforward"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.trustforward"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/ensure"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/context"
-	"github.com/facebookgo/ensure"
-	"github.com/facebookgo/fbapp"
 )
 
 const (

@@ -13,12 +13,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/daaku/go.fburl"
-	"github.com/daaku/go.signedrequest/appdata"
-	"github.com/daaku/go.signedrequest/fbsr"
-	"github.com/daaku/go.trustforward"
-	"github.com/facebookgo/fbapp"
-	"github.com/gorilla/schema"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.fburl"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/appdata"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/fbsr"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.trustforward"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/gorilla/schema"
 )
 
 var envRegexp = regexp.MustCompile(`^[a-zA-Z0-9-_.]*$`)

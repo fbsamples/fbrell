@@ -11,12 +11,11 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/daaku/go.browserid"
-	"github.com/daaku/go.fburl"
-	"github.com/daaku/go.h"
-	"github.com/daaku/go.static"
-	"github.com/facebookgo/fbapp"
-
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.browserid"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.fburl"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/view"
 )

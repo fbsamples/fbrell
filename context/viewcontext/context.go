@@ -4,9 +4,8 @@ package viewcontext
 import (
 	"net/http"
 
-	"github.com/daaku/go.httpdev"
-	"github.com/daaku/go.static"
-
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.httpdev"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/view"
 )
