@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+shopt -s dotglob nullglob
+trap 'echo "${0} line ${LINENO} Status: ${?}"' ERR
+
+mkdir -p "$1" "$2"
+BUILD_DIR=$(cd "$1/" && pwd)
+CACHE_DIR=$(cd "$2/" && pwd)
+
+GO_IMPORT_PATH=github.com/daaku/rell
+GO_VERSION=1.4.2
+GO_URL=https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
+BUILD_GOPATH=$CACHE_DIR/go
+GODEP_GOPATH=$BUILD_GOPATH/src/$GO_IMPORT_PATH/Godeps/_workspace
+
+export GOROOT=$CACHE_DIR/$GO_VERSION/go
+export GOPATH=$BUILD_GOPATH:$GODEP_GOPATH
+export PATH=$GOROOT/bin:$BUILD_GOPATH/bin:$GODEP_GOPATH/bin:$PATH
+
+if test -d $CACHE_DIR/$GO_VERSION/go; then
+  echo "-----> Using $GO_VERSION"
+  rm -rf $BUILD_GOPATH/pkg
+else
+  rm -rf $CACHE_DIR/*
+  mkdir -p $CACHE_DIR/$GO_VERSION
+  cd $CACHE_DIR/$GO_VERSION
+  echo -n "-----> Installing go ${GO_VERSION}..."
+  curl -s $GO_URL | tar xz
+  echo " done"
+fi
+
+echo -n "-----> Preparing files..."
+GO_PACKAGE_DIR=$BUILD_GOPATH/src/$GO_IMPORT_PATH
+rm -rf $GO_PACKAGE_DIR
+mkdir -p $GO_PACKAGE_DIR
+mv $BUILD_DIR/* $GO_PACKAGE_DIR/
+mv \
+  $GO_PACKAGE_DIR/Procfile \
+  $BUILD_DIR/
+echo " done"
+
+echo -n "-----> Installing rice..."
+go install github.com/GeertJohan/go.rice/rice
+echo " done"
+
+OUTPUT_BIN=$BUILD_DIR/$(basename $GO_IMPORT_PATH)
+
+echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH"
+go build -tags heroku -o $OUTPUT_BIN $GO_IMPORT_PATH
+echo " done"
+
+echo -n "-----> Boxes: rice append..."
+rice --import-path=$GO_IMPORT_PATH append --exec=$OUTPUT_BIN
+echo " done"

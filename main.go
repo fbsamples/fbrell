@@ -36,14 +36,20 @@ import (
 	"github.com/daaku/rell/web"
 )
 
+func defaultAddr() string {
+	if port := os.Getenv("PORT"); port != "" {
+		return ":" + port
+	}
+	return ":43600"
+}
+
 func main() {
 	const signedRequestMaxAge = time.Hour * 24
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	flagSet := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ExitOnError)
 	dev := flagSet.Bool("dev", runtime.GOOS != "linux", "development mode")
-	addr := flagSet.String("addr", ":43600", "server address to bind to")
-	adminAddr := flagSet.String("admin-addr", ":43601", "admin http server address")
+	addr := flagSet.String("addr", defaultAddr(), "server address to bind to")
 	facebookAppID := flagSet.Uint64("fb-app-id", 342526215814610, "facebook application id")
 	facebookAppSecret := flagSet.String("fb-app-secret", "", "facebook application secret")
 	facebookAppNS := flagSet.String("fb-app-ns", "", "facebook application namespace")
@@ -75,7 +81,8 @@ func main() {
 		*facebookAppNS,
 	)
 	forwarded := &trustforward.Forwarded{
-		X: true,
+		X:          true,
+		CloudFlare: true,
 	}
 	bid := &browserid.Cookie{
 		Name:      "z",
@@ -168,7 +175,6 @@ func main() {
 
 	err := gracehttp.Serve(
 		&http.Server{Addr: *addr, Handler: http.HandlerFunc(app.MainHandler)},
-		&http.Server{Addr: *adminAddr, Handler: http.HandlerFunc(app.AdminHandler)},
 	)
 	if err != nil {
 		logger.Fatal(err)
