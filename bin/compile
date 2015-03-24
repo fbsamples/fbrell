@@ -12,7 +12,9 @@ GO_IMPORT_PATH=github.com/daaku/rell
 GO_VERSION=1.4.2
 GO_URL=https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
 BUILD_GOPATH=$CACHE_DIR/go
-GODEP_GOPATH=$BUILD_GOPATH/src/$GO_IMPORT_PATH/Godeps/_workspace
+GO_PACKAGE_DIR=$BUILD_GOPATH/src/$GO_IMPORT_PATH
+GODEP_GOPATH=$GO_PACKAGE_DIR/Godeps/_workspace
+OUTPUT_BIN=$BUILD_DIR/$(basename $GO_IMPORT_PATH)
 
 export GOROOT=$CACHE_DIR/$GO_VERSION/go
 export GOPATH=$BUILD_GOPATH:$GODEP_GOPATH
@@ -31,20 +33,15 @@ else
 fi
 
 echo -n "-----> Preparing files..."
-GO_PACKAGE_DIR=$BUILD_GOPATH/src/$GO_IMPORT_PATH
 rm -rf $GO_PACKAGE_DIR
 mkdir -p $GO_PACKAGE_DIR
 mv $BUILD_DIR/* $GO_PACKAGE_DIR/
-mv \
-  $GO_PACKAGE_DIR/Procfile \
-  $BUILD_DIR/
+mv $GO_PACKAGE_DIR/Procfile $BUILD_DIR/
 echo " done"
 
 echo -n "-----> Installing rice..."
 go install github.com/GeertJohan/go.rice/rice
 echo " done"
-
-OUTPUT_BIN=$BUILD_DIR/$(basename $GO_IMPORT_PATH)
 
 echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH"
 go build -tags heroku -o $OUTPUT_BIN $GO_IMPORT_PATH
