@@ -43,7 +43,7 @@ echo -n "-----> Installing rice..."
 go install github.com/GeertJohan/go.rice/rice
 echo " done"
 
-echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH"
+echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH..."
 go build -tags heroku -o $OUTPUT_BIN $GO_IMPORT_PATH
 echo " done"
 
