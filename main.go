@@ -24,6 +24,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/httpcontrol"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/parse"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/golang/groupcache/lru"
+	"github.com/daaku/rell/adminweb"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/context/appns"
 	"github.com/daaku/rell/context/empcheck"
@@ -50,6 +51,7 @@ func main() {
 	flagSet := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ExitOnError)
 	dev := flagSet.Bool("dev", runtime.GOOS != "linux", "development mode")
 	addr := flagSet.String("addr", defaultAddr(), "server address to bind to")
+	adminPath := flagSet.String("admin-path", "", "secret admin path")
 	facebookAppID := flagSet.Uint64("fb-app-id", 342526215814610, "facebook application id")
 	facebookAppSecret := flagSet.String("fb-app-secret", "", "facebook application secret")
 	facebookAppNS := flagSet.String("fb-app-ns", "", "facebook application namespace")
@@ -144,8 +146,7 @@ func main() {
 		SignedRequestMaxAge: signedRequestMaxAge,
 		Forwarded:           forwarded,
 	}
-
-	app := &web.App{
+	webHandler := &web.Handler{
 		Static: static,
 		App:    fbApp,
 		ContextHandler: &viewcontext.Handler{
@@ -170,11 +171,16 @@ func main() {
 			HttpTransport: httpTransport,
 			Static:        static,
 		},
+		AdminHandler: &adminweb.Handler{
+			Forwarded: forwarded,
+			Path:      *adminPath,
+			SkipHTTPS: *dev,
+		},
 		SignedRequestMaxAge: signedRequestMaxAge,
 	}
 
 	err := gracehttp.Serve(
-		&http.Server{Addr: *addr, Handler: http.HandlerFunc(app.MainHandler)},
+		&http.Server{Addr: *addr, Handler: webHandler},
 	)
 	if err != nil {
 		logger.Fatal(err)
