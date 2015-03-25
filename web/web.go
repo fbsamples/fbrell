@@ -47,6 +47,7 @@ func (a *App) AdminHandler(w http.ResponseWriter, r *http.Request) {
 		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 		mux.HandleFunc("/vars/", viewvar.Json)
 		mux.HandleFunc("/env/", a.envHandler)
+		mux.HandleFunc("/sleep/", httpdev.Sleep)
 		a.adminHandler = mux
 	})
 	a.adminHandler.ServeHTTP(w, r)
@@ -74,7 +75,6 @@ func (a *App) MainHandler(w http.ResponseWriter, r *http.Request) {
 		mux.HandleFunc("/rog/", a.OgHandler.Base64)
 		mux.HandleFunc("/rog-redirect/", a.OgHandler.Redirect)
 		mux.Handle(oauth.Path, a.OauthHandler)
-		mux.HandleFunc("/sleep/", httpdev.Sleep)
 
 		var handler http.Handler
 		handler = &appdata.Handler{
