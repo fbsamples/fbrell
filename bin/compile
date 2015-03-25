@@ -21,7 +21,7 @@ export GOPATH=$BUILD_GOPATH:$GODEP_GOPATH
 export PATH=$GOROOT/bin:$BUILD_GOPATH/bin:$GODEP_GOPATH/bin:$PATH
 
 if test -d $CACHE_DIR/$GO_VERSION/go; then
-  echo "-----> Using $GO_VERSION"
+  echo "-----> Using existing go $GO_VERSION"
   rm -rf $BUILD_GOPATH/pkg
 else
   rm -rf $CACHE_DIR/*
