@@ -149,6 +149,7 @@ func main() {
 	webHandler := &web.Handler{
 		Static: static,
 		App:    fbApp,
+		Logger: logger,
 		ContextHandler: &viewcontext.Handler{
 			ContextParser: contextParser,
 			Static:        static,

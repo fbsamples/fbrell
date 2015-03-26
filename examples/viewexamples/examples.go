@@ -25,6 +25,8 @@ import (
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/view"
+	"github.com/facebookgo/stackerr"
+	netcontext "golang.org/x/net/context"
 )
 
 const (
@@ -85,53 +87,49 @@ func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (a *Handler) Saved(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" && r.URL.Path == savedPath {
-		c, err := a.ContextParser.FromRequest(r)
-		if err != nil {
-			view.Error(w, r, a.Static, err)
-			return
-		}
-		if !c.IsEmployee {
-			view.Error(w, r, a.Static, errSaveDisabled)
-			return
-		}
-		if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
-			view.Error(w, r, a.Static, errTokenMismatch)
-			return
-		}
-		content := strings.TrimSpace(r.FormValue("code"))
-		content = strings.Replace(content, "\x13", "", -1) // remove CR
-		id := examples.ContentID(content)
-		db := a.ExampleStore.DB
-		example, ok := db.Reverse[id]
-		if ok {
-			http.Redirect(w, r, c.ViewURL(example.URL), 302)
-			return
-		}
-		err = a.ExampleStore.Save(id, content)
-		if err != nil {
-			view.Error(w, r, a.Static, err)
-			return
-		}
-		http.Redirect(w, r, c.ViewURL(savedPath+id), 302)
-		return
-	} else {
-		context, example, err := a.parse(r)
-		if err != nil {
-			view.Error(w, r, a.Static, err)
-			return
-		}
-		h.WriteResponse(w, r, &page{
-			Writer:        w,
-			Request:       r,
-			ContextParser: a.ContextParser,
-			Context:       context,
-			Static:        a.Static,
-			Example:       example,
-			Xsrf:          a.Xsrf,
-		})
+func (a *Handler) PostSaved(ctx netcontext.Context, w http.ResponseWriter, r *http.Request) error {
+	c, err := a.ContextParser.FromRequest(r)
+	if err != nil {
+		return err
 	}
+	if !c.IsEmployee {
+		return stackerr.Wrap(errSaveDisabled)
+	}
+	if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
+		return stackerr.Wrap(errTokenMismatch)
+	}
+	content := strings.TrimSpace(r.FormValue("code"))
+	content = strings.Replace(content, "\x13", "", -1) // remove CR
+	id := examples.ContentID(content)
+	db := a.ExampleStore.DB
+	example, ok := db.Reverse[id]
+	if ok {
+		http.Redirect(w, r, c.ViewURL(example.URL), 302)
+		return nil
+	}
+	err = a.ExampleStore.Save(id, content)
+	if err != nil {
+		return err
+	}
+	http.Redirect(w, r, c.ViewURL(savedPath+id), 302)
+	return nil
+}
+
+func (a *Handler) GetSaved(ctx netcontext.Context, w http.ResponseWriter, r *http.Request) error {
+	context, example, err := a.parse(r)
+	if err != nil {
+		return err
+	}
+	h.WriteResponse(w, r, &page{
+		Writer:        w,
+		Request:       r,
+		ContextParser: a.ContextParser,
+		Context:       context,
+		Static:        a.Static,
+		Example:       example,
+		Xsrf:          a.Xsrf,
+	})
+	return nil
 }
 
 func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
