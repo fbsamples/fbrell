@@ -197,6 +197,13 @@ func MuxNotFoundHandler(handler Handler) MuxOption {
 	}
 }
 
+// MuxRedirectTrailingSlash configures the Mux to automatically handling
+// missing or extraneous trailing slashes by redirecting.
+func MuxRedirectTrailingSlash(m *Mux) error {
+	m.r.RedirectTrailingSlash = true
+	return nil
+}
+
 // New creates a new Mux and configures it with the given options.
 func New(options ...MuxOption) (*Mux, error) {
 	var m Mux

@@ -263,3 +263,21 @@ func TestHandlerNotFound(t *testing.T) {
 	mux.ServeHTTP(hw, hr)
 	ensure.True(t, called)
 }
+
+func TestRedirectTrailingSlash(t *testing.T) {
+	mux, err := ctxmux.New(ctxmux.MuxRedirectTrailingSlash)
+	ensure.Nil(t, err)
+	hw := httptest.NewRecorder()
+	hr := &http.Request{
+		Method: "GET",
+		URL: &url.URL{
+			Path: "/foo",
+		},
+	}
+	mux.GET(hr.URL.Path+"/", func(context.Context, http.ResponseWriter, *http.Request) error {
+		return nil
+	})
+	mux.ServeHTTP(hw, hr)
+	ensure.DeepEqual(t, hw.Header().Get("Location"), hr.URL.Path)
+	ensure.DeepEqual(t, hw.Code, http.StatusMovedPermanently)
+}

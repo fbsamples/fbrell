@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/GeertJohan/go.incremental"
+	"github.com/GeertJohan/go.incremental"
 	"runtime"
 )
 
