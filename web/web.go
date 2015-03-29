@@ -48,32 +48,36 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		fileserver := http.FileServer(a.Static.Box.HTTPBox())
 
-		mux := ctxmux.Mux{
-			ErrorHandler: a.handleError,
+		mux, err := ctxmux.New(
+			ctxmux.MuxErrorHandler(a.handleError),
+		)
+		if err != nil {
+			panic(err)
 		}
-		mux.Handler("GET", a.Static.HttpPath+"*rest", a.Static)
-		mux.Handler("GET", "/favicon.ico", fileserver)
-		mux.Handler("GET", "/f8.jpg", fileserver)
-		mux.Handler("GET", "/robots.txt", fileserver)
-		mux.Handler("GET", public+"*rest", http.StripPrefix(public, fileserver))
-		mux.Handler("GET", "/info/*rest", a.ContextHandler)
-		mux.Handler("POST", "/info/*rest", a.ContextHandler)
-		mux.HandlerFunc("GET", "/examples/", a.ExamplesHandler.List)
+
+		mux.GET(a.Static.HttpPath+"*rest", ctxmux.HTTPHandler(a.Static))
+		mux.GET("/favicon.ico", ctxmux.HTTPHandler(fileserver))
+		mux.GET("/f8.jpg", ctxmux.HTTPHandler(fileserver))
+		mux.GET("/robots.txt", ctxmux.HTTPHandler(fileserver))
+		mux.GET(public+"*rest", ctxmux.HTTPHandler(http.StripPrefix(public, fileserver)))
+		mux.GET("/info/*rest", ctxmux.HTTPHandler(a.ContextHandler))
+		mux.POST("/info/*rest", ctxmux.HTTPHandler(a.ContextHandler))
+		mux.GET("/examples/", ctxmux.HTTPHandlerFunc(a.ExamplesHandler.List))
 		mux.GET("/saved/:hash", a.ExamplesHandler.GetSaved)
 		mux.POST("/saved/", a.ExamplesHandler.PostSaved)
-		mux.HandlerFunc("GET", "/", a.ExamplesHandler.Example)
-		mux.HandlerFunc("GET", "/og/*rest", a.OgHandler.Values)
-		mux.HandlerFunc("GET", "/rog/*rest", a.OgHandler.Base64)
-		mux.HandlerFunc("GET", "/rog-redirect/*rest", a.OgHandler.Redirect)
-		mux.Handler("GET", oauth.Path+"*rest", a.OauthHandler)
+		mux.GET("/", ctxmux.HTTPHandlerFunc(a.ExamplesHandler.Example))
+		mux.GET("/og/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Values))
+		mux.GET("/rog/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Base64))
+		mux.GET("/rog-redirect/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Redirect))
+		mux.GET(oauth.Path+"*rest", ctxmux.HTTPHandler(a.OauthHandler))
 
 		if a.AdminHandler.Path != "" {
-			mux.Handler("GET", path.Join("/", a.AdminHandler.Path)+"/", a.AdminHandler)
+			mux.GET(path.Join("/", a.AdminHandler.Path)+"/", ctxmux.HTTPHandler(a.AdminHandler))
 		}
 
 		var handler http.Handler
 		handler = &appdata.Handler{
-			Handler: &mux,
+			Handler: mux,
 			Secret:  a.App.SecretByte(),
 			MaxAge:  a.SignedRequestMaxAge,
 		}
