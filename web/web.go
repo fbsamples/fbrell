@@ -72,7 +72,8 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		mux.GET(oauth.Path+"*rest", ctxmux.HTTPHandler(a.OauthHandler))
 
 		if a.AdminHandler.Path != "" {
-			mux.GET(path.Join("/", a.AdminHandler.Path)+"/*rest", ctxmux.HTTPHandler(a.AdminHandler))
+			adminPath := path.Join("/", a.AdminHandler.Path) + "/*rest"
+			mux.GET(adminPath, ctxmux.HTTPHandler(a.AdminHandler))
 		}
 
 		var handler http.Handler
