@@ -53,28 +53,6 @@ func TestHTTPHandlerFunc(t *testing.T) {
 	ensure.DeepEqual(t, actualR, r)
 }
 
-func TestContextPipeChainSuccess(t *testing.T) {
-	const key = int(1)
-	const val = int(2)
-	p := ctxmux.ContextPipeChain(
-		func(ctx context.Context, r *http.Request) (context.Context, error) {
-			return context.WithValue(ctx, key, val), nil
-		})
-	ctx, err := p(context.Background(), nil)
-	ensure.Nil(t, err)
-	ensure.DeepEqual(t, ctx.Value(key), val)
-}
-
-func TestContextPipeChainFailure(t *testing.T) {
-	givenErr := errors.New("")
-	p := ctxmux.ContextPipeChain(
-		func(context.Context, *http.Request) (context.Context, error) {
-			return nil, givenErr
-		})
-	_, err := p(context.Background(), nil)
-	ensure.DeepEqual(t, err, givenErr)
-}
-
 func TestNewError(t *testing.T) {
 	givenErr := errors.New("")
 	mux, err := ctxmux.New(
@@ -103,10 +81,10 @@ func TestWrapMethods(t *testing.T) {
 	body := []byte("body")
 	for _, c := range cases {
 		mux, err := ctxmux.New(
-			ctxmux.MuxContextPipe(ctxmux.ContextPipeChain(
-				func(ctx context.Context, r *http.Request) (context.Context, error) {
-					return context.WithValue(ctx, key, val), nil
-				})),
+			ctxmux.MuxContextMaker(func(r *http.Request) (context.Context, error) {
+				ctx := context.Background()
+				return context.WithValue(ctx, key, val), nil
+			}),
 		)
 		ensure.Nil(t, err)
 		hw := httptest.NewRecorder()
@@ -126,16 +104,16 @@ func TestWrapMethods(t *testing.T) {
 	}
 }
 
-func TestMuxContextPipeError(t *testing.T) {
+func TestMuxContextMakerError(t *testing.T) {
 	givenErr := errors.New("")
 	var actualErr error
 	mux, err := ctxmux.New(
-		ctxmux.MuxContextPipe(ctxmux.ContextPipeChain(
-			func(ctx context.Context, r *http.Request) (context.Context, error) {
-				return nil, givenErr
-			})),
+		ctxmux.MuxContextMaker(func(r *http.Request) (context.Context, error) {
+			return nil, givenErr
+		}),
 		ctxmux.MuxErrorHandler(
 			func(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
+				ensure.DeepEqual(t, ctx, context.Background())
 				actualErr = err
 			}),
 	)

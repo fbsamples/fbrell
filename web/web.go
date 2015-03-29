@@ -52,7 +52,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			ctxmux.MuxErrorHandler(a.handleError),
 			ctxmux.MuxNotFoundHandler(a.ExamplesHandler.Example),
 			ctxmux.MuxRedirectTrailingSlash,
-			ctxmux.MuxContextPipe(a.envContextPipe),
+			ctxmux.MuxContextMaker(a.contextMaker),
 		)
 		if err != nil {
 			panic(err)
@@ -95,7 +95,8 @@ func (a *Handler) handleError(ctx context.Context, w http.ResponseWriter, r *htt
 	view.Error(w, r, a.Static, err)
 }
 
-func (a *Handler) envContextPipe(ctx context.Context, r *http.Request) (context.Context, error) {
+func (a *Handler) contextMaker(r *http.Request) (context.Context, error) {
+	ctx := context.Background()
 	env, err := a.EnvParser.FromRequest(r)
 	if err != nil {
 		return ctx, err
