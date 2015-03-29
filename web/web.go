@@ -50,7 +50,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		mux, err := ctxmux.New(
 			ctxmux.MuxErrorHandler(a.handleError),
-			ctxmux.MuxNotFoundHandler(ctxmux.HTTPHandlerFunc(a.ExamplesHandler.Example)),
+			ctxmux.MuxNotFoundHandler(a.ExamplesHandler.Example),
 		)
 		if err != nil {
 			panic(err)

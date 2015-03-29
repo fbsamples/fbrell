@@ -132,11 +132,10 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 	return nil
 }
 
-func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	context, example, err := a.parse(r)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	h.WriteResponse(w, r, &page{
 		Writer:        w,
@@ -147,6 +146,7 @@ func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
 		Example:       example,
 		Xsrf:          a.Xsrf,
 	})
+	return nil
 }
 
 type page struct {
