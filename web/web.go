@@ -8,11 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/daaku/ctxmux"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/ctxmux"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.httpgzip"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
+	netcontext "github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/adminweb"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/context/viewcontext"
@@ -20,7 +21,6 @@ import (
 	"github.com/daaku/rell/oauth"
 	"github.com/daaku/rell/og/viewog"
 	"github.com/daaku/rell/view"
-	netcontext "golang.org/x/net/context"
 )
 
 // The rell web application.

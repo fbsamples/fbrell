@@ -22,11 +22,11 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.xsrf"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/sortutil"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/counting"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/stackerr"
+	netcontext "github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/view"
-	"github.com/facebookgo/stackerr"
-	netcontext "golang.org/x/net/context"
 )
 
 const (

@@ -10,6 +10,10 @@
 			"Rev": "b4a18af231435326dd7995d2dd0f3ee31b81f212"
 		},
 		{
+			"ImportPath": "github.com/daaku/ctxmux",
+			"Rev": "6bad1e2b1c01c576d4f6c0347b5665658247665b"
+		},
+		{
 			"ImportPath": "github.com/daaku/go.browserid",
 			"Rev": "b9bd71b767c8b90fb996a03015794c6f4b1dbe5a"
 		},
@@ -167,8 +171,16 @@
 			"Rev": "c8422571edf3131506bab7df27e18980fe2598d5"
 		},
 		{
+			"ImportPath": "github.com/julienschmidt/httprouter",
+			"Rev": "2913780ee44a32395d9a2cf75ee6382b768f422a"
+		},
+		{
 			"ImportPath": "github.com/kardianos/osext",
 			"Rev": "583b4a4ef520a1b8492b014b23956643080c8d54"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "8b2d0ae1f4c3b83c10ff17e89a89ff04cc0903c3"
 		},
 		{
 			"ImportPath": "golang.org/x/net/publicsuffix",
