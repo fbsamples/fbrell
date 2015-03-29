@@ -11,7 +11,7 @@
 		},
 		{
 			"ImportPath": "github.com/daaku/ctxmux",
-			"Rev": "67be1a1664ec6bf9400571d130596aa0b48d53b6"
+			"Rev": "554fb152dca8554a6b44fdd2e586a62263a6260b"
 		},
 		{
 			"ImportPath": "github.com/daaku/go.browserid",

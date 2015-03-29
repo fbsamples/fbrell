@@ -51,7 +51,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		mux, err := ctxmux.New(
 			ctxmux.MuxErrorHandler(a.handleError),
 			ctxmux.MuxNotFoundHandler(a.ExamplesHandler.Example),
-			ctxmux.MuxRedirectTrailingSlash,
+			ctxmux.MuxRedirectTrailingSlash(),
 			ctxmux.MuxContextMaker(a.contextMaker),
 		)
 		if err != nil {

@@ -243,7 +243,7 @@ func TestHandlerNotFound(t *testing.T) {
 }
 
 func TestRedirectTrailingSlash(t *testing.T) {
-	mux, err := ctxmux.New(ctxmux.MuxRedirectTrailingSlash)
+	mux, err := ctxmux.New(ctxmux.MuxRedirectTrailingSlash())
 	ensure.Nil(t, err)
 	hw := httptest.NewRecorder()
 	hr := &http.Request{
