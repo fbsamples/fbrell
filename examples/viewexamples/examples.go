@@ -74,17 +74,17 @@ func (h *Handler) parse(r *http.Request) (*rellenv.Context, *examples.Example, e
 	return context, example, nil
 }
 
-func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	h.WriteResponse(w, r, &examplesList{
 		Context: context,
 		Static:  a.Static,
 		DB:      a.ExampleStore.DB,
 	})
+	return nil
 }
 
 func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

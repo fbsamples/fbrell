@@ -63,7 +63,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		mux.GET(public+"*rest", ctxmux.HTTPHandler(http.StripPrefix(public, fileserver)))
 		mux.GET("/info/*rest", a.ContextHandler.Info)
 		mux.POST("/info/*rest", a.ContextHandler.Info)
-		mux.GET("/examples/", ctxmux.HTTPHandlerFunc(a.ExamplesHandler.List))
+		mux.GET("/examples/", a.ExamplesHandler.List)
 		mux.GET("/saved/:hash", a.ExamplesHandler.GetSaved)
 		mux.POST("/saved/", a.ExamplesHandler.PostSaved)
 		mux.GET("/og/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Values))
