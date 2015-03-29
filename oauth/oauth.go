@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -16,8 +15,8 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
+	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
-	"github.com/daaku/rell/view"
 )
 
 const (
@@ -39,37 +38,33 @@ type Handler struct {
 	BrowserID     *browserid.Cookie
 }
 
-func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	c, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	if !c.IsEmployee {
-		view.Error(w, r, a.Static, errEmployeesOnly)
-		return
+		return errEmployeesOnly
 	}
 
 	switch r.URL.Path {
 	case Path:
-		a.Start(w, r)
-		return
+		return a.Start(ctx, w, r)
 	case Path + resp:
-		a.Response(w, r)
-		return
+		return a.Response(ctx, w, r)
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
 	h.WriteResponse(w, r, &h.Script{
 		Inner: h.Unsafe("top.location='/'"),
 	})
+	return nil
 }
 
-func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	c, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	values := url.Values{}
 	values.Set("client_id", strconv.FormatUint(c.AppID, 10))
@@ -100,17 +95,16 @@ func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
 			Inner: h.Unsafe(fmt.Sprintf("top.location=%s", b)),
 		})
 	}
+	return nil
 }
 
-func (a *Handler) Response(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	c, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	if r.FormValue("state") != a.state(w, r) {
-		view.Error(w, r, a.Static, errInvalidState)
-		return
+		return errInvalidState
 	}
 
 	values := url.Values{}
@@ -129,24 +123,22 @@ func (a *Handler) Response(w http.ResponseWriter, r *http.Request) {
 
 	req, err := http.NewRequest("GET", atURL.String(), nil)
 	if err != nil {
-		log.Printf("oauth.Response error: %s", err)
-		view.Error(w, r, a.Static, errOAuthFail)
+		return errOAuthFail
 	}
 	res, err := a.HttpTransport.RoundTrip(req)
 	if err != nil {
-		log.Printf("oauth.Response error: %s", err)
-		view.Error(w, r, a.Static, errOAuthFail)
+		return err
 	}
 	defer res.Body.Close()
 	bd, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Printf("oauth.Response error: %s", err)
-		view.Error(w, r, a.Static, errOAuthFail)
+		return err
 	}
 	h.WriteResponse(w, r, &h.Frag{
 		&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
 		h.String(string(bd)),
 	})
+	return nil
 }
 
 func (a *Handler) state(w http.ResponseWriter, r *http.Request) string {

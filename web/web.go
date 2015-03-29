@@ -69,7 +69,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		mux.GET("/og/*rest", a.OgHandler.Values)
 		mux.GET("/rog/*rest", a.OgHandler.Base64)
 		mux.GET("/rog-redirect/*rest", a.OgHandler.Redirect)
-		mux.GET(oauth.Path+"*rest", ctxmux.HTTPHandler(a.OauthHandler))
+		mux.GET(oauth.Path+"*rest", a.OauthHandler.Handler)
 
 		if a.AdminHandler.Path != "" {
 			adminPath := path.Join("/", a.AdminHandler.Path) + "/*rest"
