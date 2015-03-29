@@ -23,9 +23,9 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/sortutil"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/counting"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/stackerr"
-	netcontext "github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
-	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/examples"
+	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
 )
 
@@ -46,23 +46,23 @@ var (
 		"sb":             "Sandbox",
 	}
 	viewModeOptions = map[string]string{
-		context.Website: "Website",
-		context.PageTab: "Page Tab",
-		context.Canvas:  "Canvas",
+		rellenv.Website: "Website",
+		rellenv.PageTab: "Page Tab",
+		rellenv.Canvas:  "Canvas",
 	}
 	errTokenMismatch = errcode.New(http.StatusForbidden, "Token mismatch.")
 	errSaveDisabled  = errcode.New(http.StatusForbidden, "Save disallowed.")
 )
 
 type Handler struct {
-	ContextParser *context.Parser
+	ContextParser *rellenv.Parser
 	ExampleStore  *examples.Store
 	Static        *static.Handler
 	Xsrf          *xsrf.Provider
 }
 
 // Parse the Context and an Example.
-func (h *Handler) parse(r *http.Request) (*context.Context, *examples.Example, error) {
+func (h *Handler) parse(r *http.Request) (*rellenv.Context, *examples.Example, error) {
 	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
 		return nil, nil, err
@@ -87,7 +87,7 @@ func (a *Handler) List(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (a *Handler) PostSaved(ctx netcontext.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	c, err := a.ContextParser.FromRequest(r)
 	if err != nil {
 		return err
@@ -115,7 +115,7 @@ func (a *Handler) PostSaved(ctx netcontext.Context, w http.ResponseWriter, r *ht
 	return nil
 }
 
-func (a *Handler) GetSaved(ctx netcontext.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	context, example, err := a.parse(r)
 	if err != nil {
 		return err
@@ -152,8 +152,8 @@ func (a *Handler) Example(w http.ResponseWriter, r *http.Request) {
 type page struct {
 	Writer        http.ResponseWriter
 	Request       *http.Request
-	ContextParser *context.Parser
-	Context       *context.Context
+	ContextParser *rellenv.Parser
+	Context       *rellenv.Context
 	Static        *static.Handler
 	Example       *examples.Example
 	Xsrf          *xsrf.Provider
@@ -219,7 +219,7 @@ func (p *page) HTML() (h.HTML, error) {
 }
 
 type editorTop struct {
-	Context *context.Context
+	Context *rellenv.Context
 	Example *examples.Example
 }
 
@@ -284,8 +284,8 @@ func (e *editorTop) HTML() (h.HTML, error) {
 }
 
 type editorArea struct {
-	ContextParser *context.Parser
-	Context       *context.Context
+	ContextParser *rellenv.Parser
+	Context       *rellenv.Context
 	Example       *examples.Example
 }
 
@@ -305,7 +305,7 @@ func (e *editorArea) HTML() (h.HTML, error) {
 }
 
 type viewModeDropdown struct {
-	Context *context.Context
+	Context *rellenv.Context
 	Example *examples.Example
 }
 
@@ -335,21 +335,21 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 				Inner: &h.Frag{
 					&h.Li{
 						Inner: &h.A{
-							Inner:  h.String(viewModeOptions[context.Website]),
+							Inner:  h.String(viewModeOptions[rellenv.Website]),
 							Target: "_top",
 							HREF:   d.Context.URL(d.Example.URL).String(),
 						},
 					},
 					&h.Li{
 						Inner: &h.A{
-							Inner:  h.String(viewModeOptions[context.Canvas]),
+							Inner:  h.String(viewModeOptions[rellenv.Canvas]),
 							Target: "_top",
 							HREF:   d.Context.CanvasURL(d.Example.URL),
 						},
 					},
 					&h.Li{
 						Inner: &h.A{
-							Inner:  h.String(viewModeOptions[context.PageTab]),
+							Inner:  h.String(viewModeOptions[rellenv.PageTab]),
 							Target: "_top",
 							HREF:   d.Context.PageTabURL(d.Example.URL),
 						},
@@ -370,7 +370,7 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 }
 
 type editorBottom struct {
-	Context *context.Context
+	Context *rellenv.Context
 	Example *examples.Example
 }
 
@@ -464,7 +464,7 @@ func (e *logContainer) HTML() (h.HTML, error) {
 }
 
 type contextEditor struct {
-	Context *context.Context
+	Context *rellenv.Context
 	Example *examples.Example
 }
 
@@ -522,7 +522,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 }
 
 type examplesList struct {
-	Context *context.Context
+	Context *rellenv.Context
 	DB      *examples.DB
 	Static  *static.Handler
 }
@@ -559,7 +559,7 @@ func (l *examplesList) HTML() (h.HTML, error) {
 }
 
 type exampleCategory struct {
-	Context  *context.Context
+	Context  *rellenv.Context
 	Category *examples.Category
 }
 
@@ -580,7 +580,7 @@ func (c *exampleCategory) HTML() (h.HTML, error) {
 }
 
 type envSelector struct {
-	Context *context.Context
+	Context *rellenv.Context
 	Example *examples.Example
 }
 
@@ -641,8 +641,8 @@ func (e *envSelector) HTML() (h.HTML, error) {
 }
 
 type exampleContent struct {
-	ContextParser *context.Parser
-	Context       *context.Context
+	ContextParser *rellenv.Parser
+	Context       *rellenv.Context
 	Example       *examples.Example
 }
 
@@ -696,7 +696,7 @@ func randString(length int) string {
 // Represents configuration for initializing the rell module. Sets up a couple
 // of globals.
 type JsInit struct {
-	Context *context.Context
+	Context *rellenv.Context
 	Example *examples.Example
 }
 

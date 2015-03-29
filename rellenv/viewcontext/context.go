@@ -6,14 +6,14 @@ import (
 
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.httpdev"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
-	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
 )
 
 var version string
 
 type Handler struct {
-	ContextParser *context.Parser
+	ContextParser *rellenv.Parser
 	Static        *static.Handler
 }
 

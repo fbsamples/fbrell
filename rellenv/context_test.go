@@ -1,4 +1,4 @@
-package context_test
+package rellenv_test
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/ensure"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/rellenv"
 )
 
 const (
@@ -29,8 +29,8 @@ func (f funcAppNSFetcher) Get(id uint64) string {
 	return f(id)
 }
 
-func defaultParser() *context.Parser {
-	return &context.Parser{
+func defaultParser() *rellenv.Parser {
+	return &rellenv.Parser{
 		EmpChecker:   funcEmpChecker(func(uint64) bool { return true }),
 		AppNSFetcher: funcAppNSFetcher(func(uint64) string { return defaultAppNS }),
 		App:          fbapp.New(defaultFacebookAppID, "", ""),
@@ -38,7 +38,7 @@ func defaultParser() *context.Parser {
 	}
 }
 
-func fromValues(t *testing.T, values url.Values) *context.Context {
+func fromValues(t *testing.T, values url.Values) *rellenv.Context {
 	req, err := http.NewRequest(
 		"GET",
 		"http://www.fbrell.com/?"+values.Encode(),
@@ -85,7 +85,7 @@ func TestComplex(t *testing.T) {
 	values.Add("status", "1")
 	values.Add("server", "beta")
 	values.Add("locale", "en_PI")
-	expected := &context.Context{
+	expected := &rellenv.Context{
 		Status: true,
 		Env:    "beta",
 		Locale: "en_PI",

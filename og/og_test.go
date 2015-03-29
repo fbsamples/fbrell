@@ -8,10 +8,10 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/rellenv"
 )
 
-var defaultContext = (&context.Parser{
+var defaultContext = (&rellenv.Parser{
 	App: fbapp.New(0, "", ""),
 }).Default()
 

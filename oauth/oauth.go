@@ -16,7 +16,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/context"
+	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
 )
 
@@ -32,7 +32,7 @@ var (
 )
 
 type Handler struct {
-	ContextParser *context.Parser
+	ContextParser *rellenv.Parser
 	HttpTransport http.RoundTripper
 	Static        *static.Handler
 	App           fbapp.App
@@ -77,7 +77,7 @@ func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
 		values.Set("scope", scope)
 	}
 
-	if c.ViewMode == context.Website {
+	if c.ViewMode == rellenv.Website {
 		values.Set("redirect_uri", redirectURI(c))
 		values.Set("state", a.state(w, r))
 	} else {
@@ -92,7 +92,7 @@ func (a *Handler) Start(w http.ResponseWriter, r *http.Request) {
 		Values:    values,
 	}
 
-	if c.ViewMode == context.Website {
+	if c.ViewMode == rellenv.Website {
 		http.Redirect(w, r, dialogURL.String(), 302)
 	} else {
 		b, _ := json.Marshal(dialogURL.String())
@@ -153,6 +153,6 @@ func (a *Handler) state(w http.ResponseWriter, r *http.Request) string {
 	return a.BrowserID.Get(w, r)[:10]
 }
 
-func redirectURI(c *context.Context) string {
+func redirectURI(c *rellenv.Context) string {
 	return c.AbsoluteURL(Path + resp).String()
 }

@@ -25,15 +25,15 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/parse"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/golang/groupcache/lru"
 	"github.com/daaku/rell/adminweb"
-	"github.com/daaku/rell/context"
-	"github.com/daaku/rell/context/appns"
-	"github.com/daaku/rell/context/empcheck"
-	"github.com/daaku/rell/context/viewcontext"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/rell/oauth"
 	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/og/viewog"
+	"github.com/daaku/rell/rellenv"
+	"github.com/daaku/rell/rellenv/appns"
+	"github.com/daaku/rell/rellenv/empcheck"
+	"github.com/daaku/rell/rellenv/viewcontext"
 	"github.com/daaku/rell/web"
 )
 
@@ -139,7 +139,7 @@ func main() {
 		DB:    examples.MustMakeDB(rice.MustFindBox("examples/db")),
 		Cache: lruCache,
 	}
-	contextParser := &context.Parser{
+	contextParser := &rellenv.Parser{
 		App:                 fbApp,
 		EmpChecker:          empChecker,
 		AppNSFetcher:        appNSFetcher,

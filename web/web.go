@@ -13,13 +13,13 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
-	netcontext "github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
+	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/adminweb"
-	"github.com/daaku/rell/context"
-	"github.com/daaku/rell/context/viewcontext"
 	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/rell/oauth"
 	"github.com/daaku/rell/og/viewog"
+	"github.com/daaku/rell/rellenv"
+	"github.com/daaku/rell/rellenv/viewcontext"
 	"github.com/daaku/rell/view"
 )
 
@@ -28,7 +28,7 @@ type Handler struct {
 	Logger              *log.Logger
 	App                 fbapp.App
 	SignedRequestMaxAge time.Duration
-	ContextParser       *context.Parser
+	ContextParser       *rellenv.Parser
 
 	ContextHandler  *viewcontext.Handler
 	ExamplesHandler *viewexamples.Handler
@@ -88,7 +88,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.mux.ServeHTTP(w, r)
 }
 
-func (a *Handler) handleError(ctx netcontext.Context, w http.ResponseWriter, r *http.Request, err error) {
+func (a *Handler) handleError(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
 	a.Logger.Println(err)
 	view.Error(w, r, a.Static, err)
 }

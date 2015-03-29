@@ -11,13 +11,13 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h.js.fb"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
-	"github.com/daaku/rell/context"
 	"github.com/daaku/rell/og"
+	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
 )
 
 type Handler struct {
-	ContextParser *context.Parser
+	ContextParser *rellenv.Parser
 	Static        *static.Handler
 	ObjectParser  *og.Parser
 }
@@ -154,7 +154,7 @@ func renderMetaTable(o *og.Object) h.HTML {
 }
 
 // Render a document for the Object.
-func renderObject(context *context.Context, s *static.Handler, o *og.Object) h.HTML {
+func renderObject(context *rellenv.Context, s *static.Handler, o *og.Object) h.HTML {
 	var title, header h.HTML
 	if o.Title() != "" {
 		title = &h.Title{h.String(o.Title())}

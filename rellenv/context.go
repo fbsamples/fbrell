@@ -1,7 +1,7 @@
 // Package context implements the shared context for a Rell
 // request, including the parsed global state associated with URLs and
 // the SDK version.
-package context
+package rellenv
 
 import (
 	"encoding/json"
