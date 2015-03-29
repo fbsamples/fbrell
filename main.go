@@ -152,7 +152,6 @@ func main() {
 		Logger: logger,
 		ContextHandler: &viewcontext.Handler{
 			ContextParser: contextParser,
-			Static:        static,
 		},
 		ExamplesHandler: &viewexamples.Handler{
 			ContextParser: contextParser,
