@@ -114,14 +114,6 @@
 			"Rev": "f7e073f8584bf287827d243aa73abb3498361ec5"
 		},
 		{
-			"ImportPath": "github.com/facebookgo/grace/gracehttp",
-			"Rev": "1b0609c25d1f0d6aefdd5404eaa710a16daca9d6"
-		},
-		{
-			"ImportPath": "github.com/facebookgo/grace/gracenet",
-			"Rev": "1b0609c25d1f0d6aefdd5404eaa710a16daca9d6"
-		},
-		{
 			"ImportPath": "github.com/facebookgo/httpcontrol",
 			"Rev": "bbe22583cc42d4a142ff7d0dd901e7304ac30599"
 		},

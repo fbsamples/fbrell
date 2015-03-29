@@ -20,8 +20,8 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapi"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/flagenv"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/grace/gracehttp"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/httpcontrol"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/httpdown"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/parse"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/golang/groupcache/lru"
 	"github.com/daaku/rell/adminweb"
@@ -174,8 +174,9 @@ func main() {
 		SignedRequestMaxAge: signedRequestMaxAge,
 	}
 
-	err := gracehttp.Serve(
+	err := httpdown.ListenAndServe(
 		&http.Server{Addr: *addr, Handler: webHandler},
+		&httpdown.HTTP{},
 	)
 	if err != nil {
 		logger.Fatal(err)
