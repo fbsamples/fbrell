@@ -145,6 +145,6 @@ func (a *Handler) state(w http.ResponseWriter, r *http.Request) string {
 	return a.BrowserID.Get(w, r)[:10]
 }
 
-func redirectURI(c *rellenv.Context) string {
+func redirectURI(c *rellenv.Env) string {
 	return c.AbsoluteURL(Path + resp).String()
 }

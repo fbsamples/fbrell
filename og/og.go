@@ -28,7 +28,7 @@ type Pair struct {
 // An ordered list of Pairs representing a raw Object.
 type Object struct {
 	Pairs        []Pair
-	context      *rellenv.Context
+	context      *rellenv.Env
 	static       *static.Handler
 	skipGenerate []string
 }
@@ -88,7 +88,7 @@ type Parser struct {
 }
 
 // Create a new Object from Base64 JSON encoded data.
-func (p *Parser) FromBase64(context *rellenv.Context, b64 string) (*Object, error) {
+func (p *Parser) FromBase64(context *rellenv.Env, b64 string) (*Object, error) {
 	jsonBytes, err := base64.URLEncoding.DecodeString(fixPadding(b64))
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -139,7 +139,7 @@ func (p *Parser) FromBase64(context *rellenv.Context, b64 string) (*Object, erro
 }
 
 // Create a new Object from query string data.
-func (p *Parser) FromValues(context *rellenv.Context, values url.Values) (*Object, error) {
+func (p *Parser) FromValues(context *rellenv.Env, values url.Values) (*Object, error) {
 	object := &Object{
 		context: context,
 		static:  p.Static,

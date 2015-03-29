@@ -145,7 +145,7 @@ func renderMetaTable(o *og.Object) h.HTML {
 }
 
 // Render a document for the Object.
-func renderObject(context *rellenv.Context, s *static.Handler, o *og.Object) h.HTML {
+func renderObject(context *rellenv.Env, s *static.Handler, o *og.Object) h.HTML {
 	var title, header h.HTML
 	if o.Title() != "" {
 		title = &h.Title{h.String(o.Title())}

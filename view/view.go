@@ -33,7 +33,7 @@ var DefaultPageConfig = &PageConfig{
 // A minimal standard page with no visible body.
 type Page struct {
 	Config  *PageConfig
-	Context *rellenv.Context
+	Context *rellenv.Env
 	Static  *static.Handler
 	Class   string
 	Head    h.HTML

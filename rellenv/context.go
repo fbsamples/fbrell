@@ -34,7 +34,7 @@ const (
 
 // The Context defined by the environment and as configured by the
 // user via the URL.
-type Context struct {
+type Env struct {
 	AppID                uint64              `schema:"appid"`
 	defaultAppID         uint64              `schema:"-"`
 	AppNamespace         string              `schema:"-"`
@@ -53,7 +53,7 @@ type Context struct {
 }
 
 // Defaults for the context.
-var defaultContext = &Context{
+var defaultContext = &Env{
 	Level:                "debug",
 	Locale:               "en_US",
 	Status:               true,
@@ -84,7 +84,7 @@ type Parser struct {
 }
 
 // Create a default context.
-func (p *Parser) Default() *Context {
+func (p *Parser) Default() *Env {
 	context := defaultContext.Copy()
 	context.AppID = p.App.ID()
 	context.defaultAppID = p.App.ID()
@@ -92,7 +92,7 @@ func (p *Parser) Default() *Context {
 }
 
 // Create a context from a HTTP request.
-func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
+func (p *Parser) FromRequest(r *http.Request) (*Env, error) {
 	err := r.ParseMultipartForm(defaultMaxMemory)
 	if err != nil && err != http.ErrNotMultipart {
 		return nil, err
@@ -140,13 +140,13 @@ func (p *Parser) FromRequest(r *http.Request) (*Context, error) {
 }
 
 // Provides a duplicate copy.
-func (c *Context) Copy() *Context {
+func (c *Env) Copy() *Env {
 	context := *c
 	return &context
 }
 
 // Get the URL for the JS SDK.
-func (c *Context) SdkURL() string {
+func (c *Env) SdkURL() string {
 	server := "connect.facebook.net"
 	if c.Env != "" {
 		server = fburl.Hostname("static", c.Env) + "/assets.php"
@@ -155,7 +155,7 @@ func (c *Context) SdkURL() string {
 }
 
 // Get the URL for loading this application in a Page Tab on Facebook.
-func (c *Context) PageTabURL(name string) string {
+func (c *Env) PageTabURL(name string) string {
 	values := url.Values{}
 	values.Set("sk", fmt.Sprintf("app_%d", c.AppID))
 	values.Set("app_data", appdata.Encode(c.URL(name)))
@@ -170,7 +170,7 @@ func (c *Context) PageTabURL(name string) string {
 }
 
 // Get the URL for loading this application in a Canvas page on Facebook.
-func (c *Context) CanvasURL(name string) string {
+func (c *Env) CanvasURL(name string) string {
 	var base = "/" + c.AppNamespace + "/"
 	if name == "" || name == "/" {
 		name = base
@@ -189,7 +189,7 @@ func (c *Context) CanvasURL(name string) string {
 }
 
 // Serialize the context back to URL values.
-func (c *Context) Values() url.Values {
+func (c *Env) Values() url.Values {
 	values := url.Values{}
 	if c.AppID != c.defaultAppID {
 		values.Set("appid", strconv.FormatUint(c.AppID, 10))
@@ -216,7 +216,7 @@ func (c *Context) Values() url.Values {
 }
 
 // Create a context aware URL for the given path.
-func (c *Context) URL(path string) *url.URL {
+func (c *Env) URL(path string) *url.URL {
 	return &url.URL{
 		Path:     path,
 		RawQuery: c.Values().Encode(),
@@ -224,7 +224,7 @@ func (c *Context) URL(path string) *url.URL {
 }
 
 // Create a context aware absolute URL for the given path.
-func (c *Context) AbsoluteURL(path string) *url.URL {
+func (c *Env) AbsoluteURL(path string) *url.URL {
 	u := c.URL(path)
 	u.Host = c.Host
 	u.Scheme = c.Scheme
@@ -232,7 +232,7 @@ func (c *Context) AbsoluteURL(path string) *url.URL {
 }
 
 // This will return a view aware URL and will always be absolute.
-func (c *Context) ViewURL(path string) string {
+func (c *Env) ViewURL(path string) string {
 	switch c.ViewMode {
 	case Canvas:
 		return c.CanvasURL(path)
@@ -244,7 +244,7 @@ func (c *Context) ViewURL(path string) string {
 }
 
 // JSON representation of Context.
-func (c *Context) MarshalJSON() ([]byte, error) {
+func (c *Env) MarshalJSON() ([]byte, error) {
 	data := map[string]interface{}{
 		"appID":                strconv.FormatUint(c.AppID, 10),
 		"level":                c.Level,

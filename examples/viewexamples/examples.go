@@ -62,7 +62,7 @@ type Handler struct {
 }
 
 // Parse the Context and an Example.
-func (h *Handler) parse(r *http.Request) (*rellenv.Context, *examples.Example, error) {
+func (h *Handler) parse(r *http.Request) (*rellenv.Env, *examples.Example, error) {
 	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
 		return nil, nil, err
@@ -153,7 +153,7 @@ type page struct {
 	Writer        http.ResponseWriter
 	Request       *http.Request
 	ContextParser *rellenv.Parser
-	Context       *rellenv.Context
+	Context       *rellenv.Env
 	Static        *static.Handler
 	Example       *examples.Example
 	Xsrf          *xsrf.Provider
@@ -219,7 +219,7 @@ func (p *page) HTML() (h.HTML, error) {
 }
 
 type editorTop struct {
-	Context *rellenv.Context
+	Context *rellenv.Env
 	Example *examples.Example
 }
 
@@ -285,7 +285,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 
 type editorArea struct {
 	ContextParser *rellenv.Parser
-	Context       *rellenv.Context
+	Context       *rellenv.Env
 	Example       *examples.Example
 }
 
@@ -305,7 +305,7 @@ func (e *editorArea) HTML() (h.HTML, error) {
 }
 
 type viewModeDropdown struct {
-	Context *rellenv.Context
+	Context *rellenv.Env
 	Example *examples.Example
 }
 
@@ -370,7 +370,7 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 }
 
 type editorBottom struct {
-	Context *rellenv.Context
+	Context *rellenv.Env
 	Example *examples.Example
 }
 
@@ -464,7 +464,7 @@ func (e *logContainer) HTML() (h.HTML, error) {
 }
 
 type contextEditor struct {
-	Context *rellenv.Context
+	Context *rellenv.Env
 	Example *examples.Example
 }
 
@@ -522,7 +522,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 }
 
 type examplesList struct {
-	Context *rellenv.Context
+	Context *rellenv.Env
 	DB      *examples.DB
 	Static  *static.Handler
 }
@@ -559,7 +559,7 @@ func (l *examplesList) HTML() (h.HTML, error) {
 }
 
 type exampleCategory struct {
-	Context  *rellenv.Context
+	Context  *rellenv.Env
 	Category *examples.Category
 }
 
@@ -580,7 +580,7 @@ func (c *exampleCategory) HTML() (h.HTML, error) {
 }
 
 type envSelector struct {
-	Context *rellenv.Context
+	Context *rellenv.Env
 	Example *examples.Example
 }
 
@@ -642,7 +642,7 @@ func (e *envSelector) HTML() (h.HTML, error) {
 
 type exampleContent struct {
 	ContextParser *rellenv.Parser
-	Context       *rellenv.Context
+	Context       *rellenv.Env
 	Example       *examples.Example
 }
 
@@ -696,7 +696,7 @@ func randString(length int) string {
 // Represents configuration for initializing the rell module. Sets up a couple
 // of globals.
 type JsInit struct {
-	Context *rellenv.Context
+	Context *rellenv.Env
 	Example *examples.Example
 }
 

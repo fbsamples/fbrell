@@ -38,7 +38,7 @@ func defaultParser() *rellenv.Parser {
 	}
 }
 
-func fromValues(t *testing.T, values url.Values) *rellenv.Context {
+func fromValues(t *testing.T, values url.Values) *rellenv.Env {
 	req, err := http.NewRequest(
 		"GET",
 		"http://www.fbrell.com/?"+values.Encode(),
@@ -85,7 +85,7 @@ func TestComplex(t *testing.T) {
 	values.Add("status", "1")
 	values.Add("server", "beta")
 	values.Add("locale", "en_PI")
-	expected := &rellenv.Context{
+	expected := &rellenv.Env{
 		Status: true,
 		Env:    "beta",
 		Locale: "en_PI",
