@@ -173,12 +173,15 @@ func main() {
 		},
 		SignedRequestMaxAge: signedRequestMaxAge,
 	}
+	httpServer := &http.Server{
+		Addr:    *addr,
+		Handler: webHandler,
+	}
+	hdConfig := &httpdown.HTTP{
+		StopTimeout: 9 * time.Second, // heroku provides 10 seconds to terminate
+	}
 
-	err := httpdown.ListenAndServe(
-		&http.Server{Addr: *addr, Handler: webHandler},
-		&httpdown.HTTP{},
-	)
-	if err != nil {
+	if err := httpdown.ListenAndServe(httpServer, hdConfig); err != nil {
 		logger.Fatal(err)
 	}
 }
