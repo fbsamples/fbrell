@@ -139,35 +139,30 @@ func main() {
 		DB:    examples.MustMakeDB(rice.MustFindBox("examples/db")),
 		Cache: lruCache,
 	}
-	contextParser := &rellenv.Parser{
-		App:                 fbApp,
-		EmpChecker:          empChecker,
-		AppNSFetcher:        appNSFetcher,
-		SignedRequestMaxAge: signedRequestMaxAge,
-		Forwarded:           forwarded,
-	}
 	webHandler := &web.Handler{
 		Static: static,
 		App:    fbApp,
 		Logger: logger,
-		ContextHandler: &viewcontext.Handler{
-			ContextParser: contextParser,
+		EnvParser: &rellenv.Parser{
+			App:                 fbApp,
+			EmpChecker:          empChecker,
+			AppNSFetcher:        appNSFetcher,
+			SignedRequestMaxAge: signedRequestMaxAge,
+			Forwarded:           forwarded,
 		},
+		ContextHandler: &viewcontext.Handler{},
 		ExamplesHandler: &viewexamples.Handler{
-			ContextParser: contextParser,
-			ExampleStore:  exampleStore,
-			Xsrf:          xsrf,
-			Static:        static,
+			ExampleStore: exampleStore,
+			Xsrf:         xsrf,
+			Static:       static,
 		},
 		OgHandler: &viewog.Handler{
-			ContextParser: contextParser,
-			Static:        static,
-			ObjectParser:  &og.Parser{Static: static},
+			Static:       static,
+			ObjectParser: &og.Parser{Static: static},
 		},
 		OauthHandler: &oauth.Handler{
 			BrowserID:     bid,
 			App:           fbApp,
-			ContextParser: contextParser,
 			HttpTransport: httpTransport,
 			Static:        static,
 		},

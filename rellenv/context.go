@@ -5,6 +5,7 @@ package rellenv
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -19,6 +20,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/gorilla/schema"
+	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
 var envRegexp = regexp.MustCompile(`^[a-zA-Z0-9-_.]*$`)
@@ -258,4 +260,24 @@ func (c *Env) MarshalJSON() ([]byte, error) {
 		data["isEmployee"] = true
 	}
 	return json.Marshal(data)
+}
+
+type contextEnvKeyT int
+
+var contextEnvKey = contextEnvKeyT(1)
+
+var errEnvNotFound = errors.New("rellenv: Env not found in Context")
+
+// FromContext retrieves the Env from the Context. If one isn't found, an error
+// is returned.
+func FromContext(ctx context.Context) (*Env, error) {
+	if e, ok := ctx.Value(contextEnvKey).(*Env); ok {
+		return e, nil
+	}
+	return nil, errEnvNotFound
+}
+
+// WithEnv adds the given env to the context.
+func WithEnv(ctx context.Context, env *Env) context.Context {
+	return context.WithValue(ctx, contextEnvKey, env)
 }

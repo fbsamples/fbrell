@@ -55,15 +55,14 @@ var (
 )
 
 type Handler struct {
-	ContextParser *rellenv.Parser
-	ExampleStore  *examples.Store
-	Static        *static.Handler
-	Xsrf          *xsrf.Provider
+	ExampleStore *examples.Store
+	Static       *static.Handler
+	Xsrf         *xsrf.Provider
 }
 
 // Parse the Context and an Example.
-func (h *Handler) parse(r *http.Request) (*rellenv.Env, *examples.Example, error) {
-	context, err := h.ContextParser.FromRequest(r)
+func (h *Handler) parse(ctx context.Context, r *http.Request) (*rellenv.Env, *examples.Example, error) {
+	context, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,7 +74,7 @@ func (h *Handler) parse(r *http.Request) (*rellenv.Env, *examples.Example, error
 }
 
 func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, err := a.ContextParser.FromRequest(r)
+	context, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -88,7 +87,7 @@ func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 }
 
 func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c, err := a.ContextParser.FromRequest(r)
+	c, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -116,47 +115,44 @@ func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.
 }
 
 func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, example, err := a.parse(r)
+	context, example, err := a.parse(ctx, r)
 	if err != nil {
 		return err
 	}
 	h.WriteResponse(w, r, &page{
-		Writer:        w,
-		Request:       r,
-		ContextParser: a.ContextParser,
-		Context:       context,
-		Static:        a.Static,
-		Example:       example,
-		Xsrf:          a.Xsrf,
+		Writer:  w,
+		Request: r,
+		Context: context,
+		Static:  a.Static,
+		Example: example,
+		Xsrf:    a.Xsrf,
 	})
 	return nil
 }
 
 func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, example, err := a.parse(r)
+	context, example, err := a.parse(ctx, r)
 	if err != nil {
 		return err
 	}
 	h.WriteResponse(w, r, &page{
-		Writer:        w,
-		Request:       r,
-		ContextParser: a.ContextParser,
-		Context:       context,
-		Static:        a.Static,
-		Example:       example,
-		Xsrf:          a.Xsrf,
+		Writer:  w,
+		Request: r,
+		Context: context,
+		Static:  a.Static,
+		Example: example,
+		Xsrf:    a.Xsrf,
 	})
 	return nil
 }
 
 type page struct {
-	Writer        http.ResponseWriter
-	Request       *http.Request
-	ContextParser *rellenv.Parser
-	Context       *rellenv.Env
-	Static        *static.Handler
-	Example       *examples.Example
-	Xsrf          *xsrf.Provider
+	Writer  http.ResponseWriter
+	Request *http.Request
+	Context *rellenv.Env
+	Static  *static.Handler
+	Example *examples.Example
+	Xsrf    *xsrf.Provider
 }
 
 func (p *page) HTML() (h.HTML, error) {
@@ -184,9 +180,8 @@ func (p *page) HTML() (h.HTML, error) {
 									Inner: &h.Frag{
 										&editorTop{Context: p.Context, Example: p.Example},
 										&editorArea{
-											ContextParser: p.ContextParser,
-											Context:       p.Context,
-											Example:       p.Example,
+											Context: p.Context,
+											Example: p.Example,
 										},
 										&editorBottom{Context: p.Context, Example: p.Example},
 									},
@@ -284,9 +279,8 @@ func (e *editorTop) HTML() (h.HTML, error) {
 }
 
 type editorArea struct {
-	ContextParser *rellenv.Parser
-	Context       *rellenv.Env
-	Example       *examples.Example
+	Context *rellenv.Env
+	Example *examples.Example
 }
 
 func (e *editorArea) HTML() (h.HTML, error) {
@@ -296,9 +290,8 @@ func (e *editorArea) HTML() (h.HTML, error) {
 			ID:   "jscode",
 			Name: "code",
 			Inner: &exampleContent{
-				ContextParser: e.ContextParser,
-				Context:       e.Context,
-				Example:       e.Example,
+				Context: e.Context,
+				Example: e.Example,
 			},
 		},
 	}, nil
@@ -641,9 +634,8 @@ func (e *envSelector) HTML() (h.HTML, error) {
 }
 
 type exampleContent struct {
-	ContextParser *rellenv.Parser
-	Context       *rellenv.Env
-	Example       *examples.Example
+	Context *rellenv.Env
+	Example *examples.Example
 }
 
 func (c *exampleContent) HTML() (h.HTML, error) {
@@ -673,7 +665,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 		}{
 			Rand:     randString(10),
 			RellFBNS: c.Context.AppNamespace,
-			RellURL:  c.ContextParser.Default().AbsoluteURL("/").String(),
+			RellURL:  c.Context.AbsoluteURL("/").String(),
 			WwwURL:   wwwURL.String(),
 		})
 	if err != nil {

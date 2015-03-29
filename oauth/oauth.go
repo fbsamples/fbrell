@@ -31,7 +31,6 @@ var (
 )
 
 type Handler struct {
-	ContextParser *rellenv.Parser
 	HttpTransport http.RoundTripper
 	Static        *static.Handler
 	App           fbapp.App
@@ -39,7 +38,7 @@ type Handler struct {
 }
 
 func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c, err := a.ContextParser.FromRequest(r)
+	c, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -62,7 +61,7 @@ func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Re
 }
 
 func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c, err := a.ContextParser.FromRequest(r)
+	c, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -99,7 +98,7 @@ func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Requ
 }
 
 func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c, err := a.ContextParser.FromRequest(r)
+	c, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}

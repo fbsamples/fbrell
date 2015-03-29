@@ -28,7 +28,7 @@ type Handler struct {
 	Logger              *log.Logger
 	App                 fbapp.App
 	SignedRequestMaxAge time.Duration
-	ContextParser       *rellenv.Parser
+	EnvParser           *rellenv.Parser
 
 	ContextHandler  *viewcontext.Handler
 	ExamplesHandler *viewexamples.Handler
@@ -52,6 +52,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			ctxmux.MuxErrorHandler(a.handleError),
 			ctxmux.MuxNotFoundHandler(a.ExamplesHandler.Example),
 			ctxmux.MuxRedirectTrailingSlash,
+			ctxmux.MuxContextPipe(a.envContextPipe),
 		)
 		if err != nil {
 			panic(err)
@@ -92,4 +93,12 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (a *Handler) handleError(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
 	a.Logger.Println(err)
 	view.Error(w, r, a.Static, err)
+}
+
+func (a *Handler) envContextPipe(ctx context.Context, r *http.Request) (context.Context, error) {
+	env, err := a.EnvParser.FromRequest(r)
+	if err != nil {
+		return ctx, err
+	}
+	return rellenv.WithEnv(ctx, env), nil
 }

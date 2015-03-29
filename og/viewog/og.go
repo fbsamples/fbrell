@@ -18,14 +18,13 @@ import (
 )
 
 type Handler struct {
-	ContextParser *rellenv.Parser
-	Static        *static.Handler
-	ObjectParser  *og.Parser
+	Static       *static.Handler
+	ObjectParser *og.Parser
 }
 
 // Handles /og/ requests.
 func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, err := a.ContextParser.FromRequest(r)
+	context, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -50,7 +49,7 @@ func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Req
 
 // Handles /rog/* requests.
 func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, err := a.ContextParser.FromRequest(r)
+	context, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -80,7 +79,7 @@ func (h *Handler) Redirect(ctx context.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		return fmt.Errorf("Invalid count: %s", parts[3])
 	}
-	context, err := h.ContextParser.FromRequest(r)
+	context, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
