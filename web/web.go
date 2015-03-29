@@ -50,6 +50,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		mux, err := ctxmux.New(
 			ctxmux.MuxErrorHandler(a.handleError),
+			ctxmux.MuxNotFoundHandler(ctxmux.HTTPHandlerFunc(a.ExamplesHandler.Example)),
 		)
 		if err != nil {
 			panic(err)
@@ -65,7 +66,6 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		mux.GET("/examples/", ctxmux.HTTPHandlerFunc(a.ExamplesHandler.List))
 		mux.GET("/saved/:hash", a.ExamplesHandler.GetSaved)
 		mux.POST("/saved/", a.ExamplesHandler.PostSaved)
-		mux.GET("/", ctxmux.HTTPHandlerFunc(a.ExamplesHandler.Example))
 		mux.GET("/og/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Values))
 		mux.GET("/rog/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Base64))
 		mux.GET("/rog-redirect/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Redirect))
