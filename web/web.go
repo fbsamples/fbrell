@@ -66,9 +66,9 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		mux.GET("/examples/", a.ExamplesHandler.List)
 		mux.GET("/saved/:hash", a.ExamplesHandler.GetSaved)
 		mux.POST("/saved/", a.ExamplesHandler.PostSaved)
-		mux.GET("/og/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Values))
-		mux.GET("/rog/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Base64))
-		mux.GET("/rog-redirect/*rest", ctxmux.HTTPHandlerFunc(a.OgHandler.Redirect))
+		mux.GET("/og/*rest", a.OgHandler.Values)
+		mux.GET("/rog/*rest", a.OgHandler.Base64)
+		mux.GET("/rog-redirect/*rest", a.OgHandler.Redirect)
 		mux.GET(oauth.Path+"*rest", ctxmux.HTTPHandler(a.OauthHandler))
 
 		if a.AdminHandler.Path != "" {

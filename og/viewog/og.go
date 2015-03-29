@@ -11,6 +11,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h.js.fb"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
+	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
@@ -23,18 +24,15 @@ type Handler struct {
 }
 
 // Handles /og/ requests.
-func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	values := r.URL.Query()
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) > 4 {
-		view.Error(w, r, a.Static, errcode.New(
-			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
-		return
+		return errcode.New(http.StatusNotFound, "Invalid URL: %s", r.URL.Path)
 	}
 	if len(parts) > 2 {
 		values.Set("og:type", parts[2])
@@ -44,64 +42,57 @@ func (a *Handler) Values(w http.ResponseWriter, r *http.Request) {
 	}
 	object, err := a.ObjectParser.FromValues(context, values)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	h.WriteResponse(w, r, renderObject(context, a.Static, object))
+	return nil
 }
 
 // Handles /rog/* requests.
-func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) {
+func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	context, err := a.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 3 {
-		view.Error(w, r, a.Static, errcode.New(
-			http.StatusNotFound, "Invalid URL: %s", r.URL.Path))
-		return
+		return errcode.New(http.StatusNotFound, "Invalid URL: %s", r.URL.Path)
 	}
 	object, err := a.ObjectParser.FromBase64(context, parts[2])
 	if err != nil {
-		view.Error(w, r, a.Static, err)
-		return
+		return err
 	}
 	h.WriteResponse(w, r, renderObject(context, a.Static, object))
+	return nil
 }
 
 // Handles /rog-redirect/ requests.
-func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Redirect(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 5 {
-		view.Error(w, r, h.Static, fmt.Errorf("Invalid URL: %s", r.URL.Path))
-		return
+		return fmt.Errorf("Invalid URL: %s", r.URL.Path)
 	}
 	status, err := strconv.Atoi(parts[2])
 	if err != nil || (status != 301 && status != 302) {
-		view.Error(w, r, h.Static, fmt.Errorf("Invalid status: %s", parts[2]))
-		return
+		return fmt.Errorf("Invalid status: %s", parts[2])
 	}
 	count, err := strconv.Atoi(parts[3])
 	if err != nil {
-		view.Error(w, r, h.Static, fmt.Errorf("Invalid count: %s", parts[3]))
-		return
+		return fmt.Errorf("Invalid count: %s", parts[3])
 	}
 	context, err := h.ContextParser.FromRequest(r)
 	if err != nil {
-		view.Error(w, r, h.Static, err)
-		return
+		return err
 	}
 	if count == 0 {
-		http.Redirect(
-			w, r, context.AbsoluteURL("/rog/"+parts[4]).String(), status)
+		http.Redirect(w, r, context.AbsoluteURL("/rog/"+parts[4]).String(), status)
 	} else {
 		count--
 		url := context.AbsoluteURL(fmt.Sprintf(
 			"/rog-redirect/%d/%d/%s", status, count, parts[4]))
 		http.Redirect(w, r, url.String(), status)
 	}
+	return nil
 }
 
 // Renders <meta> tags for object.
