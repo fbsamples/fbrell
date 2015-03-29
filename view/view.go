@@ -41,16 +41,6 @@ type Page struct {
 	Title   string
 }
 
-func (p *Page) viewport() h.HTML {
-	if p.Context != nil {
-		viewportContent := p.Context.Viewport()
-		if viewportContent != "" {
-			return &h.Meta{Name: "viewport", Content: viewportContent}
-		}
-	}
-	return nil
-}
-
 func (p *Page) config() *PageConfig {
 	if p.Config == nil {
 		return DefaultPageConfig
@@ -65,7 +55,7 @@ func (p *Page) HTML() (h.HTML, error) {
 			&h.Head{
 				Inner: &h.Frag{
 					&h.Meta{Charset: "utf-8"},
-					p.viewport(),
+					&h.Meta{Name: "viewport", Content: "width=device-width,initial-scale=1.0"},
 					&h.Title{
 						h.String(p.Title),
 						h.Unsafe(" &mdash; Facebook Read Eval Log Loop"),

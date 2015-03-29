@@ -30,10 +30,6 @@ const (
 	Website = "website"
 	Canvas  = "canvas"
 	PageTab = "page-tab"
-
-	// View Port
-	ViewportModeMobile = "mobile"
-	ViewportModeAuto   = ""
 )
 
 // The Context defined by the environment and as configured by the
@@ -52,7 +48,6 @@ type Context struct {
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
 	ViewMode             string              `schema:"view-mode"`
 	Module               string              `schema:"module"`
-	ViewportMode         string              `schema:"viewport-mode"`
 	IsEmployee           bool                `schema:"-"`
 	Init                 bool                `schema:"init"`
 }
@@ -66,7 +61,6 @@ var defaultContext = &Context{
 	Host:                 "www.fbrell.com",
 	Scheme:               "http",
 	ViewMode:             Website,
-	ViewportMode:         ViewportModeMobile,
 	Module:               "all",
 	Init:                 true,
 }
@@ -206,9 +200,6 @@ func (c *Context) Values() url.Values {
 	if c.Locale != defaultContext.Locale {
 		values.Set("locale", c.Locale)
 	}
-	if c.ViewportMode != defaultContext.ViewportMode {
-		values.Set("viewport-mode", c.ViewportMode)
-	}
 	if c.Module != defaultContext.Module {
 		values.Set("module", c.Module)
 	}
@@ -250,14 +241,6 @@ func (c *Context) ViewURL(path string) string {
 	default:
 		return c.AbsoluteURL(path).String()
 	}
-}
-
-// Context aware viewport for a customized mobile experience.
-func (c *Context) Viewport() string {
-	if c.ViewportMode == ViewportModeMobile {
-		return "width=device-width,initial-scale=1.0"
-	}
-	return ""
 }
 
 // JSON representation of Context.
