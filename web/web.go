@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/daaku/ctxerr"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/ctxerr"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/ctxmux"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.httpgzip"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/appdata"

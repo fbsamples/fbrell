@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/daaku/ctxerr"
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/ctxerr"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.fburl"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/fbsr"

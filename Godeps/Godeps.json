@@ -10,6 +10,10 @@
 			"Rev": "b4a18af231435326dd7995d2dd0f3ee31b81f212"
 		},
 		{
+			"ImportPath": "github.com/daaku/ctxerr",
+			"Rev": "c2922c2479ef5fcbc998b1df11d23258b2dd4eca"
+		},
+		{
 			"ImportPath": "github.com/daaku/ctxmux",
 			"Rev": "554fb152dca8554a6b44fdd2e586a62263a6260b"
 		},
