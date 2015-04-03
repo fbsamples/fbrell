@@ -39,11 +39,7 @@ type Handler struct {
 }
 
 func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c, err := rellenv.FromContext(ctx)
-	if err != nil {
-		return err
-	}
-	if !c.IsEmployee {
+	if !rellenv.IsEmployee(ctx) {
 		return ctxerr.Wrap(ctx, errEmployeesOnly)
 	}
 

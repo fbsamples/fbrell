@@ -91,7 +91,7 @@ func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.
 	if err != nil {
 		return err
 	}
-	if !c.IsEmployee {
+	if !rellenv.IsEmployee(ctx) {
 		return ctxerr.Wrap(ctx, errSaveDisabled)
 	}
 	if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
@@ -122,6 +122,7 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 	h.WriteResponse(w, r, &page{
 		Writer:  w,
 		Request: r,
+		Context: ctx,
 		Env:     context,
 		Static:  a.Static,
 		Example: example,
@@ -138,6 +139,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 	h.WriteResponse(w, r, &page{
 		Writer:  w,
 		Request: r,
+		Context: ctx,
 		Env:     context,
 		Static:  a.Static,
 		Example: example,
@@ -149,6 +151,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 type page struct {
 	Writer  http.ResponseWriter
 	Request *http.Request
+	Context context.Context
 	Env     *rellenv.Env
 	Static  *static.Handler
 	Example *examples.Example
@@ -177,18 +180,30 @@ func (p *page) HTML() (h.HTML, error) {
 								&h.Div{
 									Class: "span8",
 									Inner: &h.Frag{
-										&editorTop{Env: p.Env, Example: p.Example},
+										&editorTop{
+											Context: p.Context,
+											Env:     p.Env,
+											Example: p.Example,
+										},
 										&editorArea{
 											Env:     p.Env,
 											Example: p.Example,
 										},
-										&editorBottom{Env: p.Env, Example: p.Example},
+										&editorBottom{
+											Context: p.Context,
+											Env:     p.Env,
+											Example: p.Example,
+										},
 									},
 								},
 								&h.Div{
 									Class: "span4",
 									Inner: &h.Frag{
-										&contextEditor{Env: p.Env, Example: p.Example},
+										&contextEditor{
+											Context: p.Context,
+											Env:     p.Env,
+											Example: p.Example,
+										},
 										&logContainer{},
 									},
 								},
@@ -213,6 +228,7 @@ func (p *page) HTML() (h.HTML, error) {
 }
 
 type editorTop struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
@@ -245,7 +261,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 		},
 	}
 
-	if e.Env.IsEmployee {
+	if rellenv.IsEmployee(e.Context) {
 		return &h.Div{
 			Class: "row-fluid form-inline",
 			Inner: &h.Frag{
@@ -258,6 +274,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 					Inner: &h.Div{
 						Class: "pull-right",
 						Inner: &envSelector{
+							Context: e.Context,
 							Env:     e.Env,
 							Example: e.Example,
 						},
@@ -362,6 +379,7 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 }
 
 type editorBottom struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
@@ -385,7 +403,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 		}
 	}
 	var saveButton h.HTML
-	if e.Env.IsEmployee {
+	if rellenv.IsEmployee(e.Context) {
 		saveButton = &h.Frag{
 			h.String(" "),
 			&h.Div{
@@ -456,12 +474,13 @@ func (e *logContainer) HTML() (h.HTML, error) {
 }
 
 type contextEditor struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
 
 func (e *contextEditor) HTML() (h.HTML, error) {
-	if !e.Env.IsEmployee {
+	if rellenv.IsEmployee(e.Context) {
 		return h.HiddenInputs(e.Env.Values()), nil
 	}
 	return &h.Div{
@@ -571,12 +590,13 @@ func (c *exampleCategory) HTML() (h.HTML, error) {
 }
 
 type envSelector struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
 
 func (e *envSelector) HTML() (h.HTML, error) {
-	if !e.Env.IsEmployee {
+	if rellenv.IsEmployee(e.Context) {
 		return nil, nil
 	}
 	frag := &h.Frag{

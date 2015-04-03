@@ -51,7 +51,7 @@ type Env struct {
 	SignedRequest        *fbsr.SignedRequest `schema:"-"`
 	ViewMode             string              `schema:"view-mode"`
 	Module               string              `schema:"module"`
-	IsEmployee           bool                `schema:"-"`
+	isEmployee           bool                `schema:"-"`
 	Init                 bool                `schema:"init"`
 }
 
@@ -133,7 +133,7 @@ func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error)
 	context.Host = p.Forwarded.Host(r)
 	context.Scheme = p.Forwarded.Scheme(r)
 	if context.SignedRequest != nil && context.SignedRequest.UserID != 0 {
-		context.IsEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
+		context.isEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
 	}
 	context.AppNamespace = p.AppNSFetcher.Get(context.AppID)
 	if context.Env != "" && !envRegexp.MatchString(context.Env) {
@@ -257,7 +257,7 @@ func (c *Env) MarshalJSON() ([]byte, error) {
 		"viewMode":             c.ViewMode,
 		"init":                 c.Init,
 	}
-	if c.IsEmployee {
+	if c.isEmployee {
 		data["isEmployee"] = true
 	}
 	return json.Marshal(data)
@@ -286,7 +286,7 @@ func WithEnv(ctx context.Context, env *Env) context.Context {
 // IsEmployee returns true if the Context is known to be that of an employee.
 func IsEmployee(ctx context.Context) bool {
 	if ctx, err := FromContext(ctx); err != nil {
-		return ctx.IsEmployee
+		return ctx.isEmployee
 	}
 	return false
 }
