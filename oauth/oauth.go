@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/ctxerr"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.browserid"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.fburl"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
@@ -43,7 +44,7 @@ func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Re
 		return err
 	}
 	if !c.IsEmployee {
-		return errEmployeesOnly
+		return ctxerr.Wrap(ctx, errEmployeesOnly)
 	}
 
 	switch r.URL.Path {
@@ -103,7 +104,7 @@ func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.R
 		return err
 	}
 	if r.FormValue("state") != a.state(w, r) {
-		return errInvalidState
+		return ctxerr.Wrap(ctx, errInvalidState)
 	}
 
 	values := url.Values{}
@@ -122,16 +123,16 @@ func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.R
 
 	req, err := http.NewRequest("GET", atURL.String(), nil)
 	if err != nil {
-		return errOAuthFail
+		return ctxerr.Wrap(ctx, errOAuthFail)
 	}
 	res, err := a.HttpTransport.RoundTrip(req)
 	if err != nil {
-		return err
+		return ctxerr.Wrap(ctx, err)
 	}
 	defer res.Body.Close()
 	bd, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return err
+		return ctxerr.Wrap(ctx, err)
 	}
 	h.WriteResponse(w, r, &h.Frag{
 		&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
