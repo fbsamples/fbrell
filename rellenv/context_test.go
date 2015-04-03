@@ -10,6 +10,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/ensure"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/rellenv"
+	"golang.org/x/net/context"
 )
 
 const (
@@ -46,7 +47,7 @@ func fromValues(t *testing.T, values url.Values) *rellenv.Env {
 	if err != nil {
 		t.Fatalf("Failed to create request: %s", err)
 	}
-	ctx, err := defaultParser().FromRequest(req)
+	ctx, err := defaultParser().FromRequest(context.Background(), req)
 	if err != nil {
 		t.Fatalf("Failed to create context: %s", err)
 	}

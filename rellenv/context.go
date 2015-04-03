@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/daaku/ctxerr"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.fburl"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/fbsr"
@@ -94,10 +95,10 @@ func (p *Parser) Default() *Env {
 }
 
 // Create a context from a HTTP request.
-func (p *Parser) FromRequest(r *http.Request) (*Env, error) {
+func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error) {
 	err := r.ParseMultipartForm(defaultMaxMemory)
 	if err != nil && err != http.ErrNotMultipart {
-		return nil, err
+		return nil, ctxerr.Wrap(ctx, err)
 	}
 	if id := r.FormValue("client_id"); id != "" {
 		r.Form.Set("appid", id)
@@ -274,7 +275,7 @@ func FromContext(ctx context.Context) (*Env, error) {
 	if e, ok := ctx.Value(contextEnvKey).(*Env); ok {
 		return e, nil
 	}
-	return nil, errEnvNotFound
+	return nil, ctxerr.Wrap(ctx, errEnvNotFound)
 }
 
 // WithEnv adds the given env to the context.

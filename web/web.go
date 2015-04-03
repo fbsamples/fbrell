@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/daaku/ctxerr"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/ctxmux"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.httpgzip"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/appdata"
@@ -37,6 +38,7 @@ type Handler struct {
 	Static          *static.Handler
 	AdminHandler    *adminweb.Handler
 
+	ctx  context.Context
 	mux  http.Handler
 	once sync.Once
 }
@@ -86,20 +88,25 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		handler = httpgzip.NewHandler(handler)
 		a.mux = handler
+
+		a.ctx = context.Background()
+		a.ctx = ctxerr.WithConfig(a.ctx, ctxerr.Config{
+			StackMode:  ctxerr.StackModeMultiStack,
+			StringMode: ctxerr.StringModeNone,
+		})
 	})
 	a.mux.ServeHTTP(w, r)
 }
 
 func (a *Handler) handleError(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
-	a.Logger.Println(err)
+	a.Logger.Printf("Error at %s\n%s\n", r.URL, ctxerr.RichString(err))
 	view.Error(w, r, a.Static, err)
 }
 
 func (a *Handler) contextMaker(r *http.Request) (context.Context, error) {
-	ctx := context.Background()
-	env, err := a.EnvParser.FromRequest(r)
+	env, err := a.EnvParser.FromRequest(a.ctx, r)
 	if err != nil {
-		return ctx, err
+		return a.ctx, err
 	}
-	return rellenv.WithEnv(ctx, env), nil
+	return rellenv.WithEnv(a.ctx, env), nil
 }

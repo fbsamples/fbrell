@@ -2,7 +2,6 @@ package view
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
@@ -59,7 +58,6 @@ func Error(w http.ResponseWriter, r *http.Request, s *static.Handler, err error)
 		errCode, ok := err.(ErrorCode)
 		if !ok {
 			errCode = errcode.Add(500, err)
-			log.Printf("Error %d: %s %s %v", errCode.Code(), r.URL, err, err)
 		}
 		handler = errorCodeHandler{
 			Static: s,
