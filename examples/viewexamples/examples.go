@@ -489,7 +489,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 			&ui.TextInput{
 				Label:      h.String("Application ID"),
 				Name:       "appid",
-				Value:      e.Env.AppID,
+				Value:      rellenv.FbApp(e.Context).ID(),
 				InputClass: "input-medium",
 				Tooltip:    "Make sure the base domain in the application settings for the specified ID allows fbrell.com.",
 			},

@@ -9,6 +9,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/rellenv"
+	"golang.org/x/net/context"
 )
 
 var defaultContext = (&rellenv.Parser{
@@ -78,7 +79,7 @@ func TestParseValues(t *testing.T) {
 		{"og:description", stockDescriptions[6]},
 	}}
 
-	object, err := defaultParser().FromValues(defaultContext, values)
+	object, err := defaultParser().FromValues(context.Background(), defaultContext, values)
 	if err != nil {
 		t.Fatal(err)
 	}

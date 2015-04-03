@@ -285,8 +285,22 @@ func WithEnv(ctx context.Context, env *Env) context.Context {
 
 // IsEmployee returns true if the Context is known to be that of an employee.
 func IsEmployee(ctx context.Context) bool {
-	if ctx, err := FromContext(ctx); err != nil {
+	if ctx, err := FromContext(ctx); err == nil {
 		return ctx.isEmployee
 	}
 	return false
+}
+
+var defaultFbApp = fbapp.New(342526215814610, "", "")
+
+// FbApp returns the FB application configured in the context. Generally this
+// doesn't make sense as something that's different per context, but for FB
+// employees this is a meta-tool of sorts and this makes complex things
+// possible.
+func FbApp(ctx context.Context) fbapp.App {
+	// TODO: secret?
+	if ctx, err := FromContext(ctx); err == nil {
+		return fbapp.New(ctx.AppID, "", ctx.AppNamespace)
+	}
+	return defaultFbApp
 }

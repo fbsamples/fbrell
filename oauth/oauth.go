@@ -63,7 +63,7 @@ func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return err
 	}
 	values := url.Values{}
-	values.Set("client_id", strconv.FormatUint(c.AppID, 10))
+	values.Set("client_id", strconv.FormatUint(rellenv.FbApp(ctx).ID(), 10))
 	if scope := r.FormValue("scope"); scope != "" {
 		values.Set("scope", scope)
 	}

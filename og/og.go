@@ -17,6 +17,7 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.fburl"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/rellenv"
+	"golang.org/x/net/context"
 )
 
 // The representation of of <meta property="{key}" content="{value}">.
@@ -28,7 +29,7 @@ type Pair struct {
 // An ordered list of Pairs representing a raw Object.
 type Object struct {
 	Pairs        []Pair
-	context      *rellenv.Env
+	env          *rellenv.Env
 	static       *static.Handler
 	skipGenerate []string
 }
@@ -88,7 +89,7 @@ type Parser struct {
 }
 
 // Create a new Object from Base64 JSON encoded data.
-func (p *Parser) FromBase64(context *rellenv.Env, b64 string) (*Object, error) {
+func (p *Parser) FromBase64(env *rellenv.Env, b64 string) (*Object, error) {
 	jsonBytes, err := base64.URLEncoding.DecodeString(fixPadding(b64))
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -102,8 +103,8 @@ func (p *Parser) FromBase64(context *rellenv.Env, b64 string) (*Object, error) {
 	}
 
 	object := &Object{
-		context: context,
-		static:  p.Static,
+		env:    env,
+		static: p.Static,
 	}
 	for _, row := range strSlices {
 		if len(row) != 2 {
@@ -127,7 +128,7 @@ func (p *Parser) FromBase64(context *rellenv.Env, b64 string) (*Object, error) {
 	}
 
 	if object.shouldGenerate("og:url") {
-		url := context.AbsoluteURL("/rog/" + b64).String()
+		url := env.AbsoluteURL("/rog/" + b64).String()
 		object.AddPair("og:url", url)
 	}
 
@@ -139,10 +140,10 @@ func (p *Parser) FromBase64(context *rellenv.Env, b64 string) (*Object, error) {
 }
 
 // Create a new Object from query string data.
-func (p *Parser) FromValues(context *rellenv.Env, values url.Values) (*Object, error) {
+func (p *Parser) FromValues(ctx context.Context, env *rellenv.Env, values url.Values) (*Object, error) {
 	object := &Object{
-		context: context,
-		static:  p.Static,
+		env:    env,
+		static: p.Static,
 	}
 	for key, values := range values {
 		if strings.Contains(key, ":") {
@@ -157,8 +158,8 @@ func (p *Parser) FromValues(context *rellenv.Env, values url.Values) (*Object, e
 		copiedValues.Del("og:type")
 		copiedValues.Del("og:title")
 		url := url.URL{
-			Scheme:   context.Scheme,
-			Host:     context.Host,
+			Scheme:   env.Scheme,
+			Host:     env.Host,
 			Path:     "/og/" + object.Type() + "/" + object.Title(),
 			RawQuery: sortedEncode(copiedValues),
 		}
@@ -167,9 +168,9 @@ func (p *Parser) FromValues(context *rellenv.Env, values url.Values) (*Object, e
 
 	ogType := object.Type()
 	isGlobalOGType := !strings.Contains(ogType, ":")
-	isOwnedOGType := strings.HasPrefix(ogType, context.AppNamespace+":")
+	isOwnedOGType := strings.HasPrefix(ogType, env.AppNamespace+":")
 	if object.shouldGenerate("fb:app_id") && (isGlobalOGType || isOwnedOGType) {
-		object.AddPair("fb:app_id", strconv.FormatUint(context.AppID, 10))
+		object.AddPair("fb:app_id", strconv.FormatUint(rellenv.FbApp(ctx).ID(), 10))
 	}
 
 	err := object.generateDefaults()
@@ -198,7 +199,7 @@ func (o *Object) generateDefaults() error {
 		if err != nil {
 			return err
 		}
-		o.AddPair("og:image", o.context.AbsoluteURL(img).String())
+		o.AddPair("og:image", o.env.AbsoluteURL(img).String())
 	}
 	if o.shouldGenerate("og:description") {
 		o.AddPair("og:description", hashedPick(url, stockDescriptions))
@@ -241,8 +242,8 @@ func (o *Object) LintURL() string {
 	values := url.Values{}
 	values.Set("q", o.URL())
 	u := &fburl.URL{
-		Scheme:    o.context.Scheme,
-		Env:       o.context.Env,
+		Scheme:    o.env.Scheme,
+		Env:       o.env.Env,
 		SubDomain: fburl.DDevelopers,
 		Path:      "/tools/debug/og/object",
 		Values:    values,
@@ -255,8 +256,8 @@ func (o *Object) LikeURL() string {
 	values := url.Values{}
 	values.Set("href", o.URL())
 	u := &fburl.URL{
-		Scheme:    o.context.Scheme,
-		Env:       o.context.Env,
+		Scheme:    o.env.Scheme,
+		Env:       o.env.Env,
 		SubDomain: fburl.DWww,
 		Path:      "/plugins/like",
 		Values:    values,

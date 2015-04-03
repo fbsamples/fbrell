@@ -24,7 +24,7 @@ type Handler struct {
 
 // Handles /og/ requests.
 func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, err := rellenv.FromContext(ctx)
+	env, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -39,17 +39,17 @@ func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if len(parts) > 3 {
 		values.Set("og:title", parts[3])
 	}
-	object, err := a.ObjectParser.FromValues(context, values)
+	object, err := a.ObjectParser.FromValues(ctx, env, values)
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(w, r, renderObject(context, a.Static, object))
+	h.WriteResponse(w, r, renderObject(ctx, env, a.Static, object))
 	return nil
 }
 
 // Handles /rog/* requests.
 func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, err := rellenv.FromContext(ctx)
+	env, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -57,11 +57,11 @@ func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if len(parts) != 3 {
 		return errcode.New(http.StatusNotFound, "Invalid URL: %s", r.URL.Path)
 	}
-	object, err := a.ObjectParser.FromBase64(context, parts[2])
+	object, err := a.ObjectParser.FromBase64(env, parts[2])
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(w, r, renderObject(context, a.Static, object))
+	h.WriteResponse(w, r, renderObject(ctx, env, a.Static, object))
 	return nil
 }
 
@@ -144,7 +144,7 @@ func renderMetaTable(o *og.Object) h.HTML {
 }
 
 // Render a document for the Object.
-func renderObject(context *rellenv.Env, s *static.Handler, o *og.Object) h.HTML {
+func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *og.Object) h.HTML {
 	var title, header h.HTML
 	if o.Title() != "" {
 		title = &h.Title{h.String(o.Title())}
@@ -174,8 +174,8 @@ func renderObject(context *rellenv.Env, s *static.Handler, o *og.Object) h.HTML 
 					&h.Div{ID: "fb-root"},
 					view.DefaultPageConfig.GA,
 					&fb.Init{
-						URL:   context.SdkURL(),
-						AppID: context.AppID,
+						URL:   env.SdkURL(),
+						AppID: rellenv.FbApp(ctx).ID(),
 					},
 					&h.Div{
 						Class: "row",
