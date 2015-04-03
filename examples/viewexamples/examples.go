@@ -157,10 +157,9 @@ type page struct {
 
 func (p *page) HTML() (h.HTML, error) {
 	return &view.Page{
-		Context: p.Context,
-		Static:  p.Static,
-		Title:   p.Example.Title,
-		Class:   "main",
+		Static: p.Static,
+		Title:  p.Example.Title,
+		Class:  "main",
 		Body: &h.Div{
 			Class: "container-fluid",
 			Inner: &h.Frag{
@@ -531,10 +530,9 @@ func (l *examplesList) HTML() (h.HTML, error) {
 		}
 	}
 	return &view.Page{
-		Context: l.Context,
-		Static:  l.Static,
-		Title:   "Examples",
-		Class:   "examples",
+		Static: l.Static,
+		Title:  "Examples",
+		Class:  "examples",
 		Body: &h.Div{
 			Class: "container",
 			Inner: &h.Div{

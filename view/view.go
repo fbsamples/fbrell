@@ -6,7 +6,6 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h.js.ga"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
-	"github.com/daaku/rell/rellenv"
 )
 
 type PageConfig struct {
@@ -32,13 +31,12 @@ var DefaultPageConfig = &PageConfig{
 
 // A minimal standard page with no visible body.
 type Page struct {
-	Config  *PageConfig
-	Context *rellenv.Env
-	Static  *static.Handler
-	Class   string
-	Head    h.HTML
-	Body    h.HTML
-	Title   string
+	Config *PageConfig
+	Static *static.Handler
+	Class  string
+	Head   h.HTML
+	Body   h.HTML
+	Title  string
 }
 
 func (p *Page) config() *PageConfig {
