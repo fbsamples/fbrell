@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/ctxerr"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.errcode"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.fburl"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.h"
@@ -22,7 +23,6 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.xsrf"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/sortutil"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/counting"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/stackerr"
 	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/rellenv"
@@ -92,10 +92,10 @@ func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.
 		return err
 	}
 	if !c.IsEmployee {
-		return stackerr.Wrap(errSaveDisabled)
+		return ctxerr.Wrap(ctx, errSaveDisabled)
 	}
 	if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
-		return stackerr.Wrap(errTokenMismatch)
+		return ctxerr.Wrap(ctx, errTokenMismatch)
 	}
 	content := strings.TrimSpace(r.FormValue("code"))
 	content = strings.Replace(content, "\x13", "", -1) // remove CR
