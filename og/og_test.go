@@ -8,8 +8,8 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.static"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
+	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
-	"golang.org/x/net/context"
 )
 
 var defaultContext = (&rellenv.Parser{

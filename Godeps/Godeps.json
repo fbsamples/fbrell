@@ -163,10 +163,6 @@
 			"Rev": "604ed5785183e59ae2789449d89e73f3a2a77987"
 		},
 		{
-			"ImportPath": "github.com/gorilla/schema",
-			"Rev": "c8422571edf3131506bab7df27e18980fe2598d5"
-		},
-		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
 			"Rev": "2913780ee44a32395d9a2cf75ee6382b768f422a"
 		},
