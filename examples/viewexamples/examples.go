@@ -60,7 +60,7 @@ type Handler struct {
 	Xsrf         *xsrf.Provider
 }
 
-// Parse the Context and an Example.
+// Parse the Env and an Example.
 func (h *Handler) parse(ctx context.Context, r *http.Request) (*rellenv.Env, *examples.Example, error) {
 	context, err := rellenv.FromContext(ctx)
 	if err != nil {
@@ -79,9 +79,9 @@ func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return err
 	}
 	h.WriteResponse(w, r, &examplesList{
-		Context: context,
-		Static:  a.Static,
-		DB:      a.ExampleStore.DB,
+		Env:    context,
+		Static: a.Static,
+		DB:     a.ExampleStore.DB,
 	})
 	return nil
 }
@@ -122,7 +122,7 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 	h.WriteResponse(w, r, &page{
 		Writer:  w,
 		Request: r,
-		Context: context,
+		Env:     context,
 		Static:  a.Static,
 		Example: example,
 		Xsrf:    a.Xsrf,
@@ -138,7 +138,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 	h.WriteResponse(w, r, &page{
 		Writer:  w,
 		Request: r,
-		Context: context,
+		Env:     context,
 		Static:  a.Static,
 		Example: example,
 		Xsrf:    a.Xsrf,
@@ -149,7 +149,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 type page struct {
 	Writer  http.ResponseWriter
 	Request *http.Request
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Static  *static.Handler
 	Example *examples.Example
 	Xsrf    *xsrf.Provider
@@ -177,18 +177,18 @@ func (p *page) HTML() (h.HTML, error) {
 								&h.Div{
 									Class: "span8",
 									Inner: &h.Frag{
-										&editorTop{Context: p.Context, Example: p.Example},
+										&editorTop{Env: p.Env, Example: p.Example},
 										&editorArea{
-											Context: p.Context,
+											Env:     p.Env,
 											Example: p.Example,
 										},
-										&editorBottom{Context: p.Context, Example: p.Example},
+										&editorBottom{Env: p.Env, Example: p.Example},
 									},
 								},
 								&h.Div{
 									Class: "span4",
 									Inner: &h.Frag{
-										&contextEditor{Context: p.Context, Example: p.Example},
+										&contextEditor{Env: p.Env, Example: p.Example},
 										&logContainer{},
 									},
 								},
@@ -204,7 +204,7 @@ func (p *page) HTML() (h.HTML, error) {
 					},
 				},
 				&JsInit{
-					Context: p.Context,
+					Env:     p.Env,
 					Example: p.Example,
 				},
 			},
@@ -213,7 +213,7 @@ func (p *page) HTML() (h.HTML, error) {
 }
 
 type editorTop struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
@@ -245,7 +245,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 		},
 	}
 
-	if e.Context.IsEmployee {
+	if e.Env.IsEmployee {
 		return &h.Div{
 			Class: "row-fluid form-inline",
 			Inner: &h.Frag{
@@ -258,7 +258,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 					Inner: &h.Div{
 						Class: "pull-right",
 						Inner: &envSelector{
-							Context: e.Context,
+							Env:     e.Env,
 							Example: e.Example,
 						},
 					},
@@ -278,7 +278,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 }
 
 type editorArea struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
@@ -289,7 +289,7 @@ func (e *editorArea) HTML() (h.HTML, error) {
 			ID:   "jscode",
 			Name: "code",
 			Inner: &exampleContent{
-				Context: e.Context,
+				Env:     e.Env,
 				Example: e.Example,
 			},
 		},
@@ -297,7 +297,7 @@ func (e *editorArea) HTML() (h.HTML, error) {
 }
 
 type viewModeDropdown struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
@@ -310,7 +310,7 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 				Inner: &h.Frag{
 					&h.I{Class: "icon-eye-open"},
 					h.String(" "),
-					h.String(viewModeOptions[d.Context.ViewMode]),
+					h.String(viewModeOptions[d.Env.ViewMode]),
 				},
 			},
 			&h.Button{
@@ -329,21 +329,21 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 						Inner: &h.A{
 							Inner:  h.String(viewModeOptions[rellenv.Website]),
 							Target: "_top",
-							HREF:   d.Context.URL(d.Example.URL).String(),
+							HREF:   d.Env.URL(d.Example.URL).String(),
 						},
 					},
 					&h.Li{
 						Inner: &h.A{
 							Inner:  h.String(viewModeOptions[rellenv.Canvas]),
 							Target: "_top",
-							HREF:   d.Context.CanvasURL(d.Example.URL),
+							HREF:   d.Env.CanvasURL(d.Example.URL),
 						},
 					},
 					&h.Li{
 						Inner: &h.A{
 							Inner:  h.String(viewModeOptions[rellenv.PageTab]),
 							Target: "_top",
-							HREF:   d.Context.PageTabURL(d.Example.URL),
+							HREF:   d.Env.PageTabURL(d.Example.URL),
 						},
 					},
 				},
@@ -354,7 +354,7 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 					Type:  "hidden",
 					ID:    "rell-view-mode",
 					Name:  "view-mode",
-					Value: d.Context.ViewMode,
+					Value: d.Env.ViewMode,
 				},
 			},
 		},
@@ -362,7 +362,7 @@ func (d *viewModeDropdown) HTML() (h.HTML, error) {
 }
 
 type editorBottom struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
@@ -385,7 +385,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 		}
 	}
 	var saveButton h.HTML
-	if e.Context.IsEmployee {
+	if e.Env.IsEmployee {
 		saveButton = &h.Frag{
 			h.String(" "),
 			&h.Div{
@@ -407,7 +407,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 			&h.Strong{
 				Class: "span4",
 				Inner: &h.A{
-					HREF:  e.Context.URL("/examples/").String(),
+					HREF:  e.Env.URL("/examples/").String(),
 					Inner: h.String("Examples"),
 				},
 			},
@@ -417,7 +417,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 					Class: "btn-toolbar pull-right",
 					Inner: &h.Frag{
 						&viewModeDropdown{
-							Context: e.Context,
+							Env:     e.Env,
 							Example: e.Example,
 						},
 						saveButton,
@@ -456,13 +456,13 @@ func (e *logContainer) HTML() (h.HTML, error) {
 }
 
 type contextEditor struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
 func (e *contextEditor) HTML() (h.HTML, error) {
-	if !e.Context.IsEmployee {
-		return h.HiddenInputs(e.Context.Values()), nil
+	if !e.Env.IsEmployee {
+		return h.HiddenInputs(e.Env.Values()), nil
 	}
 	return &h.Div{
 		Class: "well form-horizontal",
@@ -470,7 +470,7 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 			&ui.TextInput{
 				Label:      h.String("Application ID"),
 				Name:       "appid",
-				Value:      e.Context.AppID,
+				Value:      e.Env.AppID,
 				InputClass: "input-medium",
 				Tooltip:    "Make sure the base domain in the application settings for the specified ID allows fbrell.com.",
 			},
@@ -478,19 +478,19 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 				Inner: &h.Frag{
 					&ui.ToggleItem{
 						Name:        "init",
-						Checked:     e.Context.Init,
+						Checked:     e.Env.Init,
 						Description: h.String("Automatically initialize SDK."),
 						Tooltip:     "This controls if FB.init() is automatically called. If off, you'll need to call it in your code.",
 					},
 					&ui.ToggleItem{
 						Name:        "status",
-						Checked:     e.Context.Status,
+						Checked:     e.Env.Status,
 						Description: h.String("Automatically trigger status ping."),
 						Tooltip:     "This controls the \"status\" parameter to FB.init.",
 					},
 					&ui.ToggleItem{
 						Name:        "frictionlessRequests",
-						Checked:     e.Context.FrictionlessRequests,
+						Checked:     e.Env.FrictionlessRequests,
 						Description: h.String("Enable frictionless requests."),
 						Tooltip:     "This controls the \"frictionlessRequests\" parameter to FB.init.",
 					},
@@ -514,9 +514,9 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 }
 
 type examplesList struct {
-	Context *rellenv.Env
-	DB      *examples.DB
-	Static  *static.Handler
+	Env    *rellenv.Env
+	DB     *examples.DB
+	Static *static.Handler
 }
 
 func (l *examplesList) HTML() (h.HTML, error) {
@@ -524,7 +524,7 @@ func (l *examplesList) HTML() (h.HTML, error) {
 	for _, category := range l.DB.Category {
 		if !category.Hidden {
 			categories.Append(&exampleCategory{
-				Context:  l.Context,
+				Env:      l.Env,
 				Category: category,
 			})
 		}
@@ -550,7 +550,7 @@ func (l *examplesList) HTML() (h.HTML, error) {
 }
 
 type exampleCategory struct {
-	Context  *rellenv.Env
+	Env      *rellenv.Env
 	Category *examples.Category
 }
 
@@ -559,7 +559,7 @@ func (c *exampleCategory) HTML() (h.HTML, error) {
 	for _, example := range c.Category.Example {
 		li.Append(&h.Li{
 			Inner: &h.A{
-				HREF:  c.Context.URL(example.URL).String(),
+				HREF:  c.Env.URL(example.URL).String(),
 				Inner: h.String(example.Name),
 			},
 		})
@@ -571,24 +571,24 @@ func (c *exampleCategory) HTML() (h.HTML, error) {
 }
 
 type envSelector struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
 func (e *envSelector) HTML() (h.HTML, error) {
-	if !e.Context.IsEmployee {
+	if !e.Env.IsEmployee {
 		return nil, nil
 	}
 	frag := &h.Frag{
 		h.HiddenInputs(url.Values{
-			"server": []string{e.Context.Env},
+			"server": []string{e.Env.Env},
 		}),
 	}
 	for _, pair := range sortutil.StringMapByValue(envOptions) {
-		if e.Context.Env == pair.Key {
+		if e.Env.Env == pair.Key {
 			continue
 		}
-		ctxCopy := e.Context.Copy()
+		ctxCopy := e.Env.Copy()
 		ctxCopy.Env = pair.Key
 		frag.Append(&h.Li{
 			Inner: &h.A{
@@ -599,9 +599,9 @@ func (e *envSelector) HTML() (h.HTML, error) {
 		})
 	}
 
-	title := envOptions[e.Context.Env]
+	title := envOptions[e.Env.Env]
 	if title == "" {
-		title = e.Context.Env
+		title = e.Env.Env
 	}
 	return &h.Div{
 		Class: "btn-group",
@@ -632,7 +632,7 @@ func (e *envSelector) HTML() (h.HTML, error) {
 }
 
 type exampleContent struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
@@ -645,7 +645,7 @@ func (c *exampleContent) HTML() (h.HTML, error) {
 func (c *exampleContent) Write(w io.Writer) (int, error) {
 	e := c.Example
 	wwwURL := fburl.URL{
-		Env: c.Context.Env,
+		Env: c.Env.Env,
 	}
 	w = htmlwriter.New(w)
 	tpl, err := template.New("example-" + e.URL).Parse(string(e.Content))
@@ -662,8 +662,8 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 			WwwURL   string // server specific http://www.facebook.com/ URL
 		}{
 			Rand:     randString(10),
-			RellFBNS: c.Context.AppNamespace,
-			RellURL:  c.Context.AbsoluteURL("/").String(),
+			RellFBNS: c.Env.AppNamespace,
+			RellURL:  c.Env.AbsoluteURL("/").String(),
 			WwwURL:   wwwURL.String(),
 		})
 	if err != nil {
@@ -686,12 +686,12 @@ func randString(length int) string {
 // Represents configuration for initializing the rell module. Sets up a couple
 // of globals.
 type JsInit struct {
-	Context *rellenv.Env
+	Env     *rellenv.Env
 	Example *examples.Example
 }
 
 func (i *JsInit) HTML() (h.HTML, error) {
-	encodedContext, err := json.Marshal(i.Context)
+	encodedEnv, err := json.Marshal(i.Env)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to json.Marshal context: %s", err)
 	}
@@ -701,13 +701,13 @@ func (i *JsInit) HTML() (h.HTML, error) {
 	}
 	return &h.Frag{
 		&h.Script{
-			Src:   i.Context.SdkURL(),
+			Src:   i.Env.SdkURL(),
 			Async: true,
 		},
 		&h.Script{
 			Inner: &h.Frag{
 				h.Unsafe("window.rellConfig="),
-				h.UnsafeBytes(encodedContext),
+				h.UnsafeBytes(encodedEnv),
 				h.Unsafe(";window.rellExample="),
 				h.UnsafeBytes(encodedExample),
 			},
