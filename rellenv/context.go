@@ -37,21 +37,21 @@ const (
 // The Context defined by the environment and as configured by the
 // user via the URL.
 type Env struct {
-	AppID                uint64              `schema:"appid"`
-	defaultAppID         uint64              `schema:"-"`
-	AppNamespace         string              `schema:"-"`
-	Level                string              `schema:"level"`
-	Locale               string              `schema:"locale"`
-	Env                  string              `schema:"server"`
-	Status               bool                `schema:"status"`
-	FrictionlessRequests bool                `schema:"frictionlessRequests"`
-	Host                 string              `schema:"-"`
-	Scheme               string              `schema:"-"`
-	SignedRequest        *fbsr.SignedRequest `schema:"-"`
-	ViewMode             string              `schema:"view-mode"`
-	Module               string              `schema:"module"`
-	isEmployee           bool                `schema:"-"`
-	Init                 bool                `schema:"init"`
+	AppID                uint64
+	defaultAppID         uint64
+	AppNamespace         string
+	Level                string
+	Locale               string
+	Env                  string
+	Status               bool
+	FrictionlessRequests bool
+	Host                 string
+	Scheme               string
+	SignedRequest        *fbsr.SignedRequest
+	ViewMode             string
+	Module               string
+	isEmployee           bool
+	Init                 bool
 }
 
 // Defaults for the context.
