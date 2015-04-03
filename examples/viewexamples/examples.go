@@ -480,7 +480,7 @@ type contextEditor struct {
 }
 
 func (e *contextEditor) HTML() (h.HTML, error) {
-	if rellenv.IsEmployee(e.Context) {
+	if !rellenv.IsEmployee(e.Context) {
 		return h.HiddenInputs(e.Env.Values()), nil
 	}
 	return &h.Div{
@@ -596,7 +596,7 @@ type envSelector struct {
 }
 
 func (e *envSelector) HTML() (h.HTML, error) {
-	if rellenv.IsEmployee(e.Context) {
+	if !rellenv.IsEmployee(e.Context) {
 		return nil, nil
 	}
 	frag := &h.Frag{
