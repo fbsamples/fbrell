@@ -20,7 +20,6 @@ import (
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.signedrequest/fbsr"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.trustforward"
 	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/gorilla/schema"
 	"github.com/daaku/rell/Godeps/_workspace/src/golang.org/x/net/context"
 )
 
@@ -68,8 +67,6 @@ var defaultContext = &Env{
 	Init:                 true,
 }
 
-var schemaDecoder = schema.NewDecoder()
-
 type EmpChecker interface {
 	Check(uid uint64) bool
 }
@@ -96,50 +93,74 @@ func (p *Parser) Default() *Env {
 
 // Create a context from a HTTP request.
 func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error) {
-	err := r.ParseMultipartForm(defaultMaxMemory)
-	if err != nil && err != http.ErrNotMultipart {
-		return nil, ctxerr.Wrap(ctx, err)
+	e := p.Default()
+
+	if appid, err := strconv.ParseUint(r.FormValue("appid"), 10, 64); err == nil {
+		e.AppID = appid
 	}
-	if id := r.FormValue("client_id"); id != "" {
-		r.Form.Set("appid", id)
+	if appid, err := strconv.ParseUint(r.FormValue("client_id"), 10, 64); err == nil {
+		e.AppID = appid
 	}
-	context := p.Default()
-	_ = schemaDecoder.Decode(context, r.URL.Query())
-	_ = schemaDecoder.Decode(context, r.Form)
+	if level := r.FormValue("level"); level != "" {
+		e.Level = level
+	}
+	if locale := r.FormValue("locale"); locale != "" {
+		e.Locale = locale
+	}
+	if env := r.FormValue("server"); env != "" {
+		e.Env = env
+	}
+	if viewMode := r.FormValue("view-mode"); viewMode != "" {
+		e.ViewMode = viewMode
+	}
+	if module := r.FormValue("module"); module != "" {
+		e.Module = module
+	}
+	if status, err := strconv.ParseBool(r.FormValue("status")); err == nil {
+		e.Status = status
+	}
+	if fr, err := strconv.ParseBool(r.FormValue("frictionlessRequests")); err == nil {
+		e.FrictionlessRequests = fr
+	}
+	if init, err := strconv.ParseBool(r.FormValue("init")); err == nil {
+		e.Init = init
+	}
+
+	var err error
 	rawSr := r.FormValue("signed_request")
 	if rawSr != "" {
-		context.SignedRequest, err = fbsr.Unmarshal(
+		e.SignedRequest, err = fbsr.Unmarshal(
 			[]byte(rawSr),
 			p.App.SecretByte(),
 			p.SignedRequestMaxAge,
 		)
 		if err == nil {
-			if context.SignedRequest.Page != nil {
-				context.ViewMode = PageTab
+			if e.SignedRequest.Page != nil {
+				e.ViewMode = PageTab
 			} else {
-				context.ViewMode = Canvas
+				e.ViewMode = Canvas
 			}
 		}
 	} else {
-		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", context.AppID))
+		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", e.AppID))
 		if cookie != nil {
-			context.SignedRequest, err = fbsr.Unmarshal(
+			e.SignedRequest, err = fbsr.Unmarshal(
 				[]byte(cookie.Value),
 				p.App.SecretByte(),
 				p.SignedRequestMaxAge,
 			)
 		}
 	}
-	context.Host = p.Forwarded.Host(r)
-	context.Scheme = p.Forwarded.Scheme(r)
-	if context.SignedRequest != nil && context.SignedRequest.UserID != 0 {
-		context.isEmployee = p.EmpChecker.Check(context.SignedRequest.UserID)
+	e.Host = p.Forwarded.Host(r)
+	e.Scheme = p.Forwarded.Scheme(r)
+	if e.SignedRequest != nil && e.SignedRequest.UserID != 0 {
+		e.isEmployee = p.EmpChecker.Check(e.SignedRequest.UserID)
 	}
-	context.AppNamespace = p.AppNSFetcher.Get(context.AppID)
-	if context.Env != "" && !envRegexp.MatchString(context.Env) {
-		context.Env = ""
+	e.AppNamespace = p.AppNSFetcher.Get(e.AppID)
+	if e.Env != "" && !envRegexp.MatchString(e.Env) {
+		e.Env = ""
 	}
-	return context, nil
+	return e, nil
 }
 
 // Provides a duplicate copy.
