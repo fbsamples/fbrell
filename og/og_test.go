@@ -57,7 +57,7 @@ func TestParseBase64(t *testing.T) {
 		{"og:description", stockDescriptions[0]},
 	}}
 
-	object, err := defaultParser().FromBase64(defaultContext, song1)
+	object, err := defaultParser().FromBase64(context.Background(), defaultContext, song1)
 	if err != nil {
 		t.Fatal(err)
 	}

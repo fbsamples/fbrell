@@ -74,14 +74,15 @@ func (h *Handler) parse(ctx context.Context, r *http.Request) (*rellenv.Env, *ex
 }
 
 func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, err := rellenv.FromContext(ctx)
+	env, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
 	}
 	h.WriteResponse(w, r, &examplesList{
-		Env:    context,
-		Static: a.Static,
-		DB:     a.ExampleStore.DB,
+		Context: ctx,
+		Env:     env,
+		Static:  a.Static,
+		DB:      a.ExampleStore.DB,
 	})
 	return nil
 }
@@ -115,7 +116,7 @@ func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.
 }
 
 func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, example, err := a.parse(ctx, r)
+	env, example, err := a.parse(ctx, r)
 	if err != nil {
 		return err
 	}
@@ -123,7 +124,7 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 		Writer:  w,
 		Request: r,
 		Context: ctx,
-		Env:     context,
+		Env:     env,
 		Static:  a.Static,
 		Example: example,
 		Xsrf:    a.Xsrf,
@@ -132,7 +133,7 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 }
 
 func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	context, example, err := a.parse(ctx, r)
+	env, example, err := a.parse(ctx, r)
 	if err != nil {
 		return err
 	}
@@ -140,7 +141,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 		Writer:  w,
 		Request: r,
 		Context: ctx,
-		Env:     context,
+		Env:     env,
 		Static:  a.Static,
 		Example: example,
 		Xsrf:    a.Xsrf,
@@ -186,6 +187,7 @@ func (p *page) HTML() (h.HTML, error) {
 											Example: p.Example,
 										},
 										&editorArea{
+											Context: p.Context,
 											Env:     p.Env,
 											Example: p.Example,
 										},
@@ -219,6 +221,7 @@ func (p *page) HTML() (h.HTML, error) {
 					},
 				},
 				&JsInit{
+					Context: p.Context,
 					Env:     p.Env,
 					Example: p.Example,
 				},
@@ -295,6 +298,7 @@ func (e *editorTop) HTML() (h.HTML, error) {
 }
 
 type editorArea struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
@@ -306,6 +310,7 @@ func (e *editorArea) HTML() (h.HTML, error) {
 			ID:   "jscode",
 			Name: "code",
 			Inner: &exampleContent{
+				Context: e.Context,
 				Env:     e.Env,
 				Example: e.Example,
 			},
@@ -314,6 +319,7 @@ func (e *editorArea) HTML() (h.HTML, error) {
 }
 
 type viewModeDropdown struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
@@ -435,6 +441,7 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 					Class: "btn-toolbar pull-right",
 					Inner: &h.Frag{
 						&viewModeDropdown{
+							Context: e.Context,
 							Env:     e.Env,
 							Example: e.Example,
 						},
@@ -533,9 +540,10 @@ func (e *contextEditor) HTML() (h.HTML, error) {
 }
 
 type examplesList struct {
-	Env    *rellenv.Env
-	DB     *examples.DB
-	Static *static.Handler
+	Context context.Context
+	Env     *rellenv.Env
+	DB      *examples.DB
+	Static  *static.Handler
 }
 
 func (l *examplesList) HTML() (h.HTML, error) {
@@ -543,6 +551,7 @@ func (l *examplesList) HTML() (h.HTML, error) {
 	for _, category := range l.DB.Category {
 		if !category.Hidden {
 			categories.Append(&exampleCategory{
+				Context:  l.Context,
 				Env:      l.Env,
 				Category: category,
 			})
@@ -569,6 +578,7 @@ func (l *examplesList) HTML() (h.HTML, error) {
 }
 
 type exampleCategory struct {
+	Context  context.Context
 	Env      *rellenv.Env
 	Category *examples.Category
 }
@@ -652,6 +662,7 @@ func (e *envSelector) HTML() (h.HTML, error) {
 }
 
 type exampleContent struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
@@ -682,7 +693,7 @@ func (c *exampleContent) Write(w io.Writer) (int, error) {
 			WwwURL   string // server specific http://www.facebook.com/ URL
 		}{
 			Rand:     randString(10),
-			RellFBNS: c.Env.AppNamespace,
+			RellFBNS: rellenv.FbApp(c.Context).Namespace(),
 			RellURL:  c.Env.AbsoluteURL("/").String(),
 			WwwURL:   wwwURL.String(),
 		})
@@ -706,6 +717,7 @@ func randString(length int) string {
 // Represents configuration for initializing the rell module. Sets up a couple
 // of globals.
 type JsInit struct {
+	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }

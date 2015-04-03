@@ -39,7 +39,7 @@ const (
 type Env struct {
 	appID                uint64
 	defaultAppID         uint64
-	AppNamespace         string
+	appNamespace         string
 	Level                string
 	Locale               string
 	Env                  string
@@ -156,7 +156,7 @@ func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error)
 	if e.SignedRequest != nil && e.SignedRequest.UserID != 0 {
 		e.isEmployee = p.EmpChecker.Check(e.SignedRequest.UserID)
 	}
-	e.AppNamespace = p.AppNSFetcher.Get(e.appID)
+	e.appNamespace = p.AppNSFetcher.Get(e.appID)
 	if e.Env != "" && !envRegexp.MatchString(e.Env) {
 		e.Env = ""
 	}
@@ -195,7 +195,7 @@ func (c *Env) PageTabURL(name string) string {
 
 // Get the URL for loading this application in a Canvas page on Facebook.
 func (c *Env) CanvasURL(name string) string {
-	var base = "/" + c.AppNamespace + "/"
+	var base = "/" + c.appNamespace + "/"
 	if name == "" || name == "/" {
 		name = base
 	} else {
@@ -321,7 +321,7 @@ var defaultFbApp = fbapp.New(342526215814610, "", "")
 func FbApp(ctx context.Context) fbapp.App {
 	// TODO: secret?
 	if ctx, err := FromContext(ctx); err == nil {
-		return fbapp.New(ctx.appID, "", ctx.AppNamespace)
+		return fbapp.New(ctx.appID, "", ctx.appNamespace)
 	}
 	return defaultFbApp
 }

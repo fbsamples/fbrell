@@ -57,7 +57,7 @@ func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if len(parts) != 3 {
 		return errcode.New(http.StatusNotFound, "Invalid URL: %s", r.URL.Path)
 	}
-	object, err := a.ObjectParser.FromBase64(env, parts[2])
+	object, err := a.ObjectParser.FromBase64(ctx, env, parts[2])
 	if err != nil {
 		return err
 	}

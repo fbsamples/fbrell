@@ -29,6 +29,7 @@ type Pair struct {
 // An ordered list of Pairs representing a raw Object.
 type Object struct {
 	Pairs        []Pair
+	context      context.Context
 	env          *rellenv.Env
 	static       *static.Handler
 	skipGenerate []string
@@ -89,7 +90,7 @@ type Parser struct {
 }
 
 // Create a new Object from Base64 JSON encoded data.
-func (p *Parser) FromBase64(env *rellenv.Env, b64 string) (*Object, error) {
+func (p *Parser) FromBase64(ctx context.Context, env *rellenv.Env, b64 string) (*Object, error) {
 	jsonBytes, err := base64.URLEncoding.DecodeString(fixPadding(b64))
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -103,8 +104,9 @@ func (p *Parser) FromBase64(env *rellenv.Env, b64 string) (*Object, error) {
 	}
 
 	object := &Object{
-		env:    env,
-		static: p.Static,
+		context: ctx,
+		env:     env,
+		static:  p.Static,
 	}
 	for _, row := range strSlices {
 		if len(row) != 2 {
@@ -142,8 +144,9 @@ func (p *Parser) FromBase64(env *rellenv.Env, b64 string) (*Object, error) {
 // Create a new Object from query string data.
 func (p *Parser) FromValues(ctx context.Context, env *rellenv.Env, values url.Values) (*Object, error) {
 	object := &Object{
-		env:    env,
-		static: p.Static,
+		context: ctx,
+		env:     env,
+		static:  p.Static,
 	}
 	for key, values := range values {
 		if strings.Contains(key, ":") {
@@ -168,7 +171,7 @@ func (p *Parser) FromValues(ctx context.Context, env *rellenv.Env, values url.Va
 
 	ogType := object.Type()
 	isGlobalOGType := !strings.Contains(ogType, ":")
-	isOwnedOGType := strings.HasPrefix(ogType, env.AppNamespace+":")
+	isOwnedOGType := strings.HasPrefix(ogType, rellenv.FbApp(ctx).Namespace()+":")
 	if object.shouldGenerate("fb:app_id") && (isGlobalOGType || isOwnedOGType) {
 		object.AddPair("fb:app_id", strconv.FormatUint(rellenv.FbApp(ctx).ID(), 10))
 	}
