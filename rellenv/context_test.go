@@ -39,7 +39,7 @@ func defaultParser() *rellenv.Parser {
 	}
 }
 
-func fromValues(t *testing.T, values url.Values) *rellenv.Env {
+func fromValues(t *testing.T, values url.Values) (*rellenv.Env, context.Context) {
 	req, err := http.NewRequest(
 		"GET",
 		"http://www.fbrell.com/?"+values.Encode(),
@@ -47,35 +47,33 @@ func fromValues(t *testing.T, values url.Values) *rellenv.Env {
 	if err != nil {
 		t.Fatalf("Failed to create request: %s", err)
 	}
-	ctx, err := defaultParser().FromRequest(context.Background(), req)
+	env, err := defaultParser().FromRequest(context.Background(), req)
 	if err != nil {
-		t.Fatalf("Failed to create context: %s", err)
+		t.Fatalf("Failed to create env: %s", err)
 	}
-	return ctx
+	return env, rellenv.WithEnv(context.Background(), env)
 }
 
-func TestDefaultContext(t *testing.T) {
+func TestDefaultEnv(t *testing.T) {
 	t.Parallel()
-	ctx := fromValues(t, url.Values{})
-	ensure.Subset(t, ctx, defaultParser().Default())
+	env, _ := fromValues(t, url.Values{})
+	ensure.Subset(t, env, defaultParser().Default())
 }
 
 func TestCustomAppID(t *testing.T) {
 	t.Parallel()
 	values := url.Values{}
 	values.Add("appid", "123")
-	context := fromValues(t, values)
-	if context.AppID != 123 {
-		t.Fatalf("Did not find expected app id 123 instead found %d", context.AppID)
-	}
+	_, ctx := fromValues(t, values)
+	ensure.DeepEqual(t, rellenv.FbApp(ctx).ID(), uint64(123))
 }
 
 func TestCustomStatus(t *testing.T) {
 	t.Parallel()
 	values := url.Values{}
 	values.Add("status", "0")
-	context := fromValues(t, values)
-	if context.Status {
+	env, _ := fromValues(t, values)
+	if env.Status {
 		t.Fatal("Was expecting status to be false.")
 	}
 }
@@ -91,22 +89,22 @@ func TestComplex(t *testing.T) {
 		Env:    "beta",
 		Locale: "en_PI",
 	}
-	context := fromValues(t, values)
-	ensure.Subset(t, context, expected)
+	env, _ := fromValues(t, values)
+	ensure.Subset(t, env, expected)
 }
 
 func TestPageTabURLBeta(t *testing.T) {
 	t.Parallel()
-	context := fromValues(t, url.Values{"server": []string{"beta"}})
-	pageTabURL := context.PageTabURL("/")
+	env, _ := fromValues(t, url.Values{"server": []string{"beta"}})
+	pageTabURL := env.PageTabURL("/")
 	ensure.StringContains(t, pageTabURL,
 		"http://www.beta.facebook.com/pages/Rell-Page-for-Tabs/141929622497380")
 }
 
 func TestPageTabURL(t *testing.T) {
 	t.Parallel()
-	context := fromValues(t, url.Values{})
-	pageTabURL := context.PageTabURL("/")
+	env, _ := fromValues(t, url.Values{})
+	pageTabURL := env.PageTabURL("/")
 	ensure.StringContains(t, pageTabURL,
 		"http://www.facebook.com/pages/Rell-Page-for-Tabs/141929622497380")
 	ensure.StringContains(t, pageTabURL, fmt.Sprintf("app_%d", defaultFacebookAppID))
@@ -115,16 +113,16 @@ func TestPageTabURL(t *testing.T) {
 
 func TestCanvasURLBeta(t *testing.T) {
 	t.Parallel()
-	context := fromValues(t, url.Values{"server": []string{"beta"}})
-	canvasURL := context.CanvasURL("/")
+	env, _ := fromValues(t, url.Values{"server": []string{"beta"}})
+	canvasURL := env.CanvasURL("/")
 	ensure.StringContains(t, canvasURL,
 		fmt.Sprintf("https://apps.beta.facebook.com/%s/?server=beta", defaultAppNS))
 }
 
 func TestCanvasURL(t *testing.T) {
 	t.Parallel()
-	context := fromValues(t, url.Values{})
-	canvasURL := context.CanvasURL("/")
+	env, _ := fromValues(t, url.Values{})
+	canvasURL := env.CanvasURL("/")
 	ensure.StringContains(t, canvasURL,
 		fmt.Sprintf("https://apps.facebook.com/%s/", defaultAppNS))
 }

@@ -37,7 +37,7 @@ const (
 // The Context defined by the environment and as configured by the
 // user via the URL.
 type Env struct {
-	AppID                uint64
+	appID                uint64
 	defaultAppID         uint64
 	AppNamespace         string
 	Level                string
@@ -86,7 +86,7 @@ type Parser struct {
 // Create a default context.
 func (p *Parser) Default() *Env {
 	context := defaultContext.Copy()
-	context.AppID = p.App.ID()
+	context.appID = p.App.ID()
 	context.defaultAppID = p.App.ID()
 	return context
 }
@@ -96,10 +96,10 @@ func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error)
 	e := p.Default()
 
 	if appid, err := strconv.ParseUint(r.FormValue("appid"), 10, 64); err == nil {
-		e.AppID = appid
+		e.appID = appid
 	}
 	if appid, err := strconv.ParseUint(r.FormValue("client_id"), 10, 64); err == nil {
-		e.AppID = appid
+		e.appID = appid
 	}
 	if level := r.FormValue("level"); level != "" {
 		e.Level = level
@@ -142,7 +142,7 @@ func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error)
 			}
 		}
 	} else {
-		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", e.AppID))
+		cookie, _ := r.Cookie(fmt.Sprintf("fbsr_%d", e.appID))
 		if cookie != nil {
 			e.SignedRequest, err = fbsr.Unmarshal(
 				[]byte(cookie.Value),
@@ -156,7 +156,7 @@ func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error)
 	if e.SignedRequest != nil && e.SignedRequest.UserID != 0 {
 		e.isEmployee = p.EmpChecker.Check(e.SignedRequest.UserID)
 	}
-	e.AppNamespace = p.AppNSFetcher.Get(e.AppID)
+	e.AppNamespace = p.AppNSFetcher.Get(e.appID)
 	if e.Env != "" && !envRegexp.MatchString(e.Env) {
 		e.Env = ""
 	}
@@ -181,7 +181,7 @@ func (c *Env) SdkURL() string {
 // Get the URL for loading this application in a Page Tab on Facebook.
 func (c *Env) PageTabURL(name string) string {
 	values := url.Values{}
-	values.Set("sk", fmt.Sprintf("app_%d", c.AppID))
+	values.Set("sk", fmt.Sprintf("app_%d", c.appID))
 	values.Set("app_data", appdata.Encode(c.URL(name)))
 	url := fburl.URL{
 		Scheme:    c.Scheme,
@@ -215,8 +215,8 @@ func (c *Env) CanvasURL(name string) string {
 // Serialize the context back to URL values.
 func (c *Env) Values() url.Values {
 	values := url.Values{}
-	if c.AppID != c.defaultAppID {
-		values.Set("appid", strconv.FormatUint(c.AppID, 10))
+	if c.appID != c.defaultAppID {
+		values.Set("appid", strconv.FormatUint(c.appID, 10))
 	}
 	if c.Env != defaultContext.Env {
 		values.Set("server", c.Env)
@@ -270,7 +270,7 @@ func (c *Env) ViewURL(path string) string {
 // JSON representation of Context.
 func (c *Env) MarshalJSON() ([]byte, error) {
 	data := map[string]interface{}{
-		"appID":                strconv.FormatUint(c.AppID, 10),
+		"appID":                strconv.FormatUint(c.appID, 10),
 		"level":                c.Level,
 		"status":               c.Status,
 		"frictionlessRequests": c.FrictionlessRequests,
@@ -321,7 +321,7 @@ var defaultFbApp = fbapp.New(342526215814610, "", "")
 func FbApp(ctx context.Context) fbapp.App {
 	// TODO: secret?
 	if ctx, err := FromContext(ctx); err == nil {
-		return fbapp.New(ctx.AppID, "", ctx.AppNamespace)
+		return fbapp.New(ctx.appID, "", ctx.AppNamespace)
 	}
 	return defaultFbApp
 }
