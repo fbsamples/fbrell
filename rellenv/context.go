@@ -282,3 +282,11 @@ func FromContext(ctx context.Context) (*Env, error) {
 func WithEnv(ctx context.Context, env *Env) context.Context {
 	return context.WithValue(ctx, contextEnvKey, env)
 }
+
+// IsEmployee returns true if the Context is known to be that of an employee.
+func IsEmployee(ctx context.Context) bool {
+	if ctx, err := FromContext(ctx); err != nil {
+		return ctx.IsEmployee
+	}
+	return false
+}
