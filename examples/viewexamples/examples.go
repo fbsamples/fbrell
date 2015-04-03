@@ -68,7 +68,7 @@ func (h *Handler) parse(ctx context.Context, r *http.Request) (*rellenv.Env, *ex
 	}
 	example, err := h.ExampleStore.Load(r.URL.Path)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, ctxerr.Wrap(ctx, err)
 	}
 	return context, example, nil
 }
