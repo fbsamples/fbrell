@@ -38,7 +38,7 @@ type Env struct {
 	appID                uint64
 	defaultAppID         uint64
 	appNamespace         string
-	Level                string
+	level                string
 	Locale               string
 	Env                  string
 	Status               bool
@@ -54,7 +54,7 @@ type Env struct {
 
 // Defaults for the context.
 var defaultContext = &Env{
-	Level:                "debug",
+	level:                "debug",
 	Locale:               "en_US",
 	Status:               true,
 	FrictionlessRequests: true,
@@ -100,7 +100,7 @@ func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error)
 		e.appID = appid
 	}
 	if level := r.FormValue("level"); level != "" {
-		e.Level = level
+		e.level = level
 	}
 	if locale := r.FormValue("locale"); locale != "" {
 		e.Locale = locale
@@ -269,7 +269,7 @@ func (c *Env) ViewURL(path string) string {
 func (c *Env) MarshalJSON() ([]byte, error) {
 	data := map[string]interface{}{
 		"appID":                strconv.FormatUint(c.appID, 10),
-		"level":                c.Level,
+		"level":                c.level,
 		"status":               c.Status,
 		"frictionlessRequests": c.FrictionlessRequests,
 		"signedRequest":        c.SignedRequest,
