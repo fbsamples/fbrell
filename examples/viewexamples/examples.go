@@ -609,13 +609,14 @@ func (e *envSelector) HTML() (h.HTML, error) {
 	if !rellenv.IsEmployee(e.Context) {
 		return nil, nil
 	}
+	fbEnv := rellenv.FbEnv(e.Context)
 	frag := &h.Frag{
 		h.HiddenInputs(url.Values{
-			"server": []string{e.Env.Env},
+			"server": []string{fbEnv},
 		}),
 	}
 	for _, pair := range sortutil.StringMapByValue(envOptions) {
-		if e.Env.Env == pair.Key {
+		if fbEnv == pair.Key {
 			continue
 		}
 		ctxCopy := e.Env.Copy()
@@ -629,9 +630,9 @@ func (e *envSelector) HTML() (h.HTML, error) {
 		})
 	}
 
-	title := envOptions[e.Env.Env]
+	title := envOptions[fbEnv]
 	if title == "" {
-		title = e.Env.Env
+		title = fbEnv
 	}
 	return &h.Div{
 		Class: "btn-group",
@@ -676,7 +677,7 @@ func (c *exampleContent) HTML() (h.HTML, error) {
 func (c *exampleContent) Write(w io.Writer) (int, error) {
 	e := c.Example
 	wwwURL := fburl.URL{
-		Env: c.Env.Env,
+		Env: rellenv.FbEnv(c.Context),
 	}
 	w = htmlwriter.New(w)
 	tpl, err := template.New("example-" + e.URL).Parse(string(e.Content))

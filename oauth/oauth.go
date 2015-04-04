@@ -78,7 +78,7 @@ func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	dialogURL := fburl.URL{
 		Scheme:    "https",
 		SubDomain: fburl.DWww,
-		Env:       c.Env,
+		Env:       rellenv.FbEnv(ctx),
 		Path:      "/dialog/oauth",
 		Values:    values,
 	}
@@ -112,7 +112,7 @@ func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.R
 	atURL := &fburl.URL{
 		Scheme:    "https",
 		SubDomain: fburl.DGraph,
-		Env:       c.Env,
+		Env:       rellenv.FbEnv(ctx),
 		Path:      "/oauth/access_token",
 		Values:    values,
 	}

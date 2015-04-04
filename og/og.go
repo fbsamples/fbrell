@@ -246,7 +246,7 @@ func (o *Object) LintURL() string {
 	values.Set("q", o.URL())
 	u := &fburl.URL{
 		Scheme:    o.env.Scheme,
-		Env:       o.env.Env,
+		Env:       rellenv.FbEnv(o.context),
 		SubDomain: fburl.DDevelopers,
 		Path:      "/tools/debug/og/object",
 		Values:    values,
@@ -260,7 +260,7 @@ func (o *Object) LikeURL() string {
 	values.Set("href", o.URL())
 	u := &fburl.URL{
 		Scheme:    o.env.Scheme,
-		Env:       o.env.Env,
+		Env:       rellenv.FbEnv(o.context),
 		SubDomain: fburl.DWww,
 		Path:      "/plugins/like",
 		Values:    values,

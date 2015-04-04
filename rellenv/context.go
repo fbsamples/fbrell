@@ -323,3 +323,10 @@ func FbApp(ctx context.Context) fbapp.App {
 	}
 	return defaultFbApp
 }
+
+func FbEnv(ctx context.Context) string {
+	if ctx, err := FromContext(ctx); err == nil {
+		return ctx.Env
+	}
+	return ""
+}
