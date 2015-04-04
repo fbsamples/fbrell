@@ -25,8 +25,6 @@ import (
 
 var envRegexp = regexp.MustCompile(`^[a-zA-Z0-9-_.]*$`)
 
-const defaultMaxMemory = 32 << 20 // 32 MB
-
 const (
 	// View Modes.
 	Website = "website"
