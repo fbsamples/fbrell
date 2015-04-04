@@ -87,10 +87,10 @@ func TestComplex(t *testing.T) {
 	expected := &rellenv.Env{
 		Status: true,
 		Env:    "beta",
-		Locale: "en_PI",
 	}
 	env, _ := fromValues(t, values)
 	ensure.Subset(t, env, expected)
+	ensure.StringContains(t, env.SdkURL(), "en_PI")
 }
 
 func TestPageTabURLBeta(t *testing.T) {

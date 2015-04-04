@@ -39,7 +39,7 @@ type Env struct {
 	defaultAppID         uint64
 	appNamespace         string
 	level                string
-	Locale               string
+	locale               string
 	Env                  string
 	Status               bool
 	FrictionlessRequests bool
@@ -55,7 +55,7 @@ type Env struct {
 // Defaults for the context.
 var defaultContext = &Env{
 	level:                "debug",
-	Locale:               "en_US",
+	locale:               "en_US",
 	Status:               true,
 	FrictionlessRequests: true,
 	Host:                 "www.fbrell.com",
@@ -103,7 +103,7 @@ func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error)
 		e.level = level
 	}
 	if locale := r.FormValue("locale"); locale != "" {
-		e.Locale = locale
+		e.locale = locale
 	}
 	if env := r.FormValue("server"); env != "" {
 		e.Env = env
@@ -173,7 +173,7 @@ func (c *Env) SdkURL() string {
 	if c.Env != "" {
 		server = fburl.Hostname("static", c.Env) + "/assets.php"
 	}
-	return fmt.Sprintf("%s://%s/%s/%s.js", c.Scheme, server, c.Locale, c.Module)
+	return fmt.Sprintf("%s://%s/%s/%s.js", c.Scheme, server, c.locale, c.Module)
 }
 
 // Get the URL for loading this application in a Page Tab on Facebook.
@@ -219,8 +219,8 @@ func (c *Env) Values() url.Values {
 	if c.Env != defaultContext.Env {
 		values.Set("server", c.Env)
 	}
-	if c.Locale != defaultContext.Locale {
-		values.Set("locale", c.Locale)
+	if c.locale != defaultContext.locale {
+		values.Set("locale", c.locale)
 	}
 	if c.Module != defaultContext.Module {
 		values.Set("module", c.Module)
