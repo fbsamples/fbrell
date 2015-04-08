@@ -8,9 +8,9 @@ import (
 	"path"
 	"sync"
 
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.httpdev"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.trustforward"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.viewvar"
+	"github.com/daaku/go.httpdev"
+	"github.com/daaku/go.trustforward"
+	"github.com/daaku/go.viewvar"
 )
 
 type Handler struct {

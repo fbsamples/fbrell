@@ -39,3 +39,11 @@ heroku config:set RELL_FB_APP_SECRET=...
 heroku config:set RELL_PARSE_APP_ID=...
 heroku config:set RELL_PARSE_REST_API_KEY=...
 ```
+
+Upgrade Vendored Dependencies
+-----------------------------
+
+```sh
+go get github.com/mjibson/party
+party -c -d=internal -u -t
+```

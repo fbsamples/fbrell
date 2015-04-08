@@ -13,10 +13,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/GeertJohan/go.rice"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/daaku/go.errcode"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/parse"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/golang/groupcache/lru"
+	"github.com/GeertJohan/go.rice"
+	"github.com/daaku/go.errcode"
+	"github.com/facebookgo/parse"
+	"github.com/golang/groupcache/lru"
 )
 
 // Some categories are hidden from the listing.

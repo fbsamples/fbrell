@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapi"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/Godeps/_workspace/src/github.com/golang/groupcache/lru"
+	"github.com/facebookgo/fbapi"
+	"github.com/facebookgo/fbapp"
+	"github.com/golang/groupcache/lru"
 )
 
 type cacheKey uint64
