@@ -10,13 +10,13 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/daaku/ctxerr"
-	"github.com/daaku/go.browserid"
-	"github.com/daaku/go.fburl"
-	"github.com/daaku/go.h"
-	"github.com/daaku/go.static"
-	"github.com/facebookgo/fbapp"
-	"golang.org/x/net/context"
+	"github.com/daaku/rell/internal/github.com/daaku/ctxerr"
+	"github.com/daaku/rell/internal/github.com/daaku/go.browserid"
+	"github.com/daaku/rell/internal/github.com/daaku/go.fburl"
+	"github.com/daaku/rell/internal/github.com/daaku/go.h"
+	"github.com/daaku/rell/internal/github.com/daaku/go.static"
+	"github.com/daaku/rell/internal/github.com/facebookgo/fbapp"
+	"github.com/daaku/rell/internal/golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
 )
 

@@ -14,9 +14,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/daaku/go.fburl"
-	"github.com/daaku/go.static"
-	"golang.org/x/net/context"
+	"github.com/daaku/rell/internal/github.com/daaku/go.fburl"
+	"github.com/daaku/rell/internal/github.com/daaku/go.static"
+	"github.com/daaku/rell/internal/golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
 )
 

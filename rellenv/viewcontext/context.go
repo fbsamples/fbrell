@@ -4,8 +4,8 @@ package viewcontext
 import (
 	"net/http"
 
-	"github.com/daaku/go.httpdev"
-	"golang.org/x/net/context"
+	"github.com/daaku/rell/internal/github.com/daaku/go.httpdev"
+	"github.com/daaku/rell/internal/golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
 )
 
