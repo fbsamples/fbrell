@@ -13,15 +13,13 @@ GO_VERSION=1.4.2
 GO_URL=https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
 BUILD_GOPATH=$CACHE_DIR/go
 GO_PACKAGE_DIR=$BUILD_GOPATH/src/$GO_IMPORT_PATH
-GODEP_WORKSPACE=Godeps/_workspace
-GODEP_GOPATH=$GO_PACKAGE_DIR/$GODEP_WORKSPACE
 OUTPUT_BIN=$BUILD_DIR/$(basename $GO_IMPORT_PATH)
 
 export GOROOT=$CACHE_DIR/$GO_VERSION/go
-export GOPATH=$BUILD_GOPATH:$GODEP_GOPATH
-export PATH=$GOROOT/bin:$BUILD_GOPATH/bin:$GODEP_GOPATH/bin:$PATH
+export GOPATH=$BUILD_GOPATH
+export PATH=$GOROOT/bin:$BUILD_GOPATH/bin:$PATH
 
-GO_LDFLAGS="-X $GO_IMPORT_PATH/$GODEP_WORKSPACE/src/github.com/facebookgo/stack.gopath $GOPATH"
+GO_LDFLAGS="-X $GO_IMPORT_PATH/internal/github.com/facebookgo/stack.gopath $GOPATH"
 
 if test -d $CACHE_DIR/$GO_VERSION/go; then
   echo "-----> Using existing go $GO_VERSION"
@@ -43,7 +41,7 @@ mv $GO_PACKAGE_DIR/Procfile $BUILD_DIR/
 echo " done"
 
 echo -n "-----> Installing rice..."
-go install github.com/GeertJohan/go.rice/rice
+go install github.com/daaku/rell/internal/github.com/GeertJohan/go.rice/rice
 echo " done"
 
 echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH..."
