@@ -1,10 +1,12 @@
 package xsrf_test
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/daaku/rell/internal/github.com/daaku/go.browserid"
 	"github.com/daaku/rell/internal/github.com/daaku/go.xsrf"
@@ -15,10 +17,15 @@ const (
 	bitUno    = "bitUno"
 )
 
-var provider = xsrf.ProviderFlag("default-provider")
-
-func init() {
-	provider.BrowserID = browserid.CookieFlag("browserid")
+var provider = &xsrf.Provider{
+	MaxAge: 24 * time.Hour,
+	SumLen: uint(10),
+	BrowserID: &browserid.Cookie{
+		Name:   "z",
+		MaxAge: time.Hour * 24 * 365 * 10,
+		Length: 16,
+		Rand:   rand.Reader,
+	},
 }
 
 func TestToken(t *testing.T) {

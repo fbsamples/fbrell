@@ -15,11 +15,7 @@ import (
 	"github.com/daaku/rell/internal/github.com/daaku/go.browserid"
 )
 
-var (
-	defaultMaxAge = 24 * time.Hour
-	defaultSumLen = uint(10)
-	maxUint64Len  = uint(len(fmt.Sprintf("%d", uint64(1<<63))))
-)
+var maxUint64Len = uint(len(fmt.Sprintf("%d", uint64(1<<63))))
 
 // The Provider issues and validates tokens.
 type Provider struct {
