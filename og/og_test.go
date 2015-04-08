@@ -3,7 +3,6 @@ package og
 import (
 	"net/url"
 	"testing"
-	"time"
 
 	"github.com/daaku/rell/internal/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/internal/github.com/daaku/go.static"
@@ -19,10 +18,8 @@ var defaultContext = (&rellenv.Parser{
 func defaultParser() *Parser {
 	return &Parser{
 		Static: &static.Handler{
-			HttpPath:    "/static/",
-			MaxAge:      time.Hour * 24 * 365,
-			MemoryCache: true,
-			Box:         rice.MustFindBox("../public"),
+			Path: "/static/",
+			Box:  rice.MustFindBox("../public"),
 		},
 	}
 }
@@ -53,7 +50,7 @@ func TestParseBase64(t *testing.T) {
 		{"og:title", "song1"},
 		{"og:type", "song"},
 		{"og:url", "http://www.fbrell.com/rog/" + song1},
-		{"og:image", "http://www.fbrell.com/static/17d19f450d/taxi_rotia_2806339125.jpg"},
+		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0=.jpg"},
 		{"og:description", stockDescriptions[0]},
 	}}
 
@@ -75,7 +72,7 @@ func TestParseValues(t *testing.T) {
 		{"og:type", ogType},
 		{"og:title", ogTitle},
 		{"og:url", "http://www.fbrell.com/og/" + ogType + "/" + ogTitle},
-		{"og:image", "http://www.fbrell.com/static/17d19f450d/taxi_rotia_2806339125.jpg"},
+		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0=.jpg"},
 		{"og:description", stockDescriptions[6]},
 	}}
 
