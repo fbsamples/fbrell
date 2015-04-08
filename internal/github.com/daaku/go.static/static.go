@@ -1,13 +1,17 @@
-// Package static provides go.h compatible hashed static asset
-// URIs. This allows for providing long lived cache headers for
-// resources which change URLs as their content changes.
+// Package static provides go.h compatible hashed static assets. This allows
+// for providing long lived cache headers for resources which change URLs as
+// their content changes.
 package static
 
 import (
 	"bytes"
 	"crypto/md5"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"mime"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -15,195 +19,271 @@ import (
 	"sync"
 	"time"
 
-	"github.com/daaku/rell/internal/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/internal/github.com/daaku/go.h"
 )
 
-const errHandlerRequired = "go.static: a handler is required for static HTML: %+v"
+const maxAge = time.Hour * 24 * 365 * 10
 
-type cacheEntry struct {
-	Content []byte
-	ModTime time.Time
-}
+var errZeroNames = errors.New("static: zero names given")
 
-type Handler struct {
-	sync.RWMutex
-	HttpPath    string        // prefix path for static files
-	MaxAge      time.Duration // max-age for HTTP headers
-	MemoryCache bool          // enable in memory cache
-	Box         *rice.Box
-	cache       map[string]cacheEntry
-}
-
-func notFound(w http.ResponseWriter, r *http.Request) {
+func disableCaching(w http.ResponseWriter) {
 	header := w.Header()
 	header.Set("Cache-Control", "no-cache")
 	header.Set("Pragma", "no-cache")
-	w.WriteHeader(404)
-	w.Write([]byte("static resource not found!"))
 }
 
-func joinBasenames(names []string) string {
-	basenames := make([]string, len(names))
-	for i, name := range names {
-		basenames[i] = filepath.Base(name)
+func notFound(w http.ResponseWriter) {
+	disableCaching(w)
+	w.WriteHeader(http.StatusNotFound)
+	io.WriteString(w, http.StatusText(http.StatusNotFound))
+}
+
+func badRequest(w http.ResponseWriter) {
+	disableCaching(w)
+	w.WriteHeader(http.StatusBadRequest)
+	io.WriteString(w, http.StatusText(http.StatusBadRequest))
+}
+
+type errInvalidURL string
+
+func (e errInvalidURL) Error() string {
+	return fmt.Sprintf("static: invalid URL %q", string(e))
+}
+
+type file struct {
+	Name    string
+	Content []byte
+	Hash    string
+}
+
+func encode(files []*file) (string, error) {
+	var parts [][]string
+	for _, f := range files {
+		parts = append(parts, []string{f.Name, f.Hash})
 	}
-	return strings.Join(basenames, "-")
+
+	b, err := json.Marshal(parts)
+	if err != nil {
+		return "", errors.New("static: could not encode URL")
+	}
+
+	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-// Get a hashed URL for a single file.
-func (h *Handler) URL(name string) (string, error) {
-	return h.CombinedURL([]string{name})
+func decode(value string) ([]*file, error) {
+	decoded, err := base64.URLEncoding.DecodeString(value)
+	if err != nil {
+		return nil, errInvalidURL(value)
+	}
+
+	var parts [][]string
+	if err := json.NewDecoder(bytes.NewReader(decoded)).Decode(&parts); err != nil {
+		return nil, errInvalidURL(value)
+	}
+
+	var files []*file
+	for _, part := range parts {
+		if len(part) != 2 {
+			return nil, errInvalidURL(value)
+		}
+		files = append(files, &file{
+			Name: part[0],
+			Hash: part[1],
+		})
+	}
+
+	return files, nil
 }
 
-// Get a hashed combined URL for all named files.
-func (h *Handler) CombinedURL(names []string) (string, error) {
-	hash := md5.New()
-	var ce cacheEntry
+// Box is where the files are loaded from. Practically you'll probably want to
+// use https://github.com/GeertJohan/go.rice.
+type Box interface {
+	Bytes(name string) ([]byte, error)
+}
+
+// Handler serves and provides URLs for static resources.
+type Handler struct {
+	Path string // Path at which Handler is configured.
+	Box  Box    // Box of files to serve.
+
+	mu    sync.RWMutex
+	files map[string]*file
+}
+
+func (h *Handler) load(name string) (*file, error) {
+	// fast path
+	h.mu.RLock()
+	f := h.files[name]
+	h.mu.RUnlock()
+
+	if f != nil {
+		return f, nil
+	}
+
+	// slow path
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	// check again in case someone else populated it
+	f = h.files[name]
+	if f != nil {
+		return f, nil
+	}
+
+	contents, err := h.Box.Bytes(name)
+	if err != nil {
+		return nil, err
+	}
+
+	hash := fmt.Sprintf("%x", md5.Sum(contents))
+	f = &file{
+		Name:    name,
+		Content: contents,
+		Hash:    hash[:8],
+	}
+	if h.files == nil {
+		h.files = make(map[string]*file)
+	}
+	h.files[name] = f
+
+	return f, nil
+}
+
+// URL returns a hashed URL for all the given component names.
+func (h *Handler) URL(names ...string) (string, error) {
+	if len(names) == 0 {
+		return "", errZeroNames
+	}
+
+	var files []*file
 	for _, name := range names {
-		f, err := h.Box.HTTPBox().Open(name)
+		f, err := h.load(name)
 		if err != nil {
 			return "", err
 		}
-		defer f.Close()
-
-		stat, err := f.Stat()
-		if err != nil {
-			return "", err
-		}
-		modTime := stat.ModTime()
-		if ce.ModTime.Before(modTime) {
-			ce.ModTime = modTime
-		}
-
-		content, err := ioutil.ReadAll(f)
-		if err != nil {
-			return "", err
-		}
-		ce.Content = append(ce.Content, content...)
-		_, err = hash.Write(content)
-		if err != nil {
-			return "", err
-		}
+		files = append(files, f)
 	}
-	hex := fmt.Sprintf("%x", hash.Sum(nil))
-	hexS := hex[:10]
-	url := path.Join(h.HttpPath, hexS, joinBasenames(names))
-	h.Lock()
-	defer h.Unlock()
-	if h.cache == nil {
-		h.cache = make(map[string]cacheEntry)
+
+	value, err := encode(files)
+	if err != nil {
+		return "", err
 	}
-	h.cache[hexS] = ce
-	return url, nil
+
+	if ext := filepath.Ext(names[0]); ext != "" {
+		value = value + ext
+	}
+
+	return path.Join(h.Path, value), nil
 }
 
-// Serves the static resource.
+// ServeHTTP handles requests for hashed URLs.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
-	if !strings.HasPrefix(path, h.HttpPath) {
-		notFound(w, r)
-		return
-	}
-	parts := strings.Split(path, "/")
-	if len(parts) < 3 {
-		notFound(w, r)
+	if !strings.HasPrefix(path, h.Path) {
+		notFound(w)
 		return
 	}
 
-	h.RLock()
-	defer h.RUnlock()
-	if h.cache == nil {
-		notFound(w, r)
+	contentType := ""
+	encoded := path[len(h.Path):]
+	if ext := filepath.Ext(encoded); ext != "" {
+		encoded = encoded[:len(encoded)-len(ext)]
+		contentType = mime.TypeByExtension(ext)
+	}
+
+	files, err := decode(encoded)
+	if err != nil {
+		badRequest(w)
 		return
 	}
-	ce, ok := h.cache[parts[2]]
-	if !ok {
-		notFound(w, r)
-		return
+
+	// fill in the contents and calculate the length
+	var contentLength int
+	for i, f := range files {
+		loaded, err := h.load(f.Name)
+		if err != nil {
+			notFound(w)
+			return
+		}
+		if loaded.Hash != f.Hash {
+			notFound(w)
+			return
+		}
+		contentLength += len(loaded.Content)
+		files[i] = loaded
 	}
 
 	header := w.Header()
 	header.Set(
 		"Cache-Control",
-		fmt.Sprintf("public, max-age=%d", int(h.MaxAge.Seconds())))
-	http.ServeContent(w, r, path, ce.ModTime, bytes.NewReader(ce.Content))
+		fmt.Sprintf("public, max-age=%d", int(maxAge.Seconds())))
+	header.Set("Content-Length", fmt.Sprint(contentLength))
+	if contentType != "" {
+		header.Set("Content-Type", contentType)
+	}
+
+	for _, f := range files {
+		w.Write(f.Content)
+	}
 }
 
+// LinkStyle provides a h.LinkStyle where the HREFs are combined and served
+// using the specified Handler.
 type LinkStyle struct {
-	HREF    []string
 	Handler *Handler
-	cache   h.HTML
+	HREF    []string
 }
 
+// HTML returns the <link> tag with the appropriate attributes.
 func (l *LinkStyle) HTML() (h.HTML, error) {
-	if l.Handler == nil {
-		return nil, fmt.Errorf(errHandlerRequired, l)
+	url, err := l.Handler.URL(l.HREF...)
+	if err != nil {
+		return nil, err
 	}
-	if !l.Handler.MemoryCache || l.cache == nil {
-		url, err := l.Handler.CombinedURL(l.HREF)
-		if err != nil {
-			return nil, err
-		}
-		l.cache = &h.LinkStyle{HREF: url}
-	}
-	return l.cache, nil
+	return &h.LinkStyle{HREF: url}, nil
 }
 
+// Script provides a h.Script where the Srcs are combined and served using the
+// specified Handler.
 type Script struct {
+	Handler *Handler
 	Src     []string
 	Async   bool
-	Handler *Handler
-	cache   h.HTML
 }
 
+// HTML returns the <script> tag with the appropriate attributes.
 func (l *Script) HTML() (h.HTML, error) {
-	if l.Handler == nil {
-		return nil, fmt.Errorf(errHandlerRequired, l)
+	url, err := l.Handler.URL(l.Src...)
+	if err != nil {
+		return nil, err
 	}
-	if !l.Handler.MemoryCache || l.cache == nil {
-		url, err := l.Handler.CombinedURL(l.Src)
-		if err != nil {
-			return nil, err
-		}
-		l.cache = &h.Script{
-			Src:   url,
-			Async: l.Async,
-		}
-	}
-	return l.cache, nil
+	return &h.Script{
+		Src:   url,
+		Async: l.Async,
+	}, nil
 }
 
+// Img provides a h.Img where the src is served using the specified Handler.
 type Img struct {
+	Handler *Handler
 	ID      string
 	Class   string
 	Style   string
 	Src     string
 	Alt     string
-	Handler *Handler
-	cache   h.HTML
 }
 
+// HTML returns the <img> tag with the appropriate attributes.
 func (i *Img) HTML() (h.HTML, error) {
-	if i.Handler == nil {
-		return nil, fmt.Errorf(errHandlerRequired, i)
+	src, err := i.Handler.URL(i.Src)
+	if err != nil {
+		return nil, err
 	}
-	if !i.Handler.MemoryCache || i.cache == nil {
-		src, err := i.Handler.URL(i.Src)
-		if err != nil {
-			return nil, err
-		}
-		i.cache = &h.Node{
-			Tag:         "img",
-			SelfClosing: true,
-			Attributes: h.Attributes{
-				"id":    i.ID,
-				"class": i.Class,
-				"style": i.Style,
-				"src":   src,
-				"alt":   i.Alt,
-			},
-		}
-	}
-	return i.cache, nil
+	return &h.Img{
+		ID:    i.ID,
+		Class: i.Class,
+		Style: i.Style,
+		Src:   src,
+		Alt:   i.Alt,
+	}, nil
 }

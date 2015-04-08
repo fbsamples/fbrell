@@ -98,11 +98,10 @@ func main() {
 		MaxAge:    time.Hour * 24,
 		SumLen:    10,
 	}
+	publicBox := rice.MustFindBox("public")
 	static := &static.Handler{
-		HttpPath:    "/static/",
-		MaxAge:      time.Hour * 24 * 365,
-		MemoryCache: true,
-		Box:         rice.MustFindBox("public"),
+		Path: "/static/",
+		Box:  publicBox,
 	}
 	httpTransport := &httpcontrol.Transport{
 		MaxIdleConnsPerHost:   http.DefaultMaxIdleConnsPerHost,
@@ -150,6 +149,7 @@ func main() {
 			SignedRequestMaxAge: signedRequestMaxAge,
 			Forwarded:           forwarded,
 		},
+		PublicBox:      publicBox,
 		ContextHandler: &viewcontext.Handler{},
 		ExamplesHandler: &viewexamples.Handler{
 			ExampleStore: exampleStore,

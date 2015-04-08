@@ -10,9 +10,9 @@ import (
 
 	"github.com/daaku/rell/adminweb"
 	"github.com/daaku/rell/examples/viewexamples"
+	"github.com/daaku/rell/internal/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/internal/github.com/daaku/ctxerr"
 	"github.com/daaku/rell/internal/github.com/daaku/ctxmux"
-	"github.com/daaku/rell/internal/github.com/daaku/go.httpgzip"
 	"github.com/daaku/rell/internal/github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/rell/internal/github.com/daaku/go.static"
 	"github.com/daaku/rell/internal/github.com/facebookgo/fbapp"
@@ -30,6 +30,7 @@ type Handler struct {
 	App                 fbapp.App
 	SignedRequestMaxAge time.Duration
 	EnvParser           *rellenv.Parser
+	PublicBox           *rice.Box
 
 	ContextHandler  *viewcontext.Handler
 	ExamplesHandler *viewexamples.Handler
@@ -48,7 +49,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.once.Do(func() {
 		const public = "/public/"
 
-		fileserver := http.FileServer(a.Static.Box.HTTPBox())
+		fileserver := http.FileServer(a.PublicBox.HTTPBox())
 
 		mux, err := ctxmux.New(
 			ctxmux.MuxErrorHandler(a.handleError),
@@ -60,7 +61,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 
-		mux.GET(a.Static.HttpPath+"*rest", ctxmux.HTTPHandler(a.Static))
+		mux.GET(a.Static.Path+"*rest", ctxmux.HTTPHandler(a.Static))
 		mux.GET("/favicon.ico", ctxmux.HTTPHandler(fileserver))
 		mux.GET("/f8.jpg", ctxmux.HTTPHandler(fileserver))
 		mux.GET("/robots.txt", ctxmux.HTTPHandler(fileserver))
@@ -86,7 +87,6 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			Secret:  a.App.SecretByte(),
 			MaxAge:  a.SignedRequestMaxAge,
 		}
-		handler = httpgzip.NewHandler(handler)
 		a.mux = handler
 
 		a.ctx = context.Background()
