@@ -36,7 +36,7 @@ Outer:
 			}
 		}
 		t.Fatalf(
-			`Did not find expected pair "%s" = "%s" in\n%+v`,
+			"Did not find expected pair %q = %q in\n%+v",
 			pair.Key,
 			pair.Value,
 			actual)
@@ -50,7 +50,7 @@ func TestParseBase64(t *testing.T) {
 		{"og:title", "song1"},
 		{"og:type", "song"},
 		{"og:url", "http://www.fbrell.com/rog/" + song1},
-		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0=.jpg"},
+		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0.jpg"},
 		{"og:description", stockDescriptions[0]},
 	}}
 
@@ -72,7 +72,7 @@ func TestParseValues(t *testing.T) {
 		{"og:type", ogType},
 		{"og:title", ogTitle},
 		{"og:url", "http://www.fbrell.com/og/" + ogType + "/" + ogTitle},
-		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0=.jpg"},
+		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0.jpg"},
 		{"og:description", stockDescriptions[6]},
 	}}
 

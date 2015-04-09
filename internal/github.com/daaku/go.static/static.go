@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -22,9 +23,15 @@ import (
 	"github.com/daaku/rell/internal/github.com/daaku/go.h"
 )
 
-const maxAge = time.Hour * 24 * 365 * 10
+const (
+	maxAge  = time.Hour * 24 * 365 * 10
+	hashLen = 8
+)
 
-var errZeroNames = errors.New("static: zero names given")
+var (
+	errZeroNames = errors.New("static: zero names given")
+	cacheControl = fmt.Sprintf("public, max-age=%d", int(maxAge.Seconds()))
+)
 
 func disableCaching(w http.ResponseWriter) {
 	header := w.Header()
@@ -50,16 +57,35 @@ func (e errInvalidURL) Error() string {
 	return fmt.Sprintf("static: invalid URL %q", string(e))
 }
 
+// we drop base64 padding in our URLs
+func dropPadding(s string) string {
+	return strings.TrimRight(s, "=")
+}
+
+// so we only allocate these strings once
+var paddings = [...]string{
+	"=",
+	"==",
+	"===",
+}
+
+func addPadding(s string) string {
+	if l := len(s) % 4; l > 0 {
+		return s + paddings[3-l]
+	}
+	return s
+}
+
 type file struct {
 	Name    string
 	Content []byte
 	Hash    string
 }
 
-func encode(files []*file) (string, error) {
-	var parts [][]string
+func encode(files []file) (string, error) {
+	parts := make([][2]string, 0, len(files))
 	for _, f := range files {
-		parts = append(parts, []string{f.Name, f.Hash})
+		parts = append(parts, [2]string{f.Name, f.Hash})
 	}
 
 	b, err := json.Marshal(parts)
@@ -67,26 +93,26 @@ func encode(files []*file) (string, error) {
 		return "", errors.New("static: could not encode URL")
 	}
 
-	return base64.URLEncoding.EncodeToString(b), nil
+	return dropPadding(base64.URLEncoding.EncodeToString(b)), nil
 }
 
-func decode(value string) ([]*file, error) {
-	decoded, err := base64.URLEncoding.DecodeString(value)
+func decode(value string) ([]file, error) {
+	decoded, err := base64.URLEncoding.DecodeString(addPadding(value))
 	if err != nil {
 		return nil, errInvalidURL(value)
 	}
 
-	var parts [][]string
+	var parts [][2]string
 	if err := json.NewDecoder(bytes.NewReader(decoded)).Decode(&parts); err != nil {
 		return nil, errInvalidURL(value)
 	}
 
-	var files []*file
+	files := make([]file, 0, len(parts))
 	for _, part := range parts {
-		if len(part) != 2 {
+		if len(part) != 2 || part[0] == "" || part[1] == "" {
 			return nil, errInvalidURL(value)
 		}
-		files = append(files, &file{
+		files = append(files, file{
 			Name: part[0],
 			Hash: part[1],
 		})
@@ -95,8 +121,8 @@ func decode(value string) ([]*file, error) {
 	return files, nil
 }
 
-// Box is where the files are loaded from. Practically you'll probably want to
-// use https://github.com/GeertJohan/go.rice.
+// Box is where the files are loaded from. You'll probably want to use
+// https://github.com/GeertJohan/go.rice.
 type Box interface {
 	Bytes(name string) ([]byte, error)
 }
@@ -107,16 +133,16 @@ type Handler struct {
 	Box  Box    // Box of files to serve.
 
 	mu    sync.RWMutex
-	files map[string]*file
+	files map[string]file
 }
 
-func (h *Handler) load(name string) (*file, error) {
+func (h *Handler) load(name string) (file, error) {
 	// fast path
 	h.mu.RLock()
-	f := h.files[name]
+	f, found := h.files[name]
 	h.mu.RUnlock()
 
-	if f != nil {
+	if found {
 		return f, nil
 	}
 
@@ -125,37 +151,38 @@ func (h *Handler) load(name string) (*file, error) {
 	defer h.mu.Unlock()
 
 	// check again in case someone else populated it
-	f = h.files[name]
-	if f != nil {
+	f, found = h.files[name]
+	if found {
 		return f, nil
 	}
 
 	contents, err := h.Box.Bytes(name)
 	if err != nil {
-		return nil, err
+		return file{}, err
 	}
 
 	hash := fmt.Sprintf("%x", md5.Sum(contents))
-	f = &file{
+	f = file{
 		Name:    name,
 		Content: contents,
-		Hash:    hash[:8],
+		Hash:    hash[:hashLen],
 	}
 	if h.files == nil {
-		h.files = make(map[string]*file)
+		h.files = make(map[string]file)
 	}
 	h.files[name] = f
 
 	return f, nil
 }
 
-// URL returns a hashed URL for all the given component names.
+// URL returns a hashed URL for all the given component names. It uses the
+// extension of the first file as the extension for the generated URL.
 func (h *Handler) URL(names ...string) (string, error) {
 	if len(names) == 0 {
 		return "", errZeroNames
 	}
 
-	var files []*file
+	files := make([]file, 0, len(names))
 	for _, name := range names {
 		f, err := h.load(name)
 		if err != nil {
@@ -214,10 +241,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	header := w.Header()
-	header.Set(
-		"Cache-Control",
-		fmt.Sprintf("public, max-age=%d", int(maxAge.Seconds())))
-	header.Set("Content-Length", fmt.Sprint(contentLength))
+	header.Set("Cache-Control", cacheControl)
+	header.Set("Content-Length", strconv.Itoa(contentLength))
 	if contentType != "" {
 		header.Set("Content-Type", contentType)
 	}
