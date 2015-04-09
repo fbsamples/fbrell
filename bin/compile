@@ -41,7 +41,7 @@ mv $GO_PACKAGE_DIR/Procfile $BUILD_DIR/
 echo " done"
 
 echo -n "-----> Installing rice..."
-go install github.com/daaku/rell/internal/github.com/GeertJohan/go.rice/rice
+go install $GO_IMPORT_PATH/internal/github.com/GeertJohan/go.rice/rice
 echo " done"
 
 echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH..."
