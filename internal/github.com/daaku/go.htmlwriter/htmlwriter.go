@@ -56,7 +56,7 @@ func (w *writer) Write(s []byte) (int, error) {
 	return total, err
 }
 
-// Create a new HTML escaping writer that will write to the given writer.
+// New creates a new HTML escaping writer that will write to the given writer.
 func New(w io.Writer) io.Writer {
 	return &writer{writer: w}
 }

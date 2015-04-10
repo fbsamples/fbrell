@@ -142,6 +142,11 @@ type Router struct {
 	// found. If it is not set, http.NotFound is used.
 	NotFound http.HandlerFunc
 
+	// Configurable http.HandlerFunc which is called when a request
+	// cannot be routed and HandleMethodNotAllowed is true.
+	// If it is not set, http.Error with http.StatusMethodNotAllowed is used.
+	MethodNotAllowed http.HandlerFunc
+
 	// Function to handle panics recovered from http handlers.
 	// It should be used to generate a error page and return the http error code
 	// 500 (Internal Server Error).
@@ -171,6 +176,11 @@ func (r *Router) GET(path string, handle Handle) {
 // HEAD is a shortcut for router.Handle("HEAD", path, handle)
 func (r *Router) HEAD(path string, handle Handle) {
 	r.Handle("HEAD", path, handle)
+}
+
+// OPTIONS is a shortcut for router.Handle("OPTIONS", path, handle)
+func (r *Router) OPTIONS(path string, handle Handle) {
+	r.Handle("OPTIONS", path, handle)
 }
 
 // POST is a shortcut for router.Handle("POST", path, handle)
@@ -203,7 +213,7 @@ func (r *Router) DELETE(path string, handle Handle) {
 // communication with a proxy).
 func (r *Router) Handle(method, path string, handle Handle) {
 	if path[0] != '/' {
-		panic("path must begin with '/'")
+		panic("path must begin with '/' in path '" + path + "'")
 	}
 
 	if r.trees == nil {
@@ -232,11 +242,7 @@ func (r *Router) Handler(method, path string, handler http.Handler) {
 // HandlerFunc is an adapter which allows the usage of an http.HandlerFunc as a
 // request handle.
 func (r *Router) HandlerFunc(method, path string, handler http.HandlerFunc) {
-	r.Handle(method, path,
-		func(w http.ResponseWriter, req *http.Request, _ Params) {
-			handler(w, req)
-		},
-	)
+	r.Handler(method, path, handler)
 }
 
 // ServeFiles serves files from the given file system root.
@@ -251,7 +257,7 @@ func (r *Router) HandlerFunc(method, path string, handler http.HandlerFunc) {
 //     router.ServeFiles("/src/*filepath", http.Dir("/var/www"))
 func (r *Router) ServeFiles(path string, root http.FileSystem) {
 	if len(path) < 10 || path[len(path)-10:] != "/*filepath" {
-		panic("path must end with /*filepath")
+		panic("path must end with /*filepath in path '" + path + "'")
 	}
 
 	fileServer := http.FileServer(root)
@@ -270,6 +276,9 @@ func (r *Router) recv(w http.ResponseWriter, req *http.Request) {
 
 // Lookup allows the manual lookup of a method + path combo.
 // This is e.g. useful to build a framework around this router.
+// If the path was found, it returns the handle function and the path parameter
+// values. Otherwise the third return value indicates whether a redirection to
+// the same path with an extra / without the trailing slash should be performed.
 func (r *Router) Lookup(method, path string) (Handle, Params, bool) {
 	if root := r.trees[method]; root != nil {
 		return root.getValue(path)
@@ -332,10 +341,14 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 			handle, _, _ := r.trees[method].getValue(req.URL.Path)
 			if handle != nil {
-				http.Error(w,
-					http.StatusText(http.StatusMethodNotAllowed),
-					http.StatusMethodNotAllowed,
-				)
+				if r.MethodNotAllowed != nil {
+					r.MethodNotAllowed(w, req)
+				} else {
+					http.Error(w,
+						http.StatusText(http.StatusMethodNotAllowed),
+						http.StatusMethodNotAllowed,
+					)
+				}
 				return
 			}
 		}

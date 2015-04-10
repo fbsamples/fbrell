@@ -1,4 +1,4 @@
-go.htmlwriter [![Build Status](https://secure.travis-ci.org/daaku/go.htmlwriter.png)](http://travis-ci.org/daaku/go.htmlwriter)
+go.htmlwriter [![Build Status](https://secure.travis-ci.org/daaku/go.htmlwriter.svg)](https://travis-ci.org/daaku/go.htmlwriter)
 =============
 
-Documentation: http://godoc.org/github.com/daaku/go.htmlwriter
+Documentation: https://godoc.org/github.com/daaku/go.htmlwriter

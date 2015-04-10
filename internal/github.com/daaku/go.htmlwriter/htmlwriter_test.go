@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/daaku/rell/internal/github.com/daaku/go.htmlwriter"
+	"github.com/daaku/rell/internal/github.com/facebookgo/ensure"
 )
 
 func TestSimple(t *testing.T) {
@@ -14,15 +15,7 @@ func TestSimple(t *testing.T) {
 	w := htmlwriter.New(&out)
 	const original = "hello & world"
 	n, err := w.Write([]byte(original))
-	if err != nil {
-		t.Fatal(err)
-	}
-	const l = 17
-	if n != l {
-		t.Fatalf("expected %d but got %d", l, n)
-	}
-	expected := html.EscapeString(original)
-	if out.String() != expected {
-		t.Fatalf("expected %s but got %s", expected, out)
-	}
+	ensure.Nil(t, err)
+	ensure.DeepEqual(t, n, 17)
+	ensure.DeepEqual(t, out.String(), html.EscapeString(original))
 }
