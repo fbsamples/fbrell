@@ -23,9 +23,6 @@ import (
 	"github.com/daaku/rell/internal/golang.org/x/net/context"
 )
 
-// This may be set by the build script.
-var rev string
-
 var envRegexp = regexp.MustCompile(`^[a-zA-Z0-9-_.]*$`)
 
 const (
@@ -281,9 +278,6 @@ func (c *Env) MarshalJSON() ([]byte, error) {
 	}
 	if c.isEmployee {
 		data["isEmployee"] = true
-	}
-	if rev != "" {
-		data["rev"] = rev
 	}
 	return json.Marshal(data)
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/daaku/rell/rellenv"
 )
 
-var version string
+var rev string
 
 type Handler struct{}
 
@@ -24,7 +24,7 @@ func (h *Handler) Info(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		"pageTabURL": env.PageTabURL("/"),
 		"canvasURL":  env.CanvasURL("/"),
 		"sdkURL":     env.SdkURL(),
-		"version":    version,
+		"rev":        rev,
 	}
 	httpdev.Info(info, w, r)
 	return nil

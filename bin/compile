@@ -20,7 +20,7 @@ export GOPATH=$BUILD_GOPATH
 export PATH=$GOROOT/bin:$BUILD_GOPATH/bin:$PATH
 
 GO_LDFLAGS="-X $GO_IMPORT_PATH/internal/github.com/facebookgo/stack.gopath $GOPATH"
-GO_LDFLAGS="$GO_LDFLAGS -X $GO_IMPORT_PATH/rellenv.rev $SOURCE_VERSION"
+GO_LDFLAGS="$GO_LDFLAGS -X $GO_IMPORT_PATH/rellenv/viewcontext.rev $SOURCE_VERSION"
 
 if test -d $CACHE_DIR/$GO_VERSION/go; then
   echo "-----> Using existing go $GO_VERSION"
