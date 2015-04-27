@@ -58,7 +58,7 @@ func main() {
 	empCheckerAppID := flagSet.Uint64("empcheck-app-id", 0, "empcheck application id")
 	empCheckerAppSecret := flagSet.String("empcheck-app-secret", "", "empcheck application secret")
 	parseAppID := flagSet.String("parse-app-id", "", "parse application id")
-	parseRestAPIKey := flagSet.String("parse-rest-api-key", "", "parse rest api key")
+	parseMasterKey := flagSet.String("parse-master-key", "", "parse master key")
 
 	flagSet.Parse(os.Args[1:])
 	if err := flagenv.ParseSet("RELL_", flagSet); err != nil {
@@ -111,9 +111,9 @@ func main() {
 	}
 	parseClient := &parse.Client{
 		Transport: httpTransport,
-		Credentials: parse.RestAPIKey{
+		Credentials: parse.MasterKey{
 			ApplicationID: *parseAppID,
-			RestAPIKey:    *parseRestAPIKey,
+			MasterKey:     *parseMasterKey,
 		},
 	}
 	fbApiClient := &fbapi.Client{
