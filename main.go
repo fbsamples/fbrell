@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/build"
 	"log"
 	"net/http"
 	"os"
@@ -44,6 +45,14 @@ func defaultAddr() string {
 	return ":43600"
 }
 
+func pkgDir(path string) string {
+	pkg, err := build.Import(path, "", build.FindOnly)
+	if err != nil {
+		return ""
+	}
+	return pkg.Dir
+}
+
 func main() {
 	const signedRequestMaxAge = time.Hour * 24
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -59,6 +68,8 @@ func main() {
 	empCheckerAppSecret := flagSet.String("empcheck-app-secret", "", "empcheck application secret")
 	parseAppID := flagSet.String("parse-app-id", "", "parse application id")
 	parseMasterKey := flagSet.String("parse-master-key", "", "parse master key")
+	publicDir := flagSet.String(
+		"public-dir", pkgDir("github.com/daaku/rell/public"), "public files directory")
 
 	flagSet.Parse(os.Args[1:])
 	if err := flagenv.ParseSet("RELL_", flagSet); err != nil {
@@ -98,10 +109,10 @@ func main() {
 		MaxAge:    time.Hour * 24,
 		SumLen:    10,
 	}
-	publicBox := rice.MustFindBox("public")
+	publicFS := http.Dir(*publicDir)
 	static := &static.Handler{
 		Path: "/static/",
-		Box:  publicBox,
+		Box:  static.FileSystemBox(publicFS),
 	}
 	httpTransport := &httpcontrol.Transport{
 		MaxIdleConnsPerHost:   http.DefaultMaxIdleConnsPerHost,
@@ -149,7 +160,7 @@ func main() {
 			SignedRequestMaxAge: signedRequestMaxAge,
 			Forwarded:           forwarded,
 		},
-		PublicBox:      publicBox,
+		PublicFS:       publicFS,
 		ContextHandler: &viewcontext.Handler{},
 		ExamplesHandler: &viewexamples.Handler{
 			ExampleStore: exampleStore,

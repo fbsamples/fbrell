@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime"
 	"net/http"
 	"path"
@@ -122,9 +123,27 @@ func decode(value string) ([]file, error) {
 }
 
 // Box is where the files are loaded from. You'll probably want to use
-// https://github.com/GeertJohan/go.rice.
+// https://github.com/GeertJohan/go.rice or FileSystemBox.
 type Box interface {
 	Bytes(name string) ([]byte, error)
+}
+
+type fileSystemBox struct {
+	fs http.FileSystem
+}
+
+func (b *fileSystemBox) Bytes(name string) ([]byte, error) {
+	f, err := b.fs.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return ioutil.ReadAll(f)
+}
+
+// FileSystemBox returns a Box from a http.FileSystem.
+func FileSystemBox(fs http.FileSystem) Box {
+	return &fileSystemBox{fs: fs}
 }
 
 // Handler serves and provides URLs for static resources.

@@ -39,6 +39,7 @@ rm -rf $GO_PACKAGE_DIR
 mkdir -p $GO_PACKAGE_DIR
 mv $BUILD_DIR/* $GO_PACKAGE_DIR/
 mv $GO_PACKAGE_DIR/Procfile $BUILD_DIR/
+mv $GO_PACKAGE_DIR/public $BUILD_DIR/public
 echo " done"
 
 echo -n "-----> Installing rice..."
