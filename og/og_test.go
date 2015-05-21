@@ -1,10 +1,10 @@
 package og
 
 import (
+	"net/http"
 	"net/url"
 	"testing"
 
-	"github.com/daaku/rell/internal/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/internal/github.com/daaku/go.static"
 	"github.com/daaku/rell/internal/github.com/facebookgo/fbapp"
 	"github.com/daaku/rell/internal/golang.org/x/net/context"
@@ -19,7 +19,7 @@ func defaultParser() *Parser {
 	return &Parser{
 		Static: &static.Handler{
 			Path: "/static/",
-			Box:  rice.MustFindBox("../public"),
+			Box:  static.FileSystemBox(http.Dir("../public")),
 		},
 	}
 }
