@@ -40,6 +40,15 @@ heroku config:set RELL_PARSE_APP_ID=...
 heroku config:set RELL_PARSE_REST_API_KEY=...
 ```
 
+Docker
+------
+
+A Docker container can be built using:
+
+```sh
+docker build -t rell-builder . && docker run rell-builder | docker build -t daaku/rell -
+```
+
 Upgrade Vendored Dependencies
 -----------------------------
 

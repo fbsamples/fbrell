@@ -1,0 +1,8 @@
+FROM daaku/goruntime
+COPY rell /usr/bin/rell
+COPY public /data/public
+COPY examples /data/examples
+ENV RELL_PUBLIC_DIR /data/public
+ENV RELL_EXAMPLES_DIR /data/examples
+EXPOSE 43600
+CMD ["/usr/bin/rell"]
