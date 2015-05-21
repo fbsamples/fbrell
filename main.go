@@ -15,7 +15,6 @@ import (
 	"github.com/daaku/rell/adminweb"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/examples/viewexamples"
-	"github.com/daaku/rell/internal/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/internal/github.com/daaku/go.browserid"
 	"github.com/daaku/rell/internal/github.com/daaku/go.static"
 	"github.com/daaku/rell/internal/github.com/daaku/go.trustforward"
@@ -70,6 +69,8 @@ func main() {
 	parseMasterKey := flagSet.String("parse-master-key", "", "parse master key")
 	publicDir := flagSet.String(
 		"public-dir", pkgDir("github.com/daaku/rell/public"), "public files directory")
+	examplesDir := flagSet.String(
+		"examples-dir", pkgDir("github.com/daaku/rell/examples/db"), "example files directory")
 
 	flagSet.Parse(os.Args[1:])
 	if err := flagenv.ParseSet("RELL_", flagSet); err != nil {
@@ -146,7 +147,7 @@ func main() {
 	}
 	exampleStore := &examples.Store{
 		Parse: parseClient,
-		DB:    examples.MustMakeDB(rice.MustFindBox("examples/db")),
+		DB:    examples.MustMakeDB(*examplesDir),
 		Cache: lruCache,
 	}
 	webHandler := &web.Handler{

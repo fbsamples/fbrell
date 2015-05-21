@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -13,7 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/daaku/rell/internal/github.com/GeertJohan/go.rice"
 	"github.com/daaku/rell/internal/github.com/daaku/go.errcode"
 	"github.com/daaku/rell/internal/github.com/facebookgo/parse"
 	"github.com/daaku/rell/internal/github.com/golang/groupcache/lru"
@@ -68,8 +68,8 @@ var (
 	classExample = &url.URL{Path: "classes/Example"}
 )
 
-func MustMakeDB(box *rice.Box) *DB {
-	db, err := MakeDB(box)
+func MustMakeDB(dir string) *DB {
+	db, err := MakeDB(dir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,15 +77,15 @@ func MustMakeDB(box *rice.Box) *DB {
 }
 
 // Loads a specific examples directory.
-func MakeDB(box *rice.Box) (*DB, error) {
+func MakeDB(dir string) (*DB, error) {
 	db := &DB{
 		Category: make(map[string]*Category),
 		Reverse:  make(map[string]*Example),
 	}
 	db.Reverse[ContentID(emptyExample.Content)] = emptyExample
 
-	err := box.Walk(
-		"",
+	err := filepath.Walk(
+		dir,
 		func(exampleFile string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -105,10 +105,11 @@ func MakeDB(box *rice.Box) (*DB, error) {
 				db.Category[categoryName] = category
 			}
 
-			content, err := box.String(exampleFile)
+			contentBytes, err := ioutil.ReadFile(exampleFile)
 			if err != nil {
 				return fmt.Errorf("Failed to read example %s: %s", exampleFile, err)
 			}
+			content := string(contentBytes)
 			cleanName := exampleName[:len(exampleName)-5] // drop .html
 			example := &Example{
 				Name:    cleanName,

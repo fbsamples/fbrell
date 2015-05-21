@@ -40,16 +40,9 @@ mkdir -p $GO_PACKAGE_DIR
 mv $BUILD_DIR/* $GO_PACKAGE_DIR/
 mv $GO_PACKAGE_DIR/Procfile $BUILD_DIR/
 mv $GO_PACKAGE_DIR/public $BUILD_DIR/public
-echo " done"
-
-echo -n "-----> Installing rice..."
-go install $GO_IMPORT_PATH/internal/github.com/GeertJohan/go.rice/rice
+mv $GO_PACKAGE_DIR/examples/db $BUILD_DIR/examples
 echo " done"
 
 echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH..."
 go build "-ldflags=$GO_LDFLAGS" -tags heroku -o $OUTPUT_BIN $GO_IMPORT_PATH
-echo " done"
-
-echo -n "-----> Boxes: rice append..."
-rice --import-path=$GO_IMPORT_PATH append --exec=$OUTPUT_BIN
 echo " done"
