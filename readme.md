@@ -53,6 +53,6 @@ Upgrade Vendored Dependencies
 -----------------------------
 
 ```sh
-go get github.com/mjibson/party
-party -c -d=internal -u -t
+go get github.com/daaku/party
+party -c -d=internal -u -t -x=false
 ```
