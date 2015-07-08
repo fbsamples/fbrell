@@ -175,9 +175,9 @@ func MuxPanicHandler(h func(context.Context, http.ResponseWriter, *http.Request,
 func MuxNotFoundHandler(h Handler) MuxOption {
 	return func(m *Mux) error {
 		h := m.wrap(h)
-		m.r.NotFound = func(w http.ResponseWriter, r *http.Request) {
+		m.r.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			h(w, r, nil)
-		}
+		})
 		return nil
 	}
 }

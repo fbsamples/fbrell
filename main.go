@@ -129,7 +129,6 @@ func main() {
 		},
 	}
 	fbApiClient := &fbapi.Client{
-		Redact:    true,
 		Transport: httpTransport,
 	}
 	lruCache := lru.New(10000)
