@@ -13,7 +13,7 @@ Development Environment
 You'll need [Go](https://golang.org/) to work on rell. Once you have it:
 
 ```sh
-go get github.com/daaku/rell
+GO15VENDOREXPERIMENT=1 go get github.com/daaku/rell
 rell
 ```
 
@@ -47,12 +47,4 @@ A Docker container can be built using:
 
 ```sh
 docker build -t rell-builder . && docker run rell-builder | docker build -t daaku/rell -
-```
-
-Upgrade Vendored Dependencies
------------------------------
-
-```sh
-go get github.com/daaku/party
-party -c -d=internal -u -t -x=false
 ```

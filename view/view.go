@@ -3,9 +3,9 @@
 package view
 
 import (
-	"github.com/daaku/rell/internal/github.com/daaku/go.h"
-	"github.com/daaku/rell/internal/github.com/daaku/go.h.js.ga"
-	"github.com/daaku/rell/internal/github.com/daaku/go.static"
+	"github.com/daaku/go.h"
+	"github.com/daaku/go.h.js.ga"
+	"github.com/daaku/go.static"
 )
 
 type PageConfig struct {

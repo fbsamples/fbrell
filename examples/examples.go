@@ -14,9 +14,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/daaku/rell/internal/github.com/daaku/go.errcode"
-	"github.com/daaku/rell/internal/github.com/facebookgo/parse"
-	"github.com/daaku/rell/internal/github.com/golang/groupcache/lru"
+	"github.com/daaku/go.errcode"
+	"github.com/facebookgo/parse"
+	"github.com/golang/groupcache/lru"
 )
 
 // Some categories are hidden from the listing.

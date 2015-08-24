@@ -5,9 +5,9 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/daaku/rell/internal/github.com/daaku/go.static"
-	"github.com/daaku/rell/internal/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/internal/golang.org/x/net/context"
+	"github.com/daaku/go.static"
+	"github.com/facebookgo/fbapp"
+	"golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
 )
 

@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/daaku/rell/internal/github.com/daaku/go.trustforward"
-	"github.com/daaku/rell/internal/github.com/facebookgo/ensure"
-	"github.com/daaku/rell/internal/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/internal/golang.org/x/net/context"
+	"github.com/daaku/go.trustforward"
+	"github.com/facebookgo/ensure"
+	"github.com/facebookgo/fbapp"
+	"golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
 )
 

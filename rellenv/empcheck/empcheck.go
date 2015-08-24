@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/daaku/rell/internal/github.com/facebookgo/fbapi"
-	"github.com/daaku/rell/internal/github.com/facebookgo/fbapp"
-	"github.com/daaku/rell/internal/github.com/golang/groupcache/lru"
+	"github.com/facebookgo/fbapi"
+	"github.com/facebookgo/fbapp"
+	"github.com/golang/groupcache/lru"
 )
 
 var fields = fbapi.ParamFields("is_employee")
