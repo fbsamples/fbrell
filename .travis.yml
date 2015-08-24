@@ -3,7 +3,7 @@ language: go
 go:
   - 1.5
 
-env
+env:
   - GO15VENDOREXPERIMENT=1
 
 install:
