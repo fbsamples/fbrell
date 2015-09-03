@@ -21,6 +21,8 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/net/context"
+
 	"github.com/daaku/go.h"
 )
 
@@ -274,13 +276,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // LinkStyle provides a h.LinkStyle where the HREFs are combined and served
 // using the specified Handler.
 type LinkStyle struct {
-	Handler *Handler
-	HREF    []string
+	HREF []string
 }
 
 // HTML returns the <link> tag with the appropriate attributes.
-func (l *LinkStyle) HTML() (h.HTML, error) {
-	url, err := l.Handler.URL(l.HREF...)
+func (l *LinkStyle) HTML(ctx context.Context) (h.HTML, error) {
+	url, err := URL(ctx, l.HREF...)
 	if err != nil {
 		return nil, err
 	}
@@ -290,14 +291,13 @@ func (l *LinkStyle) HTML() (h.HTML, error) {
 // Script provides a h.Script where the Srcs are combined and served using the
 // specified Handler.
 type Script struct {
-	Handler *Handler
-	Src     []string
-	Async   bool
+	Src   []string
+	Async bool
 }
 
 // HTML returns the <script> tag with the appropriate attributes.
-func (l *Script) HTML() (h.HTML, error) {
-	url, err := l.Handler.URL(l.Src...)
+func (l *Script) HTML(ctx context.Context) (h.HTML, error) {
+	url, err := URL(ctx, l.Src...)
 	if err != nil {
 		return nil, err
 	}
@@ -309,17 +309,16 @@ func (l *Script) HTML() (h.HTML, error) {
 
 // Img provides a h.Img where the src is served using the specified Handler.
 type Img struct {
-	Handler *Handler
-	ID      string
-	Class   string
-	Style   string
-	Src     string
-	Alt     string
+	ID    string
+	Class string
+	Style string
+	Src   string
+	Alt   string
 }
 
 // HTML returns the <img> tag with the appropriate attributes.
-func (i *Img) HTML() (h.HTML, error) {
-	src, err := i.Handler.URL(i.Src)
+func (i *Img) HTML(ctx context.Context) (h.HTML, error) {
+	src, err := URL(ctx, i.Src)
 	if err != nil {
 		return nil, err
 	}
@@ -330,4 +329,21 @@ func (i *Img) HTML() (h.HTML, error) {
 		Src:   src,
 		Alt:   i.Alt,
 	}, nil
+}
+
+type ctxKey int
+
+const handlerCtxKey ctxKey = 0
+
+func NewContext(ctx context.Context, h *Handler) context.Context {
+	return context.WithValue(ctx, handlerCtxKey, h)
+}
+
+func FromContext(ctx context.Context) *Handler {
+	h, _ := ctx.Value(handlerCtxKey).(*Handler)
+	return h
+}
+
+func URL(ctx context.Context, names ...string) (string, error) {
+	return FromContext(ctx).URL(names...)
 }

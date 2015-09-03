@@ -7,27 +7,29 @@ import (
 	"fmt"
 	"io"
 	"log"
+
+	"golang.org/x/net/context"
 )
 
 type HTML interface {
-	HTML() (HTML, error)
+	HTML(context.Context) (HTML, error)
 }
 
 type Primitive interface {
-	Write(io.Writer) (int, error)
+	Write(context.Context, io.Writer) (int, error)
 }
 
 // Write HTML into a writer.
-func Write(w io.Writer, h HTML) (int, error) {
+func Write(ctx context.Context, w io.Writer, h HTML) (int, error) {
 	var err error
 	for {
 		switch t := h.(type) {
 		case nil:
 			return 0, nil
 		case Primitive:
-			return t.Write(w)
+			return t.Write(ctx, w)
 		case HTML:
-			h, err = h.HTML()
+			h, err = h.HTML(ctx)
 			if err != nil {
 				return 0, err
 			}
@@ -38,15 +40,15 @@ func Write(w io.Writer, h HTML) (int, error) {
 }
 
 // Render HTML as a string.
-func Render(h HTML) (string, error) {
+func Render(ctx context.Context, h HTML) (string, error) {
 	buffer := bytes.NewBufferString("")
-	_, err := Write(buffer, h)
+	_, err := Write(ctx, buffer, h)
 	return buffer.String(), err
 }
 
 // Compile static HTML into HTML. Will panic if there are errors.
-func Compile(h HTML) HTML {
-	m, err := Render(h)
+func Compile(ctx context.Context, h HTML) HTML {
+	m, err := Render(ctx, h)
 	if err != nil {
 		log.Fatalf("Failed to Compile HTML %v with error %s", h, err)
 	}

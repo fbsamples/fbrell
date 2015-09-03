@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"golang.org/x/net/context"
+
 	"github.com/daaku/go.h"
 )
 
@@ -15,7 +17,7 @@ type Track struct {
 	ID string
 }
 
-func (g *Track) HTML() (h.HTML, error) {
+func (g *Track) HTML(ctx context.Context) (h.HTML, error) {
 	if g.ID == "" {
 		return nil, ErrMissingID
 	}

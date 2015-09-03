@@ -1,5 +1,7 @@
 package h
 
+import "golang.org/x/net/context"
+
 type A struct {
 	ID     string                 `h:"attr"`
 	Class  string                 `h:"attr"`
@@ -12,7 +14,7 @@ type A struct {
 	Data   map[string]interface{} `h:"dict"`
 }
 
-func (a *A) HTML() (HTML, error) {
+func (a *A) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "a", Node: a}, nil
 }
 
@@ -23,7 +25,7 @@ type Body struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (b *Body) HTML() (HTML, error) {
+func (b *Body) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "body", Node: b}, nil
 }
 
@@ -37,7 +39,7 @@ type Button struct {
 	Inner HTML                   `h:"inner"`
 }
 
-func (b *Button) HTML() (HTML, error) {
+func (b *Button) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "button", Node: b}, nil
 }
 
@@ -49,7 +51,7 @@ type Div struct {
 	Inner HTML                   `h:"inner"`
 }
 
-func (d *Div) HTML() (HTML, error) {
+func (d *Div) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "div", Node: d}, nil
 }
 
@@ -61,7 +63,7 @@ type P struct {
 	Inner HTML                   `h:"inner"`
 }
 
-func (p *P) HTML() (HTML, error) {
+func (p *P) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "p", Node: p}, nil
 }
 
@@ -82,7 +84,7 @@ type Form struct {
 	Inner   HTML   `h:"inner"`
 }
 
-func (f *Form) HTML() (HTML, error) {
+func (f *Form) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "form", Node: f}, nil
 }
 
@@ -93,7 +95,7 @@ type FieldSet struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (f *FieldSet) HTML() (HTML, error) {
+func (f *FieldSet) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "fieldset", Node: f}, nil
 }
 
@@ -104,7 +106,7 @@ type Legend struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (l *Legend) HTML() (HTML, error) {
+func (l *Legend) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "legend", Node: l}, nil
 }
 
@@ -112,7 +114,7 @@ type Head struct {
 	Inner HTML `h:"inner"`
 }
 
-func (h *Head) HTML() (HTML, error) {
+func (h *Head) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "head", Node: h}, nil
 }
 
@@ -124,7 +126,7 @@ type H1 struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (h *H1) HTML() (HTML, error) {
+func (h *H1) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "h1", Node: h}, nil
 }
 
@@ -136,18 +138,22 @@ type H2 struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (h *H2) HTML() (HTML, error) {
+func (h *H2) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "h2", Node: h}, nil
 }
 
 type Iframe struct {
-	ID    string `h:"attr"`
-	Class string `h:"attr"`
-	Style string `h:"attr"`
-	Src   string `h:"attr"`
+	ID              string `h:"attr"`
+	Class           string `h:"attr"`
+	Style           string `h:"attr"`
+	Src             string `h:"attr"`
+	Width           int    `h:"attr"`
+	Height          int    `h:"attr"`
+	FrameBorder     int    `h:"attr"`
+	AllowFullScreen bool   `h:"attr"`
 }
 
-func (t *Iframe) HTML() (HTML, error) {
+func (t *Iframe) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "iframe", Node: t}, nil
 }
 
@@ -159,7 +165,7 @@ type I struct {
 	Data  map[string]interface{} `h:"dict"`
 }
 
-func (i *I) HTML() (HTML, error) {
+func (i *I) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "i", Node: i}, nil
 }
 
@@ -172,7 +178,7 @@ type Img struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (t *Img) HTML() (HTML, error) {
+func (t *Img) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{
 		Tag:         "img",
 		Node:        t,
@@ -194,7 +200,7 @@ type Input struct {
 	Inner       HTML                   `h:"inner"`
 }
 
-func (i *Input) HTML() (HTML, error) {
+func (i *Input) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{
 		Tag:         "input",
 		Node:        i,
@@ -211,7 +217,7 @@ type Label struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (l *Label) HTML() (HTML, error) {
+func (l *Label) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "label", Node: l}, nil
 }
 
@@ -223,7 +229,7 @@ type Li struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (l *Li) HTML() (HTML, error) {
+func (l *Li) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "li", Node: l}, nil
 }
 
@@ -233,7 +239,7 @@ type Link struct {
 	Rel  string `h:"attr"`
 }
 
-func (l *Link) HTML() (HTML, error) {
+func (l *Link) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{"link", l, true}, nil
 }
 
@@ -244,7 +250,7 @@ type Meta struct {
 	Content  string `h:"attr"`
 }
 
-func (m *Meta) HTML() (HTML, error) {
+func (m *Meta) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{"meta", m, true}, nil
 }
 
@@ -259,7 +265,7 @@ type Option struct {
 	Inner    HTML                   `h:"inner"`
 }
 
-func (o *Option) HTML() (HTML, error) {
+func (o *Option) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "option", Node: o}, nil
 }
 
@@ -270,7 +276,7 @@ type Pre struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (d *Pre) HTML() (HTML, error) {
+func (d *Pre) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "pre", Node: d}, nil
 }
 
@@ -280,7 +286,7 @@ type Script struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (s *Script) HTML() (HTML, error) {
+func (s *Script) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "script", Node: s}, nil
 }
 
@@ -295,7 +301,7 @@ type Select struct {
 	Inner    HTML   `h:"inner"`
 }
 
-func (s *Select) HTML() (HTML, error) {
+func (s *Select) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "select", Node: s}, nil
 }
 
@@ -306,7 +312,7 @@ type Span struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (s *Span) HTML() (HTML, error) {
+func (s *Span) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "span", Node: s}, nil
 }
 
@@ -318,7 +324,7 @@ type Strong struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (s *Strong) HTML() (HTML, error) {
+func (s *Strong) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "strong", Node: s}, nil
 }
 
@@ -329,7 +335,7 @@ type Table struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (t *Table) HTML() (HTML, error) {
+func (t *Table) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "table", Node: t}, nil
 }
 
@@ -341,7 +347,7 @@ type Tr struct {
 	Inner HTML                   `h:"inner"`
 }
 
-func (t *Tr) HTML() (HTML, error) {
+func (t *Tr) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "tr", Node: t}, nil
 }
 
@@ -352,7 +358,7 @@ type Th struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (t *Th) HTML() (HTML, error) {
+func (t *Th) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "th", Node: t}, nil
 }
 
@@ -363,7 +369,7 @@ type Td struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (t *Td) HTML() (HTML, error) {
+func (t *Td) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "td", Node: t}, nil
 }
 
@@ -374,7 +380,7 @@ type Thead struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (t *Thead) HTML() (HTML, error) {
+func (t *Thead) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "thead", Node: t}, nil
 }
 
@@ -385,7 +391,7 @@ type Tbody struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (t *Tbody) HTML() (HTML, error) {
+func (t *Tbody) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "tbody", Node: t}, nil
 }
 
@@ -397,13 +403,13 @@ type Textarea struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (t *Textarea) HTML() (HTML, error) {
+func (t *Textarea) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "textarea", Node: t}, nil
 }
 
 type Title Frag
 
-func (t *Title) HTML() (HTML, error) {
+func (t *Title) HTML(ctx context.Context) (HTML, error) {
 	f := Frag(*t)
 	return &Node{
 		Tag:   "title",
@@ -419,7 +425,7 @@ type Ul struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (ul *Ul) HTML() (HTML, error) {
+func (ul *Ul) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "ul", Node: ul}, nil
 }
 
@@ -428,6 +434,66 @@ type Style struct {
 	Inner HTML   `h:"inner"`
 }
 
-func (s *Style) HTML() (HTML, error) {
+func (s *Style) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "style", Node: s}, nil
+}
+
+type Header struct {
+	ID    string                 `h:"attr"`
+	Class string                 `h:"attr"`
+	Style string                 `h:"attr"`
+	Data  map[string]interface{} `h:"dict"`
+	Inner HTML                   `h:"inner"`
+}
+
+func (d *Header) HTML(ctx context.Context) (HTML, error) {
+	return &ReflectNode{Tag: "header", Node: d}, nil
+}
+
+type Footer struct {
+	ID    string                 `h:"attr"`
+	Class string                 `h:"attr"`
+	Style string                 `h:"attr"`
+	Data  map[string]interface{} `h:"dict"`
+	Inner HTML                   `h:"inner"`
+}
+
+func (d *Footer) HTML(ctx context.Context) (HTML, error) {
+	return &ReflectNode{Tag: "footer", Node: d}, nil
+}
+
+type Main struct {
+	ID    string                 `h:"attr"`
+	Class string                 `h:"attr"`
+	Style string                 `h:"attr"`
+	Data  map[string]interface{} `h:"dict"`
+	Inner HTML                   `h:"inner"`
+}
+
+func (d *Main) HTML(ctx context.Context) (HTML, error) {
+	return &ReflectNode{Tag: "main", Node: d}, nil
+}
+
+type Nav struct {
+	ID    string                 `h:"attr"`
+	Class string                 `h:"attr"`
+	Style string                 `h:"attr"`
+	Data  map[string]interface{} `h:"dict"`
+	Inner HTML                   `h:"inner"`
+}
+
+func (d *Nav) HTML(ctx context.Context) (HTML, error) {
+	return &ReflectNode{Tag: "nav", Node: d}, nil
+}
+
+type Aside struct {
+	ID    string                 `h:"attr"`
+	Class string                 `h:"attr"`
+	Style string                 `h:"attr"`
+	Data  map[string]interface{} `h:"dict"`
+	Inner HTML                   `h:"inner"`
+}
+
+func (d *Aside) HTML(ctx context.Context) (HTML, error) {
+	return &ReflectNode{Tag: "aside", Node: d}, nil
 }

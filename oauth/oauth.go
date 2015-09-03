@@ -15,9 +15,9 @@ import (
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.static"
+	"github.com/daaku/rell/rellenv"
 	"github.com/facebookgo/fbapp"
 	"golang.org/x/net/context"
-	"github.com/daaku/rell/rellenv"
 )
 
 const (
@@ -51,7 +51,7 @@ func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	h.WriteResponse(w, r, &h.Script{
+	h.WriteResponse(ctx, w, r, &h.Script{
 		Inner: h.Unsafe("top.location='/'"),
 	})
 	return nil
@@ -87,7 +87,7 @@ func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		http.Redirect(w, r, dialogURL.String(), 302)
 	} else {
 		b, _ := json.Marshal(dialogURL.String())
-		h.WriteResponse(w, r, &h.Script{
+		h.WriteResponse(ctx, w, r, &h.Script{
 			Inner: h.Unsafe(fmt.Sprintf("top.location=%s", b)),
 		})
 	}
@@ -130,7 +130,7 @@ func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		return ctxerr.Wrap(ctx, err)
 	}
-	h.WriteResponse(w, r, &h.Frag{
+	h.WriteResponse(ctx, w, r, &h.Frag{
 		&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
 		h.String(string(bd)),
 	})

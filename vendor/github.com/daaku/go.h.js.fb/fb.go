@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"golang.org/x/net/context"
+
 	"github.com/daaku/go.h"
 )
 
@@ -16,7 +18,7 @@ type Init struct {
 
 const defaultURL = "//connect.facebook.net/en_US/all.js"
 
-func (i *Init) HTML() (h.HTML, error) {
+func (i *Init) HTML(ctx context.Context) (h.HTML, error) {
 	url := i.URL
 	if url == "" {
 		url = defaultURL

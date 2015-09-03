@@ -13,7 +13,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/daaku/rell/examples"
 	"github.com/daaku/ctxerr"
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.fburl"
@@ -22,11 +21,12 @@ import (
 	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.xsrf"
+	"github.com/daaku/rell/examples"
+	"github.com/daaku/rell/rellenv"
+	"github.com/daaku/rell/view"
 	"github.com/daaku/sortutil"
 	"github.com/facebookgo/counting"
 	"golang.org/x/net/context"
-	"github.com/daaku/rell/rellenv"
-	"github.com/daaku/rell/view"
 )
 
 const (
@@ -78,7 +78,7 @@ func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(w, r, &examplesList{
+	h.WriteResponse(ctx, w, r, &examplesList{
 		Context: ctx,
 		Env:     env,
 		Static:  a.Static,
@@ -120,7 +120,7 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(w, r, &page{
+	h.WriteResponse(ctx, w, r, &page{
 		Writer:  w,
 		Request: r,
 		Context: ctx,
@@ -137,7 +137,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(w, r, &page{
+	h.WriteResponse(ctx, w, r, &page{
 		Writer:  w,
 		Request: r,
 		Context: ctx,
@@ -159,11 +159,10 @@ type page struct {
 	Xsrf    *xsrf.Provider
 }
 
-func (p *page) HTML() (h.HTML, error) {
+func (p *page) HTML(ctx context.Context) (h.HTML, error) {
 	return &view.Page{
-		Static: p.Static,
-		Title:  p.Example.Title,
-		Class:  "main",
+		Title: p.Example.Title,
+		Class: "main",
 		Body: &h.Div{
 			Class: "container-fluid",
 			Inner: &h.Frag{
@@ -236,7 +235,7 @@ type editorTop struct {
 	Example *examples.Example
 }
 
-func (e *editorTop) HTML() (h.HTML, error) {
+func (e *editorTop) HTML(ctx context.Context) (h.HTML, error) {
 	left := &h.Frag{
 		&h.A{
 			ID: "rell-login",
@@ -303,7 +302,7 @@ type editorArea struct {
 	Example *examples.Example
 }
 
-func (e *editorArea) HTML() (h.HTML, error) {
+func (e *editorArea) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
 		Class: "row-fluid",
 		Inner: &h.Textarea{
@@ -324,7 +323,7 @@ type viewModeDropdown struct {
 	Example *examples.Example
 }
 
-func (d *viewModeDropdown) HTML() (h.HTML, error) {
+func (d *viewModeDropdown) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
 		Class: "btn-group",
 		Inner: &h.Frag{
@@ -390,7 +389,7 @@ type editorBottom struct {
 	Example *examples.Example
 }
 
-func (e *editorBottom) HTML() (h.HTML, error) {
+func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
 	runButton := &h.A{
 		ID:    "rell-run-code",
 		Class: "btn btn-primary",
@@ -460,13 +459,13 @@ func (e *editorBottom) HTML() (h.HTML, error) {
 
 type editorOutput struct{}
 
-func (e *editorOutput) HTML() (h.HTML, error) {
+func (e *editorOutput) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{Class: "row-fluid", ID: "jsroot"}, nil
 }
 
 type logContainer struct{}
 
-func (e *logContainer) HTML() (h.HTML, error) {
+func (e *logContainer) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
 		ID: "log-container",
 		Inner: &h.Frag{
@@ -486,7 +485,7 @@ type contextEditor struct {
 	Example *examples.Example
 }
 
-func (e *contextEditor) HTML() (h.HTML, error) {
+func (e *contextEditor) HTML(ctx context.Context) (h.HTML, error) {
 	if !rellenv.IsEmployee(e.Context) {
 		return h.HiddenInputs(e.Env.Values()), nil
 	}
@@ -546,7 +545,7 @@ type examplesList struct {
 	Static  *static.Handler
 }
 
-func (l *examplesList) HTML() (h.HTML, error) {
+func (l *examplesList) HTML(ctx context.Context) (h.HTML, error) {
 	categories := &h.Frag{}
 	for _, category := range l.DB.Category {
 		if !category.Hidden {
@@ -558,9 +557,8 @@ func (l *examplesList) HTML() (h.HTML, error) {
 		}
 	}
 	return &view.Page{
-		Static: l.Static,
-		Title:  "Examples",
-		Class:  "examples",
+		Title: "Examples",
+		Class: "examples",
 		Body: &h.Div{
 			Class: "container",
 			Inner: &h.Div{
@@ -583,7 +581,7 @@ type exampleCategory struct {
 	Category *examples.Category
 }
 
-func (c *exampleCategory) HTML() (h.HTML, error) {
+func (c *exampleCategory) HTML(ctx context.Context) (h.HTML, error) {
 	li := &h.Frag{}
 	for _, example := range c.Category.Example {
 		li.Append(&h.Li{
@@ -605,7 +603,7 @@ type envSelector struct {
 	Example *examples.Example
 }
 
-func (e *envSelector) HTML() (h.HTML, error) {
+func (e *envSelector) HTML(ctx context.Context) (h.HTML, error) {
 	if !rellenv.IsEmployee(e.Context) {
 		return nil, nil
 	}
@@ -668,13 +666,13 @@ type exampleContent struct {
 	Example *examples.Example
 }
 
-func (c *exampleContent) HTML() (h.HTML, error) {
+func (c *exampleContent) HTML(ctx context.Context) (h.HTML, error) {
 	return c, fmt.Errorf("exampleContent.HTML is a dangerous primitive")
 }
 
 // Renders the example content including support for context sensitive
 // text substitution.
-func (c *exampleContent) Write(w io.Writer) (int, error) {
+func (c *exampleContent) Write(ctx context.Context, w io.Writer) (int, error) {
 	e := c.Example
 	wwwURL := fburl.URL{
 		Env: rellenv.FbEnv(c.Context),
@@ -723,7 +721,7 @@ type JsInit struct {
 	Example *examples.Example
 }
 
-func (i *JsInit) HTML() (h.HTML, error) {
+func (i *JsInit) HTML(ctx context.Context) (h.HTML, error) {
 	encodedEnv, err := json.Marshal(i.Env)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to json.Marshal context: %s", err)

@@ -5,6 +5,8 @@ import (
 	"io"
 	"reflect"
 	"strings"
+
+	"golang.org/x/net/context"
 )
 
 type ReflectNode struct {
@@ -13,12 +15,12 @@ type ReflectNode struct {
 	SelfClosing bool
 }
 
-func (n *ReflectNode) HTML() (HTML, error) {
+func (n *ReflectNode) HTML(ctx context.Context) (HTML, error) {
 	return n, fmt.Errorf("Called HTML for ReflectNode: %+v", n)
 }
 
 // Write the generated markup for a ReflectNode.
-func (n *ReflectNode) Write(w io.Writer) (int, error) {
+func (n *ReflectNode) Write(ctx context.Context, w io.Writer) (int, error) {
 	written := 0
 	i := 0
 	var err error
@@ -41,7 +43,7 @@ func (n *ReflectNode) Write(w io.Writer) (int, error) {
 		return written, err
 	}
 
-	i, err = n.writeInner(w)
+	i, err = n.writeInner(ctx, w)
 	written += i
 	if err != nil {
 		return written, err
@@ -94,7 +96,7 @@ func (n *ReflectNode) writeAttributes(w io.Writer) (int, error) {
 }
 
 // Use reflection to write inner HTML.
-func (n *ReflectNode) writeInner(w io.Writer) (int, error) {
+func (n *ReflectNode) writeInner(ctx context.Context, w io.Writer) (int, error) {
 	value := reflect.ValueOf(n.Node).Elem()
 	typeOf := value.Type()
 	written := 0
@@ -116,7 +118,7 @@ func (n *ReflectNode) writeInner(w io.Writer) (int, error) {
 				"Field %s was marked as inner but does not satisfy the HTML interface",
 				field.Name)
 		}
-		tmp, err = Write(w, html)
+		tmp, err = Write(ctx, w, html)
 		written += tmp
 		if err != nil {
 			return written, err

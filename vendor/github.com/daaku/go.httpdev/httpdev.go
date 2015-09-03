@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/net/context"
+
 	"github.com/daaku/go.h"
 )
 
@@ -38,7 +40,7 @@ func HumanJSON(v interface{}, w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error json.MarshalIndent: %s", err)
 	}
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
-		h.WriteResponse(w, r, &h.Document{
+		h.WriteResponse(context.Background(), w, r, &h.Document{
 			Inner: &h.Frag{
 				&h.Head{
 					Inner: &h.Frag{

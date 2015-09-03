@@ -1,5 +1,7 @@
 package h
 
+import "golang.org/x/net/context"
+
 type XMLNS map[string]string
 
 func (ns XMLNS) Attributes() Attributes {
@@ -17,7 +19,7 @@ type Document struct {
 	Lang  string
 }
 
-func (d *Document) HTML() (HTML, error) {
+func (d *Document) HTML(ctx context.Context) (HTML, error) {
 	attrs := d.XMLNS.Attributes()
 	if d.ID != "" {
 		attrs["id"] = d.ID

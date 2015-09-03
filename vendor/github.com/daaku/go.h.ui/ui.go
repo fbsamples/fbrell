@@ -3,9 +3,11 @@ package ui
 import (
 	"crypto/rand"
 	"fmt"
-	"github.com/daaku/go.h"
 	"io"
 	"log"
+
+	"github.com/daaku/go.h"
+	"golang.org/x/net/context"
 )
 
 func MakeID(prefix string) string {
@@ -28,7 +30,7 @@ type Checkbox struct {
 	Value       interface{}
 }
 
-func (i *Checkbox) HTML() (h.HTML, error) {
+func (i *Checkbox) HTML(ctx context.Context) (h.HTML, error) {
 	value := i.Value
 	if value == nil {
 		value = "1"
@@ -67,7 +69,7 @@ type ToggleGroup struct {
 	Inner h.HTML
 }
 
-func (g *ToggleGroup) HTML() (h.HTML, error) {
+func (g *ToggleGroup) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Table{
 		Class: "table table-striped table-condensed",
 		Inner: &h.Frag{
@@ -100,7 +102,7 @@ type ToggleItem struct {
 	Tooltip     string
 }
 
-func (i *ToggleItem) HTML() (h.HTML, error) {
+func (i *ToggleItem) HTML(ctx context.Context) (h.HTML, error) {
 	tr := &h.Tr{
 		Inner: &h.Frag{
 			&h.Td{
@@ -146,7 +148,7 @@ type TextInput struct {
 	Tooltip    string
 }
 
-func (i *TextInput) HTML() (h.HTML, error) {
+func (i *TextInput) HTML(ctx context.Context) (h.HTML, error) {
 	t := i.Type
 	if t == "" {
 		t = "text"

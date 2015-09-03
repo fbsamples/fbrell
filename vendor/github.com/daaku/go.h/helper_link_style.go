@@ -2,13 +2,15 @@ package h
 
 import (
 	"errors"
+
+	"golang.org/x/net/context"
 )
 
 type LinkStyle struct {
 	HREF string
 }
 
-func (l *LinkStyle) HTML() (HTML, error) {
+func (l *LinkStyle) HTML(ctx context.Context) (HTML, error) {
 	if l.HREF == "" {
 		return nil, errors.New("Missing HREF in LinkStyle.")
 	}

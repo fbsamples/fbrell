@@ -6,6 +6,7 @@ import (
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.ga"
 	"github.com/daaku/go.static"
+	"golang.org/x/net/context"
 )
 
 type PageConfig struct {
@@ -32,7 +33,6 @@ var DefaultPageConfig = &PageConfig{
 // A minimal standard page with no visible body.
 type Page struct {
 	Config *PageConfig
-	Static *static.Handler
 	Class  string
 	Head   h.HTML
 	Body   h.HTML
@@ -46,7 +46,7 @@ func (p *Page) config() *PageConfig {
 	return p.Config
 }
 
-func (p *Page) HTML() (h.HTML, error) {
+func (p *Page) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Document{
 		XMLNS: h.XMLNS{"fb": "http://ogp.me/ns/fb#"},
 		Inner: &h.Frag{
@@ -59,8 +59,7 @@ func (p *Page) HTML() (h.HTML, error) {
 						h.Unsafe(" &mdash; Facebook Read Eval Log Loop"),
 					},
 					&static.LinkStyle{
-						Handler: p.Static,
-						HREF:    p.config().Style,
+						HREF: p.config().Style,
 					},
 					p.Head,
 				},
@@ -72,9 +71,8 @@ func (p *Page) HTML() (h.HTML, error) {
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},
 					&static.Script{
-						Handler: p.Static,
-						Src:     p.config().Script,
-						Async:   true,
+						Src:   p.config().Script,
+						Async: true,
 					},
 					p.config().GA,
 				},

@@ -11,10 +11,10 @@ import (
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.fb"
 	"github.com/daaku/go.static"
-	"golang.org/x/net/context"
 	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
+	"golang.org/x/net/context"
 )
 
 type Handler struct {
@@ -43,7 +43,7 @@ func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(w, r, renderObject(ctx, env, a.Static, object))
+	h.WriteResponse(ctx, w, r, renderObject(ctx, env, a.Static, object))
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(w, r, renderObject(ctx, env, a.Static, object))
+	h.WriteResponse(ctx, w, r, renderObject(ctx, env, a.Static, object))
 	return nil
 }
 
@@ -162,8 +162,7 @@ func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *o
 					&h.Meta{Charset: "utf-8"},
 					title,
 					&static.LinkStyle{
-						Handler: s,
-						HREF:    view.DefaultPageConfig.Style,
+						HREF: view.DefaultPageConfig.Style,
 					},
 					renderMeta(o),
 				},

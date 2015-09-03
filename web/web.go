@@ -8,19 +8,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/daaku/rell/adminweb"
-	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/ctxerr"
 	"github.com/daaku/ctxmux"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.static"
-	"github.com/facebookgo/fbapp"
-	"golang.org/x/net/context"
+	"github.com/daaku/rell/adminweb"
+	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/rell/oauth"
 	"github.com/daaku/rell/og/viewog"
 	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/rellenv/viewcontext"
 	"github.com/daaku/rell/view"
+	"github.com/facebookgo/fbapp"
+	"golang.org/x/net/context"
 )
 
 // The rell web application.
@@ -99,7 +99,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (a *Handler) handleError(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
 	a.Logger.Printf("Error at %s\n%s\n", r.URL, ctxerr.RichString(err))
-	view.Error(w, r, a.Static, err)
+	view.Error(ctx, w, r, err)
 }
 
 func (a *Handler) contextMaker(r *http.Request) (context.Context, error) {
@@ -107,5 +107,8 @@ func (a *Handler) contextMaker(r *http.Request) (context.Context, error) {
 	if err != nil {
 		return a.ctx, err
 	}
-	return rellenv.WithEnv(a.ctx, env), nil
+	ctx := a.ctx
+	ctx = rellenv.WithEnv(a.ctx, env)
+	ctx = static.NewContext(ctx, a.Static)
+	return ctx, nil
 }

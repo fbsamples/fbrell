@@ -3,6 +3,8 @@ package h
 import (
 	"fmt"
 	"io"
+
+	"golang.org/x/net/context"
 )
 
 type Node struct {
@@ -12,12 +14,12 @@ type Node struct {
 	SelfClosing bool
 }
 
-func (n *Node) HTML() (HTML, error) {
+func (n *Node) HTML(ctx context.Context) (HTML, error) {
 	return n, fmt.Errorf("Called HTML for Node: %+v", n)
 }
 
 // Write the generated markup for a Node.
-func (n *Node) Write(w io.Writer) (int, error) {
+func (n *Node) Write(ctx context.Context, w io.Writer) (int, error) {
 	written := 0
 	i := 0
 	var err error
@@ -40,7 +42,7 @@ func (n *Node) Write(w io.Writer) (int, error) {
 		return written, err
 	}
 
-	i, err = Write(w, n.Inner)
+	i, err = Write(ctx, w, n.Inner)
 	written += i
 	if err != nil {
 		return written, err
