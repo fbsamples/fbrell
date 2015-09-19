@@ -6,6 +6,11 @@ go:
 
 env:
   - GO15VENDOREXPERIMENT=1
+  - GO15VENDOREXPERIMENT=0
+
+matrix:
+  allow_failures:
+    - GO15VENDOREXPERIMENT=0
 
 install:
   - go install -race -v std
