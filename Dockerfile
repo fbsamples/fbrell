@@ -1,5 +1,5 @@
-FROM daaku/arch
-RUN pacman --noconfirm --sync go
+FROM golang
+RUN go version
 ENV GOPATH /go
 COPY . /go/src/github.com/daaku/rell
 ENV GO15VENDOREXPERIMENT=1
