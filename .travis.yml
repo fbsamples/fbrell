@@ -12,6 +12,9 @@ matrix:
   allow_failures:
     - GO15VENDOREXPERIMENT=0
 
+before_install:
+  - test "$GO15VENDOREXPERIMENT" == "0" && rm -rf vendor
+
 install:
   - go install -race -v std
   - go get -race -t -v ./...
