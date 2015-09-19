@@ -3,7 +3,6 @@ package ga
 
 import (
 	"errors"
-	"fmt"
 
 	"golang.org/x/net/context"
 
@@ -23,16 +22,16 @@ func (g *Track) HTML(ctx context.Context) (h.HTML, error) {
 	if g.Account == "" {
 		return nil, errMissingAccount
 	}
-	return h.Frag{
-		&h.Script{
-			Inner: h.Unsafe(fmt.Sprintf(
-				`var _gaq = _gaq || [];`+
-					`_gaq.push(['_setAccount', '%s']);`+
-					`_gaq.push(['_trackPageview']);`, g.Account)),
-		},
-		&h.Script{
-			Src:   "https://ssl.google-analytics.com/ga.js",
-			Async: true,
+	return &h.Script{
+		Inner: h.Frag{
+			h.Unsafe(
+				`(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){` +
+					`(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),` +
+					`m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)` +
+					`})(window,document,'script','//www.google-analytics.com/analytics.js','ga');` +
+					`ga('create','`),
+			h.String(g.Account),
+			h.Unsafe(`','auto');ga('send','pageview');`),
 		},
 	}, nil
 }
