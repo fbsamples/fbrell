@@ -331,6 +331,23 @@ func (i *Img) HTML(ctx context.Context) (h.HTML, error) {
 	}, nil
 }
 
+// Favicon provides a h.Link for a favicon.
+type Favicon struct {
+	HREF string
+}
+
+// HTML returns the <script> tag with the appropriate attributes.
+func (l *Favicon) HTML(ctx context.Context) (h.HTML, error) {
+	url, err := URL(ctx, l.HREF)
+	if err != nil {
+		return nil, err
+	}
+	return &h.Link{
+		Rel:  "shortcut icon",
+		HREF: url,
+	}, nil
+}
+
 type ctxKey int
 
 const handlerCtxKey ctxKey = 0
