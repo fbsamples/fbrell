@@ -165,21 +165,21 @@ func (p *page) HTML(ctx context.Context) (h.HTML, error) {
 		Class: "main",
 		Body: &h.Div{
 			Class: "container-fluid",
-			Inner: &h.Frag{
+			Inner: h.Frag{
 				&h.Form{
 					Action: savedPath,
 					Method: h.Post,
 					Target: "_top",
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						h.HiddenInputs(url.Values{
 							paramName: []string{p.Xsrf.Token(p.Writer, p.Request, savedPath)},
 						}),
 						&h.Div{
 							Class: "row-fluid",
-							Inner: &h.Frag{
+							Inner: h.Frag{
 								&h.Div{
 									Class: "span8",
-									Inner: &h.Frag{
+									Inner: h.Frag{
 										&editorTop{
 											Context: p.Context,
 											Env:     p.Env,
@@ -199,7 +199,7 @@ func (p *page) HTML(ctx context.Context) (h.HTML, error) {
 								},
 								&h.Div{
 									Class: "span4",
-									Inner: &h.Frag{
+									Inner: h.Frag{
 										&contextEditor{
 											Context: p.Context,
 											Env:     p.Env,
@@ -236,7 +236,7 @@ type editorTop struct {
 }
 
 func (e *editorTop) HTML(ctx context.Context) (h.HTML, error) {
-	left := &h.Frag{
+	left := h.Frag{
 		&h.A{
 			ID: "rell-login",
 			Inner: &h.Span{
@@ -266,7 +266,7 @@ func (e *editorTop) HTML(ctx context.Context) (h.HTML, error) {
 	if rellenv.IsEmployee(e.Context) {
 		return &h.Div{
 			Class: "row-fluid form-inline",
-			Inner: &h.Frag{
+			Inner: h.Frag{
 				&h.Div{
 					Class: "span8",
 					Inner: left,
@@ -287,7 +287,7 @@ func (e *editorTop) HTML(ctx context.Context) (h.HTML, error) {
 	}
 	return &h.Div{
 		Class: "row-fluid form-inline",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Div{
 				Class: "span12",
 				Inner: left,
@@ -326,10 +326,10 @@ type viewModeDropdown struct {
 func (d *viewModeDropdown) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
 		Class: "btn-group",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Button{
 				Class: "btn",
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.I{Class: "icon-eye-open"},
 					h.String(" "),
 					h.String(viewModeOptions[d.Env.ViewMode]),
@@ -346,7 +346,7 @@ func (d *viewModeDropdown) HTML(ctx context.Context) (h.HTML, error) {
 			},
 			&h.Ul{
 				Class: "dropdown-menu",
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.Li{
 						Inner: &h.A{
 							Inner:  h.String(viewModeOptions[rellenv.Website]),
@@ -393,7 +393,7 @@ func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
 	runButton := &h.A{
 		ID:    "rell-run-code",
 		Class: "btn btn-primary",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.I{Class: "icon-play icon-white"},
 			h.String(" Run Code"),
 		},
@@ -409,14 +409,14 @@ func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
 	}
 	var saveButton h.HTML
 	if rellenv.IsEmployee(e.Context) {
-		saveButton = &h.Frag{
+		saveButton = h.Frag{
 			h.String(" "),
 			&h.Div{
 				Class: "btn-group",
 				Inner: &h.Button{
 					Class: "btn",
 					Type:  "submit",
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						&h.I{Class: "icon-file"},
 						h.String(" Save Code"),
 					},
@@ -426,7 +426,7 @@ func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
 	}
 	return &h.Div{
 		Class: "row-fluid form-inline",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Strong{
 				Class: "span4",
 				Inner: &h.A{
@@ -438,7 +438,7 @@ func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
 				Class: "span8",
 				Inner: &h.Div{
 					Class: "btn-toolbar pull-right",
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						&viewModeDropdown{
 							Context: e.Context,
 							Env:     e.Env,
@@ -468,7 +468,7 @@ type logContainer struct{}
 func (e *logContainer) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
 		ID: "log-container",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Button{
 				ID:    "rell-log-clear",
 				Class: "btn",
@@ -491,7 +491,7 @@ func (e *contextEditor) HTML(ctx context.Context) (h.HTML, error) {
 	}
 	return &h.Div{
 		Class: "well form-horizontal",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&ui.TextInput{
 				Label:      h.String("Application ID"),
 				Name:       "appid",
@@ -500,7 +500,7 @@ func (e *contextEditor) HTML(ctx context.Context) (h.HTML, error) {
 				Tooltip:    "Make sure the base domain in the application settings for the specified ID allows fbrell.com.",
 			},
 			&ui.ToggleGroup{
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&ui.ToggleItem{
 						Name:        "init",
 						Checked:     e.Env.Init,
@@ -523,11 +523,11 @@ func (e *contextEditor) HTML(ctx context.Context) (h.HTML, error) {
 			},
 			&h.Div{
 				Class: "form-actions",
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.Button{
 						Type:  "submit",
 						Class: "btn btn-primary",
-						Inner: &h.Frag{
+						Inner: h.Frag{
 							&h.I{Class: "icon-refresh icon-white"},
 							h.String(" Update"),
 						},
@@ -546,10 +546,10 @@ type examplesList struct {
 }
 
 func (l *examplesList) HTML(ctx context.Context) (h.HTML, error) {
-	categories := &h.Frag{}
+	var categories h.Frag
 	for _, category := range l.DB.Category {
 		if !category.Hidden {
-			categories.Append(&exampleCategory{
+			categories = append(categories, &exampleCategory{
 				Context:  l.Context,
 				Env:      l.Env,
 				Category: category,
@@ -565,7 +565,7 @@ func (l *examplesList) HTML(ctx context.Context) (h.HTML, error) {
 				Class: "row",
 				Inner: &h.Div{
 					Class: "span12",
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						&h.H1{Inner: h.String("Examples")},
 						categories,
 					},
@@ -582,16 +582,16 @@ type exampleCategory struct {
 }
 
 func (c *exampleCategory) HTML(ctx context.Context) (h.HTML, error) {
-	li := &h.Frag{}
+	var li h.Frag
 	for _, example := range c.Category.Example {
-		li.Append(&h.Li{
+		li = append(li, &h.Li{
 			Inner: &h.A{
 				HREF:  c.Env.URL(example.URL).String(),
 				Inner: h.String(example.Name),
 			},
 		})
 	}
-	return &h.Frag{
+	return h.Frag{
 		&h.H2{Inner: h.String(c.Category.Name)},
 		&h.Ul{Inner: li},
 	}, nil
@@ -608,7 +608,7 @@ func (e *envSelector) HTML(ctx context.Context) (h.HTML, error) {
 		return nil, nil
 	}
 	fbEnv := rellenv.FbEnv(e.Context)
-	frag := &h.Frag{
+	frag := h.Frag{
 		h.HiddenInputs(url.Values{
 			"server": []string{fbEnv},
 		}),
@@ -619,7 +619,7 @@ func (e *envSelector) HTML(ctx context.Context) (h.HTML, error) {
 		}
 		ctxCopy := e.Env.Copy()
 		ctxCopy.Env = pair.Key
-		frag.Append(&h.Li{
+		frag = append(frag, &h.Li{
 			Inner: &h.A{
 				Inner:  h.String(pair.Value),
 				Target: "_top",
@@ -634,10 +634,10 @@ func (e *envSelector) HTML(ctx context.Context) (h.HTML, error) {
 	}
 	return &h.Div{
 		Class: "btn-group",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Button{
 				Class: "btn",
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.I{Class: "icon-road"},
 					h.String(" "),
 					h.String(title),
@@ -730,13 +730,13 @@ func (i *JsInit) HTML(ctx context.Context) (h.HTML, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to json.Marshal example: %s", err)
 	}
-	return &h.Frag{
+	return h.Frag{
 		&h.Script{
 			Src:   i.Env.SdkURL(),
 			Async: true,
 		},
 		&h.Script{
-			Inner: &h.Frag{
+			Inner: h.Frag{
 				h.Unsafe("window.rellConfig="),
 				h.UnsafeBytes(encodedEnv),
 				h.Unsafe(";window.rellExample="),

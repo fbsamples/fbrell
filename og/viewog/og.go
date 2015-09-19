@@ -96,9 +96,9 @@ func (h *Handler) Redirect(ctx context.Context, w http.ResponseWriter, r *http.R
 
 // Renders <meta> tags for object.
 func renderMeta(o *og.Object) h.HTML {
-	frag := &h.Frag{}
+	var frag h.Frag
 	for _, pair := range o.Pairs {
-		frag.Append(&h.Meta{
+		frag = append(frag, &h.Meta{
 			Property: pair.Key,
 			Content:  pair.Value,
 		})
@@ -117,10 +117,10 @@ func renderValue(val string) h.HTML {
 
 // Renders a <table> with the meta data for the object.
 func renderMetaTable(o *og.Object) h.HTML {
-	frag := &h.Frag{}
+	var frag h.Frag
 	for _, pair := range o.Pairs {
-		frag.Append(&h.Tr{
-			Inner: &h.Frag{
+		frag = append(frag, &h.Tr{
+			Inner: h.Frag{
 				&h.Th{Inner: h.String(pair.Key)},
 				&h.Td{Inner: renderValue(pair.Value)},
 			},
@@ -129,10 +129,10 @@ func renderMetaTable(o *og.Object) h.HTML {
 
 	return &h.Table{
 		Class: "table table-bordered table-striped og-info",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Thead{
 				Inner: &h.Tr{
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						&h.Th{Inner: h.String("Property")},
 						&h.Th{Inner: h.String("Content")},
 					},
@@ -156,9 +156,9 @@ func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *o
 		}
 	}
 	return &h.Document{
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Head{
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.Meta{Charset: "utf-8"},
 					title,
 					&static.LinkStyle{
@@ -169,7 +169,7 @@ func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *o
 			},
 			&h.Body{
 				Class: "container",
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.Div{ID: "fb-root"},
 					view.DefaultPageConfig.GA,
 					&fb.Init{
@@ -178,7 +178,7 @@ func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *o
 					},
 					&h.Div{
 						Class: "row",
-						Inner: &h.Frag{
+						Inner: h.Frag{
 							&h.Div{
 								Class: "span8",
 								Inner: header,
@@ -188,7 +188,7 @@ func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *o
 								Inner: &h.A{
 									Class: "btn btn-info pull-right",
 									HREF:  o.LintURL(),
-									Inner: &h.Frag{
+									Inner: h.Frag{
 										&h.I{Class: "icon-warning-sign icon-white"},
 										h.String(" Debugger"),
 									},
@@ -198,10 +198,10 @@ func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *o
 					},
 					&h.Div{
 						Class: "row",
-						Inner: &h.Frag{
+						Inner: h.Frag{
 							&h.Div{
 								Class: "span6",
-								Inner: &h.Frag{
+								Inner: h.Frag{
 									renderMetaTable(o),
 									&h.Iframe{
 										Class: "like",

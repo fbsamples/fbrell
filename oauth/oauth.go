@@ -131,7 +131,7 @@ func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		return ctxerr.Wrap(ctx, err)
 	}
-	_, err = h.Write(ctx, w, &h.Frag{
+	_, err = h.Write(ctx, w, h.Frag{
 		&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
 		h.String(string(bd)),
 	})

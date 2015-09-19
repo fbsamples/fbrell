@@ -12,10 +12,10 @@ var errLinkStyleMissingHREF = errors.New("h: LinkStyle missing HREF")
 // HiddenInputs renders some HTML for the given url.Values. It does so inside a
 // div with display: none.
 func HiddenInputs(values url.Values) HTML {
-	frag := &Frag{}
+	var frag Frag
 	for key, list := range values {
 		for _, each := range list {
-			frag.Append(&Input{Name: key, Value: each})
+			frag = append(frag, &Input{Name: key, Value: each})
 		}
 	}
 	return &Div{Style: "display:none", Inner: frag}

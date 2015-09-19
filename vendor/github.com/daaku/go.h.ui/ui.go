@@ -38,7 +38,7 @@ func (i *Checkbox) HTML(ctx context.Context) (h.HTML, error) {
 	id := MakeID(i.Name)
 	return &h.Div{
 		Class: "control-group",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Label{
 				Class: "control-label",
 				For:   id,
@@ -48,7 +48,7 @@ func (i *Checkbox) HTML(ctx context.Context) (h.HTML, error) {
 				Class: "controls",
 				Inner: &h.Label{
 					Class: "checkbox",
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						&h.Input{
 							Type:    "checkbox",
 							ID:      id,
@@ -72,10 +72,10 @@ type ToggleGroup struct {
 func (g *ToggleGroup) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Table{
 		Class: "table table-striped table-condensed",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Thead{
 				Inner: &h.Tr{
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						&h.Th{
 							Inner: h.String("On"),
 						},
@@ -104,7 +104,7 @@ type ToggleItem struct {
 
 func (i *ToggleItem) HTML(ctx context.Context) (h.HTML, error) {
 	tr := &h.Tr{
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Td{
 				Inner: &h.Input{
 					Class:   "radio",
@@ -163,7 +163,7 @@ func (i *TextInput) HTML(ctx context.Context) (h.HTML, error) {
 	}
 	div := &h.Div{
 		Class: "control-group",
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Label{
 				Class: "control-label",
 				For:   id,
@@ -171,7 +171,7 @@ func (i *TextInput) HTML(ctx context.Context) (h.HTML, error) {
 			},
 			&h.Div{
 				Class: "controls",
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.Input{
 						Class: i.InputClass,
 						Type:  t,

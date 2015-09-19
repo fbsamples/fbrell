@@ -16,7 +16,7 @@ type PageConfig struct {
 }
 
 var DefaultPageConfig = &PageConfig{
-	GA: &ga.Track{ID: "UA-15507059-1"},
+	GA: &ga.Track{Account: "UA-15507059-1"},
 	Style: []string{
 		"css/bootstrap.min.css",
 		"css/bootstrap-responsive.min.css",
@@ -49,9 +49,9 @@ func (p *Page) config() *PageConfig {
 func (p *Page) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Document{
 		XMLNS: h.XMLNS{"fb": "http://ogp.me/ns/fb#"},
-		Inner: &h.Frag{
+		Inner: h.Frag{
 			&h.Head{
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					&h.Meta{Charset: "utf-8"},
 					&h.Meta{Name: "viewport", Content: "width=device-width,initial-scale=1.0"},
 					&h.Title{
@@ -66,7 +66,7 @@ func (p *Page) HTML(ctx context.Context) (h.HTML, error) {
 			},
 			&h.Body{
 				Class: p.Class,
-				Inner: &h.Frag{
+				Inner: h.Frag{
 					p.Body,
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},

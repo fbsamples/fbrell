@@ -39,7 +39,7 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(code)
 		page := &Page{
-			Body: &h.Frag{
+			Body: h.Frag{
 				h.String(err.err.Error()),
 				&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
 			},

@@ -21,18 +21,13 @@ var _ Primitive = (*Frag)(nil)
 type Frag []HTML
 
 // HTML renders the content.
-func (f *Frag) HTML(ctx context.Context) (HTML, error) {
+func (f Frag) HTML(ctx context.Context) (HTML, error) {
 	return nil, errHTMLOnPrimitive("Frag")
 }
 
-// Append appends some HTML to the Fragment.
-func (f *Frag) Append(h HTML) {
-	*f = append(*f, h)
-}
-
-func (f *Frag) Write(ctx context.Context, w io.Writer) (int, error) {
+func (f Frag) Write(ctx context.Context, w io.Writer) (int, error) {
 	written := 0
-	for _, e := range *f {
+	for _, e := range f {
 		i, err := Write(ctx, w, e)
 		written += i
 		if err != nil {

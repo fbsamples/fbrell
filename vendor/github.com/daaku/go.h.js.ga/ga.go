@@ -10,23 +10,25 @@ import (
 	"github.com/daaku/go.h"
 )
 
-var ErrMissingID = errors.New("GoogleAnalyics requires an ID.")
+var errMissingAccount = errors.New("ga: missing required Account field")
 
-// Loadable for a Page Track event using Google Analytics.
+// Track adds the basic Google Analytics Page Tracking. More here:
+// https://developers.google.com/analytics/devguides/collection/gajs/
 type Track struct {
-	ID string
+	Account string
 }
 
+// HTML renders the relevant <script> tags.
 func (g *Track) HTML(ctx context.Context) (h.HTML, error) {
-	if g.ID == "" {
-		return nil, ErrMissingID
+	if g.Account == "" {
+		return nil, errMissingAccount
 	}
-	return &h.Frag{
+	return h.Frag{
 		&h.Script{
 			Inner: h.Unsafe(fmt.Sprintf(
 				`var _gaq = _gaq || [];`+
 					`_gaq.push(['_setAccount', '%s']);`+
-					`_gaq.push(['_trackPageview']);`, g.ID)),
+					`_gaq.push(['_trackPageview']);`, g.Account)),
 		},
 		&h.Script{
 			Src:   "https://ssl.google-analytics.com/ga.js",

@@ -41,9 +41,9 @@ func HumanJSON(v interface{}, w http.ResponseWriter, r *http.Request) {
 	}
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
 		h.Write(context.Background(), w, &h.Document{
-			Inner: &h.Frag{
+			Inner: h.Frag{
 				&h.Head{
-					Inner: &h.Frag{
+					Inner: h.Frag{
 						&h.Meta{Charset: "utf-8"},
 						&h.Title{h.String("Dump")},
 					},

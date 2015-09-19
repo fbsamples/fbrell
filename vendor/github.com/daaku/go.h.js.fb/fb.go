@@ -3,21 +3,26 @@ package fb
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"golang.org/x/net/context"
 
 	"github.com/daaku/go.h"
 )
 
-// Represents an async load and FB.init call for the Facebook JS SDK.
+// Init is akin to the FB init call for the Facebook JS SDK.
 type Init struct {
-	URL   string `json:"-"`
-	AppID uint64 `json:"appId"`
+	URL                  string `json:"-"`
+	AppID                uint64 `json:"appId"`
+	Version              string `json:"version"`
+	Cookie               bool   `json:"cookie,omitempty"`
+	Status               bool   `json:"status,omitempty"`
+	XFBML                bool   `json:"xfbml,omitempty"`
+	FrictionlessRequests bool   `json:"frictionlessRequests,omitempty"`
 }
 
 const defaultURL = "//connect.facebook.net/en_US/all.js"
 
+// HTML returns the pair of <script> tags that load and render the SDK.
 func (i *Init) HTML(ctx context.Context) (h.HTML, error) {
 	url := i.URL
 	if url == "" {
@@ -26,15 +31,15 @@ func (i *Init) HTML(ctx context.Context) (h.HTML, error) {
 
 	encoded, err := json.Marshal(i)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to json.Marshal sdk.Init %+v with error %s", i, err)
+		return nil, err
 	}
-	return &h.Frag{
+	return h.Frag{
 		&h.Script{
 			Src:   url,
 			Async: true,
 		},
 		&h.Script{
-			Inner: &h.Frag{
+			Inner: h.Frag{
 				h.Unsafe("window.fbAsyncInit=function(){FB.init("),
 				h.UnsafeBytes(encoded),
 				h.Unsafe(")"),
