@@ -43,8 +43,8 @@ func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(ctx, w, r, renderObject(ctx, env, a.Static, object))
-	return nil
+	_, err = h.Write(ctx, w, renderObject(ctx, env, a.Static, object))
+	return err
 }
 
 // Handles /rog/* requests.
@@ -61,8 +61,8 @@ func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(ctx, w, r, renderObject(ctx, env, a.Static, object))
-	return nil
+	_, err = h.Write(ctx, w, renderObject(ctx, env, a.Static, object))
+	return err
 }
 
 // Handles /rog-redirect/ requests.

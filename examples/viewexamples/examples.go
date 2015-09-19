@@ -78,13 +78,13 @@ func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(ctx, w, r, &examplesList{
+	_, err = h.Write(ctx, w, &examplesList{
 		Context: ctx,
 		Env:     env,
 		Static:  a.Static,
 		DB:      a.ExampleStore.DB,
 	})
-	return nil
+	return err
 }
 
 func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -120,7 +120,7 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(ctx, w, r, &page{
+	_, err = h.Write(ctx, w, &page{
 		Writer:  w,
 		Request: r,
 		Context: ctx,
@@ -129,7 +129,7 @@ func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.R
 		Example: example,
 		Xsrf:    a.Xsrf,
 	})
-	return nil
+	return err
 }
 
 func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -137,7 +137,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return err
 	}
-	h.WriteResponse(ctx, w, r, &page{
+	_, err = h.Write(ctx, w, &page{
 		Writer:  w,
 		Request: r,
 		Context: ctx,
@@ -146,7 +146,7 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 		Example: example,
 		Xsrf:    a.Xsrf,
 	})
-	return nil
+	return err
 }
 
 type page struct {

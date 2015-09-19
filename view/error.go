@@ -44,7 +44,7 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
 			},
 		}
-		h.WriteResponse(context.TODO(), w, r, page)
+		h.Write(context.TODO(), w, page)
 	}
 }
 

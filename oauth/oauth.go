@@ -51,10 +51,10 @@ func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Re
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	h.WriteResponse(ctx, w, r, &h.Script{
+	_, err := h.Write(ctx, w, &h.Script{
 		Inner: h.Unsafe("top.location='/'"),
 	})
-	return nil
+	return err
 }
 
 func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -87,9 +87,10 @@ func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		http.Redirect(w, r, dialogURL.String(), 302)
 	} else {
 		b, _ := json.Marshal(dialogURL.String())
-		h.WriteResponse(ctx, w, r, &h.Script{
+		_, err := h.Write(ctx, w, &h.Script{
 			Inner: h.Unsafe(fmt.Sprintf("top.location=%s", b)),
 		})
+		return err
 	}
 	return nil
 }
@@ -130,11 +131,11 @@ func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.R
 	if err != nil {
 		return ctxerr.Wrap(ctx, err)
 	}
-	h.WriteResponse(ctx, w, r, &h.Frag{
+	_, err = h.Write(ctx, w, &h.Frag{
 		&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
 		h.String(string(bd)),
 	})
-	return nil
+	return err
 }
 
 func (a *Handler) state(w http.ResponseWriter, r *http.Request) string {
