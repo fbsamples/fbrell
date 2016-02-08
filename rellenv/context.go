@@ -61,7 +61,7 @@ var defaultContext = &Env{
 	Host:                 "www.fbrell.com",
 	Scheme:               "http",
 	ViewMode:             Website,
-	Module:               "all",
+	Module:               "sdk",
 	Init:                 true,
 }
 
