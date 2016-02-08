@@ -20,7 +20,7 @@ type Init struct {
 	FrictionlessRequests bool   `json:"frictionlessRequests,omitempty"`
 }
 
-const defaultURL = "//connect.facebook.net/en_US/all.js"
+const defaultURL = "//connect.facebook.net/en_US/sdk.js"
 
 // HTML returns the pair of <script> tags that load and render the SDK.
 func (i *Init) HTML(ctx context.Context) (h.HTML, error) {
