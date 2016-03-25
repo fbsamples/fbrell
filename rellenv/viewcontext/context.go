@@ -3,10 +3,11 @@ package viewcontext
 
 import (
 	"net/http"
+	"runtime"
 
 	"github.com/daaku/go.httpdev"
-	"golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
+	"golang.org/x/net/context"
 )
 
 var rev string
@@ -20,11 +21,12 @@ func (h *Handler) Info(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return err
 	}
 	info := map[string]interface{}{
-		"context":    env,
-		"pageTabURL": env.PageTabURL("/"),
-		"canvasURL":  env.CanvasURL("/"),
-		"sdkURL":     env.SdkURL(),
-		"rev":        rev,
+		"context":        env,
+		"pageTabURL":     env.PageTabURL("/"),
+		"canvasURL":      env.CanvasURL("/"),
+		"sdkURL":         env.SdkURL(),
+		"rev":            rev,
+		"runtimeVersion": runtime.Version(),
 	}
 	httpdev.Info(info, w, r)
 	return nil
