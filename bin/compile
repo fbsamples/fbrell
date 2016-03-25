@@ -11,20 +11,19 @@ CACHE_DIR=$(cd "$2/" && pwd)
 GO_IMPORT_PATH=github.com/daaku/rell
 GO_VERSION=1.6
 GO_URL=https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
-BUILD_GOPATH=$CACHE_DIR/go
-GO_PACKAGE_DIR=$BUILD_GOPATH/src/$GO_IMPORT_PATH
 OUTPUT_BIN=$BUILD_DIR/$(basename $GO_IMPORT_PATH)
 
 export GOROOT=$CACHE_DIR/$GO_VERSION/go
-export GOPATH=$BUILD_GOPATH
-export PATH=$GOROOT/bin:$BUILD_GOPATH/bin:$PATH
+export GOPATH=$CACHE_DIR/go
+export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 
+GO_PACKAGE_DIR=$GOPATH/src/$GO_IMPORT_PATH
 GO_LDFLAGS="-X $GO_IMPORT_PATH/vendor/github.com/facebookgo/stack.gopath=$GOPATH"
 GO_LDFLAGS="$GO_LDFLAGS -X $GO_IMPORT_PATH/rellenv/viewcontext.rev=$SOURCE_VERSION"
 
 if test -d $GOROOT; then
   echo "-----> Using existing go $GO_VERSION"
-  rm -rf $BUILD_GOPATH/pkg
+  rm -rf $GOPATH/pkg
 else
   rm -rf $CACHE_DIR/*
   mkdir -p $CACHE_DIR/$GO_VERSION
