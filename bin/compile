@@ -43,6 +43,6 @@ mv $GO_PACKAGE_DIR/public $BUILD_DIR/public
 mv $GO_PACKAGE_DIR/examples/db $BUILD_DIR/examples
 echo " done"
 
-echo -n "-----> Building: go build -tags heroku $GO_IMPORT_PATH..."
-go build "-ldflags=$GO_LDFLAGS" -tags heroku -o $OUTPUT_BIN $GO_IMPORT_PATH
+echo -n "-----> Building: go build $GO_IMPORT_PATH..."
+go build "-ldflags=$GO_LDFLAGS" -o $OUTPUT_BIN $GO_IMPORT_PATH
 echo " done"
