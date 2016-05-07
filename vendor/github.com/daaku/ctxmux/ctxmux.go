@@ -2,7 +2,7 @@
 // library and combines it with the httprouter library known for it's
 // performance. The equivalent of the ServeHTTP in ctxmux is:
 //
-//    ServeHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error
+//    ServeHTTP(w http.ResponseWriter, r *http.Request) error
 //
 // It provides a hook to control context creation when a request arrives.
 // Additionally an error can be returned which is passed thru to the error
@@ -12,10 +12,10 @@
 package ctxmux
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/net/context"
 )
 
 type contextParamsKeyT int
@@ -35,7 +35,7 @@ func ContextParams(ctx context.Context) httprouter.Params {
 
 // HTTPHandler calls the underlying http.Handler.
 func HTTPHandler(h http.Handler) Handler {
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		h.ServeHTTP(w, r)
 		return nil
 	}
@@ -43,55 +43,45 @@ func HTTPHandler(h http.Handler) Handler {
 
 // HTTPHandlerFunc calls the underlying http.HandlerFunc.
 func HTTPHandlerFunc(h http.HandlerFunc) Handler {
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		h(w, r)
 		return nil
 	}
 }
 
 // Handler is an augmented http.Handler.
-type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
+type Handler func(w http.ResponseWriter, r *http.Request) error
 
 // Mux provides shared context initialization and error handling.
 type Mux struct {
-	contextMaker func(*http.Request) (context.Context, error)
-	errorHandler func(context.Context, http.ResponseWriter, *http.Request, error)
-	panicHandler func(context.Context, http.ResponseWriter, *http.Request, interface{})
-	r            httprouter.Router
-}
-
-func (m *Mux) makeContext(r *http.Request) (context.Context, error) {
-	if m.contextMaker != nil {
-		ctx, err := m.contextMaker(r)
-		if err != nil {
-			return context.Background(), err
-		}
-		return ctx, nil
-	}
-	return context.Background(), nil
+	contextChanger func(*http.Request) (*http.Request, error)
+	errorHandler   func(http.ResponseWriter, *http.Request, error)
+	panicHandler   func(http.ResponseWriter, *http.Request, interface{})
+	r              httprouter.Router
 }
 
 func (m *Mux) wrap(h Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		var ctx context.Context // so the panicHandler can get to it
-
 		if m.panicHandler != nil {
 			defer func() {
 				if v := recover(); v != nil {
-					m.panicHandler(ctx, w, r, v)
+					m.panicHandler(w, r, v)
 				}
 			}()
 		}
 
-		ctx, err := m.makeContext(r)
+		r, err := m.contextChanger(r)
 		if err != nil {
-			m.errorHandler(ctx, w, r, err)
+			m.errorHandler(w, r, err)
 			return
 		}
-		ctx = WithParams(ctx, p)
 
-		if err := h(ctx, w, r); err != nil {
-			m.errorHandler(ctx, w, r, err)
+		if len(p) != 0 {
+			r = r.WithContext(WithParams(r.Context(), p))
+		}
+
+		if err := h(w, r); err != nil {
+			m.errorHandler(w, r, err)
 			return
 		}
 	}
@@ -140,12 +130,14 @@ func (m *Mux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 // MuxOption are used to set various mux options.
 type MuxOption func(*Mux) error
 
-// MuxContextMaker sets a function to create the context for each request. The
-// default context is context.Background(). If the assigned function returns an
-// error, it will be passed to the error handler.
-func MuxContextMaker(f func(*http.Request) (context.Context, error)) MuxOption {
+// MuxContextChanger sets a function to change the context for each request. If
+// not set, the default request context is used. If set, you must return an
+// updated *http.Request created using the http.Request.WithContext method. If
+// the assigned function returns an error, it will be passed to the error
+// handler.
+func MuxContextChanger(f func(*http.Request) (*http.Request, error)) MuxOption {
 	return func(m *Mux) error {
-		m.contextMaker = f
+		m.contextChanger = f
 		return nil
 	}
 }
@@ -153,7 +145,7 @@ func MuxContextMaker(f func(*http.Request) (context.Context, error)) MuxOption {
 // MuxErrorHandler configures a function which is invoked for errors returned
 // by a Handler. If one isn't set, the default behaviour is to log it and send
 // a static error message of "internal server error".
-func MuxErrorHandler(h func(context.Context, http.ResponseWriter, *http.Request, error)) MuxOption {
+func MuxErrorHandler(h func(http.ResponseWriter, *http.Request, error)) MuxOption {
 	return func(m *Mux) error {
 		m.errorHandler = h
 		return nil
@@ -163,7 +155,7 @@ func MuxErrorHandler(h func(context.Context, http.ResponseWriter, *http.Request,
 // MuxPanicHandler configures a function which is invoked for panics raised
 // while serving a request. If one is not configured, the default behavior is
 // what the net/http package does; which is to print a trace and ignore it.
-func MuxPanicHandler(h func(context.Context, http.ResponseWriter, *http.Request, interface{})) MuxOption {
+func MuxPanicHandler(h func(http.ResponseWriter, *http.Request, interface{})) MuxOption {
 	return func(m *Mux) error {
 		m.panicHandler = h
 		return nil
@@ -199,5 +191,12 @@ func New(options ...MuxOption) (*Mux, error) {
 			return nil, err
 		}
 	}
+	if m.contextChanger == nil {
+		m.contextChanger = noOpContextChanger
+	}
 	return &m, nil
+}
+
+func noOpContextChanger(r *http.Request) (*http.Request, error) {
+	return r, nil
 }

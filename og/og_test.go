@@ -1,14 +1,14 @@
 package og
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"testing"
 
 	"github.com/daaku/go.static"
-	"github.com/facebookgo/fbapp"
-	"golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
+	"github.com/facebookgo/fbapp"
 )
 
 var defaultContext = (&rellenv.Parser{

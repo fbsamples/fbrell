@@ -1,11 +1,10 @@
 package view
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"strings"
-
-	"golang.org/x/net/context"
 
 	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.h"
@@ -51,7 +50,7 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Send a error response. If the error also implements http.Handler,
 // it will simply be passed control, otherwise the default error
 // rendering will be used.
-func Error(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
+func Error(w http.ResponseWriter, r *http.Request, err error) {
 	handler, ok := err.(http.Handler)
 	if !ok {
 		errCode, ok := err.(ErrorCode)

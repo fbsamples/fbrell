@@ -1,16 +1,16 @@
 package rellenv_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
 	"testing"
 
 	"github.com/daaku/go.trustforward"
+	"github.com/daaku/rell/rellenv"
 	"github.com/facebookgo/ensure"
 	"github.com/facebookgo/fbapp"
-	"golang.org/x/net/context"
-	"github.com/daaku/rell/rellenv"
 )
 
 const (
@@ -47,7 +47,7 @@ func fromValues(t *testing.T, values url.Values) (*rellenv.Env, context.Context)
 	if err != nil {
 		t.Fatalf("Failed to create request: %s", err)
 	}
-	env, err := defaultParser().FromRequest(context.Background(), req)
+	env, err := defaultParser().FromRequest(req)
 	if err != nil {
 		t.Fatalf("Failed to create env: %s", err)
 	}

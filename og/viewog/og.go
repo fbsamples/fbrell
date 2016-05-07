@@ -2,6 +2,7 @@
 package viewog
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -14,7 +15,6 @@ import (
 	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
-	"golang.org/x/net/context"
 )
 
 type Handler struct {
@@ -23,7 +23,8 @@ type Handler struct {
 }
 
 // Handles /og/ requests.
-func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *Handler) Values(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
 	env, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
@@ -48,7 +49,8 @@ func (a *Handler) Values(ctx context.Context, w http.ResponseWriter, r *http.Req
 }
 
 // Handles /rog/* requests.
-func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *Handler) Base64(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
 	env, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
@@ -66,7 +68,8 @@ func (a *Handler) Base64(ctx context.Context, w http.ResponseWriter, r *http.Req
 }
 
 // Handles /rog-redirect/ requests.
-func (h *Handler) Redirect(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) != 5 {
 		return fmt.Errorf("Invalid URL: %s", r.URL.Path)

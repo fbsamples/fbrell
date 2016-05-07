@@ -3,10 +3,11 @@
 package view
 
 import (
+	"context"
+
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.js.ga"
 	"github.com/daaku/go.static"
-	"golang.org/x/net/context"
 )
 
 type PageConfig struct {

@@ -20,7 +20,6 @@ import (
 	"github.com/daaku/rell/rellenv/viewcontext"
 	"github.com/daaku/rell/view"
 	"github.com/facebookgo/fbapp"
-	"golang.org/x/net/context"
 )
 
 // The rell web application.
@@ -38,7 +37,6 @@ type Handler struct {
 	Static          *static.Handler
 	AdminHandler    *adminweb.Handler
 
-	ctx  context.Context
 	mux  http.Handler
 	once sync.Once
 }
@@ -54,7 +52,7 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			ctxmux.MuxErrorHandler(a.handleError),
 			ctxmux.MuxNotFoundHandler(a.ExamplesHandler.Example),
 			ctxmux.MuxRedirectTrailingSlash(),
-			ctxmux.MuxContextMaker(a.contextMaker),
+			ctxmux.MuxContextChanger(a.contextChanger),
 		)
 		if err != nil {
 			panic(err)
@@ -85,28 +83,27 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			MaxAge:  a.SignedRequestMaxAge,
 		}
 		a.mux = handler
-
-		a.ctx = context.Background()
-		a.ctx = ctxerr.WithConfig(a.ctx, ctxerr.Config{
-			StackMode:  ctxerr.StackModeMultiStack,
-			StringMode: ctxerr.StringModeNone,
-		})
 	})
 	a.mux.ServeHTTP(w, r)
 }
 
-func (a *Handler) handleError(ctx context.Context, w http.ResponseWriter, r *http.Request, err error) {
+func (a *Handler) handleError(w http.ResponseWriter, r *http.Request, err error) {
 	a.Logger.Printf("Error at %s\n%s\n", r.URL, ctxerr.RichString(err))
-	view.Error(ctx, w, r, err)
+	view.Error(w, r, err)
 }
 
-func (a *Handler) contextMaker(r *http.Request) (context.Context, error) {
-	env, err := a.EnvParser.FromRequest(a.ctx, r)
+func (a *Handler) contextChanger(r *http.Request) (*http.Request, error) {
+	env, err := a.EnvParser.FromRequest(r)
 	if err != nil {
-		return a.ctx, err
+		return nil, err
 	}
-	ctx := a.ctx
-	ctx = rellenv.WithEnv(a.ctx, env)
+
+	ctx := r.Context()
+	ctx = ctxerr.WithConfig(ctx, ctxerr.Config{
+		StackMode:  ctxerr.StackModeMultiStack,
+		StringMode: ctxerr.StringModeNone,
+	})
+	ctx = rellenv.WithEnv(ctx, env)
 	ctx = static.NewContext(ctx, a.Static)
-	return ctx, nil
+	return r.WithContext(ctx), nil
 }

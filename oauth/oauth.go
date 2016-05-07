@@ -2,6 +2,7 @@
 package oauth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 	"github.com/daaku/go.static"
 	"github.com/daaku/rell/rellenv"
 	"github.com/facebookgo/fbapp"
-	"golang.org/x/net/context"
 )
 
 const (
@@ -38,7 +38,8 @@ type Handler struct {
 	BrowserID     *browserid.Cookie
 }
 
-func (a *Handler) Handler(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *Handler) Handler(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
 	if !rellenv.IsEmployee(ctx) {
 		return ctxerr.Wrap(ctx, errEmployeesOnly)
 	}

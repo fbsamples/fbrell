@@ -2,6 +2,7 @@
 package viewexamples
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -23,7 +24,6 @@ import (
 	"github.com/daaku/rell/view"
 	"github.com/daaku/sortutil"
 	"github.com/facebookgo/counting"
-	"golang.org/x/net/context"
 )
 
 var (
@@ -50,7 +50,8 @@ type Handler struct {
 }
 
 // Parse the Env and an Example.
-func (h *Handler) parse(ctx context.Context, r *http.Request) (*rellenv.Env, *examples.Example, error) {
+func (h *Handler) parse(r *http.Request) (*rellenv.Env, *examples.Example, error) {
+	ctx := r.Context()
 	context, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -62,7 +63,8 @@ func (h *Handler) parse(ctx context.Context, r *http.Request) (*rellenv.Env, *ex
 	return context, example, nil
 }
 
-func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (a *Handler) List(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
 	env, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err
@@ -76,8 +78,9 @@ func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	return err
 }
 
-func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	env, example, err := a.parse(ctx, r)
+func (a *Handler) Example(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	env, example, err := a.parse(r)
 	if err != nil {
 		return err
 	}

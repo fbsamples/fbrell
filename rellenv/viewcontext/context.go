@@ -7,7 +7,6 @@ import (
 
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/rell/rellenv"
-	"golang.org/x/net/context"
 )
 
 var rev string
@@ -15,7 +14,8 @@ var rev string
 type Handler struct{}
 
 // Handler for /info/ to see a JSON view of some server context.
-func (h *Handler) Info(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *Handler) Info(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
 	env, err := rellenv.FromContext(ctx)
 	if err != nil {
 		return err

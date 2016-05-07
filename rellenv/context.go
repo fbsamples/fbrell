@@ -4,6 +4,7 @@
 package rellenv
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,7 +21,6 @@ import (
 	"github.com/daaku/go.signedrequest/fbsr"
 	"github.com/daaku/go.trustforward"
 	"github.com/facebookgo/fbapp"
-	"golang.org/x/net/context"
 )
 
 var envRegexp = regexp.MustCompile(`^[a-zA-Z0-9-_.]*$`)
@@ -90,7 +90,7 @@ func (p *Parser) Default() *Env {
 }
 
 // Create a context from a HTTP request.
-func (p *Parser) FromRequest(ctx context.Context, r *http.Request) (*Env, error) {
+func (p *Parser) FromRequest(r *http.Request) (*Env, error) {
 	e := p.Default()
 
 	if appid, err := strconv.ParseUint(r.FormValue("appid"), 10, 64); err == nil {

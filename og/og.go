@@ -3,6 +3,7 @@
 package og
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.static"
-	"golang.org/x/net/context"
 	"github.com/daaku/rell/rellenv"
 )
 

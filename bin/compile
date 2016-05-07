@@ -10,7 +10,7 @@ CACHE_DIR=$(cd "$2/" && pwd)
 ENV_DIR=$(cd "$3/" && pwd)
 
 GO_IMPORT_PATH=github.com/daaku/rell
-GO_VERSION=1.6.2
+GO_VERSION=1.7
 GO_URL=https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
 OUTPUT_BIN=$BUILD_DIR/$(basename $GO_IMPORT_PATH)
 
