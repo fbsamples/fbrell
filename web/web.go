@@ -68,8 +68,6 @@ func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		mux.GET("/info/*rest", a.ContextHandler.Info)
 		mux.POST("/info/*rest", a.ContextHandler.Info)
 		mux.GET("/examples/", a.ExamplesHandler.List)
-		mux.GET("/saved/:hash", a.ExamplesHandler.GetSaved)
-		mux.POST("/saved/", a.ExamplesHandler.PostSaved)
 		mux.GET("/og/*rest", a.OgHandler.Values)
 		mux.GET("/rog/*rest", a.OgHandler.Base64)
 		mux.GET("/rog-redirect/*rest", a.OgHandler.Redirect)

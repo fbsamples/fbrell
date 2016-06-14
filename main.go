@@ -12,21 +12,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/daaku/rell/adminweb"
-	"github.com/daaku/rell/examples"
-	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.trustforward"
-	"github.com/daaku/go.xsrf"
-	"github.com/facebookgo/devrestarter"
-	"github.com/facebookgo/fbapi"
-	"github.com/facebookgo/fbapp"
-	"github.com/facebookgo/flagenv"
-	"github.com/facebookgo/httpcontrol"
-	"github.com/facebookgo/httpdown"
-	"github.com/facebookgo/parse"
-	"github.com/golang/groupcache/lru"
+	"github.com/daaku/rell/adminweb"
+	"github.com/daaku/rell/examples"
+	"github.com/daaku/rell/examples/viewexamples"
 	"github.com/daaku/rell/oauth"
 	"github.com/daaku/rell/og"
 	"github.com/daaku/rell/og/viewog"
@@ -35,6 +26,13 @@ import (
 	"github.com/daaku/rell/rellenv/empcheck"
 	"github.com/daaku/rell/rellenv/viewcontext"
 	"github.com/daaku/rell/web"
+	"github.com/facebookgo/devrestarter"
+	"github.com/facebookgo/fbapi"
+	"github.com/facebookgo/fbapp"
+	"github.com/facebookgo/flagenv"
+	"github.com/facebookgo/httpcontrol"
+	"github.com/facebookgo/httpdown"
+	"github.com/golang/groupcache/lru"
 )
 
 func defaultAddr() string {
@@ -65,8 +63,6 @@ func main() {
 	facebookAppNS := flagSet.String("fb-app-ns", "", "facebook application namespace")
 	empCheckerAppID := flagSet.Uint64("empcheck-app-id", 0, "empcheck application id")
 	empCheckerAppSecret := flagSet.String("empcheck-app-secret", "", "empcheck application secret")
-	parseAppID := flagSet.String("parse-app-id", "", "parse application id")
-	parseMasterKey := flagSet.String("parse-master-key", "", "parse master key")
 	publicDir := flagSet.String(
 		"public-dir", pkgDir("github.com/daaku/rell/public"), "public files directory")
 	examplesDir := flagSet.String(
@@ -105,11 +101,6 @@ func main() {
 		Logger:    logger,
 		Forwarded: forwarded,
 	}
-	xsrf := &xsrf.Provider{
-		BrowserID: bid,
-		MaxAge:    time.Hour * 24,
-		SumLen:    10,
-	}
 	publicFS := http.Dir(*publicDir)
 	static := &static.Handler{
 		Path: "/static/",
@@ -120,13 +111,6 @@ func main() {
 		DialTimeout:           2 * time.Second,
 		ResponseHeaderTimeout: 3 * time.Second,
 		RequestTimeout:        30 * time.Second,
-	}
-	parseClient := &parse.Client{
-		Transport: httpTransport,
-		Credentials: parse.MasterKey{
-			ApplicationID: *parseAppID,
-			MasterKey:     *parseMasterKey,
-		},
 	}
 	fbApiClient := &fbapi.Client{
 		Transport: httpTransport,
@@ -145,9 +129,7 @@ func main() {
 		Cache:       lruCache,
 	}
 	exampleStore := &examples.Store{
-		Parse: parseClient,
-		DB:    examples.MustMakeDB(*examplesDir),
-		Cache: lruCache,
+		DB: examples.MustMakeDB(*examplesDir),
 	}
 	webHandler := &web.Handler{
 		Static: static,
@@ -164,7 +146,6 @@ func main() {
 		ContextHandler: &viewcontext.Handler{},
 		ExamplesHandler: &viewexamples.Handler{
 			ExampleStore: exampleStore,
-			Xsrf:         xsrf,
 			Static:       static,
 		},
 		OgHandler: &viewog.Handler{

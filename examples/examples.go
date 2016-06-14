@@ -3,7 +3,6 @@ package examples
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -15,8 +14,6 @@ import (
 	"strings"
 
 	"github.com/daaku/go.errcode"
-	"github.com/facebookgo/parse"
-	"github.com/golang/groupcache/lru"
 )
 
 // Some categories are hidden from the listing.
@@ -33,9 +30,7 @@ var hidden = map[string]bool{
 }
 
 type Store struct {
-	Parse *parse.Client
-	DB    *DB
-	Cache *lru.Cache
+	DB *DB
 }
 
 type Example struct {
@@ -55,11 +50,6 @@ type Category struct {
 type DB struct {
 	Category map[string]*Category
 	Reverse  map[string]*Example
-}
-
-type parseExample struct {
-	Content string `json:"content,omitempty"`
-	Hash    string `json:"hash,omitempty"`
 }
 
 var (
@@ -129,41 +119,6 @@ func MakeDB(dir string) (*DB, error) {
 	return db, nil
 }
 
-type cacheKey string
-
-func (s *Store) loadFromParse(hash string) (*Example, error) {
-	if ex, ok := s.Cache.Get(cacheKey(hash)); ok {
-		return ex.(*Example), nil
-	}
-	j, err := json.Marshal(map[string]string{"hash": hash})
-	if err != nil {
-		return nil, err
-	}
-	v := make(url.Values)
-	v.Set("where", string(j))
-	u := &url.URL{
-		Path:     classExample.Path,
-		RawQuery: v.Encode(),
-	}
-	var res struct {
-		Results []parseExample `json:"results"`
-	}
-	if _, err := s.Parse.Get(u, &res); err != nil {
-		return nil, err
-	}
-	if len(res.Results) == 0 {
-		return nil, errcode.New(
-			http.StatusNotFound, "Example not found: %s", hash)
-	}
-	ex := &Example{
-		Content: res.Results[0].Content,
-		Title:   "Stored Example",
-		URL:     path.Join("/saved", hash),
-	}
-	s.Cache.Add(cacheKey(hash), ex)
-	return ex, nil
-}
-
 // Load an Example for a given version and path.
 func (s *Store) Load(path string) (*Example, error) {
 	parts := strings.Split(path, "/")
@@ -173,9 +128,6 @@ func (s *Store) Load(path string) (*Example, error) {
 		return nil, errcode.New(http.StatusNotFound, "Invalid URL: %s", path)
 	}
 
-	if parts[1] == "saved" {
-		return s.loadFromParse(parts[2])
-	}
 	category := s.DB.FindCategory(parts[1])
 	if category == nil {
 		return nil, errcode.New(http.StatusNotFound, "Could not find category: %s", parts[1])
@@ -204,36 +156,6 @@ func (c *Category) FindExample(name string) *Example {
 			return example
 		}
 	}
-	return nil
-}
-
-// Save an Example.
-func (s *Store) Save(hash string, content string) error {
-	if len(content) > 10240 {
-		return errcode.New(
-			http.StatusRequestEntityTooLarge,
-			"Maximum allowed size is 10 kilobytes.")
-	}
-
-	if _, err := s.loadFromParse(hash); err == nil {
-		return nil // it already exists
-	}
-
-	pe := &parseExample{
-		Content: content,
-		Hash:    hash,
-	}
-	if _, err := s.Parse.Post(classExample, pe, nil); err != nil {
-		return err
-	}
-
-	ex := &Example{
-		Content: content,
-		Title:   "Stored Example",
-		URL:     path.Join("/saved", hash),
-	}
-	s.Cache.Add(cacheKey(hash), ex)
-
 	return nil
 }
 

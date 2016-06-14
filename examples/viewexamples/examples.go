@@ -11,27 +11,19 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strings"
 
 	"github.com/daaku/ctxerr"
-	"github.com/daaku/go.errcode"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/go.static"
-	"github.com/daaku/go.xsrf"
 	"github.com/daaku/rell/examples"
 	"github.com/daaku/rell/rellenv"
 	"github.com/daaku/rell/view"
 	"github.com/daaku/sortutil"
 	"github.com/facebookgo/counting"
 	"golang.org/x/net/context"
-)
-
-const (
-	savedPath = "/saved/"
-	paramName = "-xsrf-token-"
 )
 
 var (
@@ -50,14 +42,11 @@ var (
 		rellenv.PageTab: "Page Tab",
 		rellenv.Canvas:  "Canvas",
 	}
-	errTokenMismatch = errcode.New(http.StatusForbidden, "Token mismatch.")
-	errSaveDisabled  = errcode.New(http.StatusForbidden, "Save disallowed.")
 )
 
 type Handler struct {
 	ExampleStore *examples.Store
 	Static       *static.Handler
-	Xsrf         *xsrf.Provider
 }
 
 // Parse the Env and an Example.
@@ -87,51 +76,6 @@ func (a *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	return err
 }
 
-func (a *Handler) PostSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	c, err := rellenv.FromContext(ctx)
-	if err != nil {
-		return err
-	}
-	if !rellenv.IsEmployee(ctx) {
-		return ctxerr.Wrap(ctx, errSaveDisabled)
-	}
-	if !a.Xsrf.Validate(r.FormValue(paramName), w, r, savedPath) {
-		return ctxerr.Wrap(ctx, errTokenMismatch)
-	}
-	content := strings.TrimSpace(r.FormValue("code"))
-	content = strings.Replace(content, "\x13", "", -1) // remove CR
-	id := examples.ContentID(content)
-	db := a.ExampleStore.DB
-	example, ok := db.Reverse[id]
-	if ok {
-		http.Redirect(w, r, c.ViewURL(example.URL), 302)
-		return nil
-	}
-	err = a.ExampleStore.Save(id, content)
-	if err != nil {
-		return err
-	}
-	http.Redirect(w, r, c.ViewURL(savedPath+id), 302)
-	return nil
-}
-
-func (a *Handler) GetSaved(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	env, example, err := a.parse(ctx, r)
-	if err != nil {
-		return err
-	}
-	_, err = h.Write(ctx, w, &page{
-		Writer:  w,
-		Request: r,
-		Context: ctx,
-		Env:     env,
-		Static:  a.Static,
-		Example: example,
-		Xsrf:    a.Xsrf,
-	})
-	return err
-}
-
 func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	env, example, err := a.parse(ctx, r)
 	if err != nil {
@@ -144,7 +88,6 @@ func (a *Handler) Example(ctx context.Context, w http.ResponseWriter, r *http.Re
 		Env:     env,
 		Static:  a.Static,
 		Example: example,
-		Xsrf:    a.Xsrf,
 	})
 	return err
 }
@@ -156,7 +99,6 @@ type page struct {
 	Env     *rellenv.Env
 	Static  *static.Handler
 	Example *examples.Example
-	Xsrf    *xsrf.Provider
 }
 
 func (p *page) HTML(ctx context.Context) (h.HTML, error) {
@@ -166,48 +108,38 @@ func (p *page) HTML(ctx context.Context) (h.HTML, error) {
 		Body: &h.Div{
 			Class: "container-fluid",
 			Inner: h.Frag{
-				&h.Form{
-					Action: savedPath,
-					Method: h.Post,
-					Target: "_top",
+				&h.Div{
+					Class: "row-fluid",
 					Inner: h.Frag{
-						h.HiddenInputs(url.Values{
-							paramName: []string{p.Xsrf.Token(p.Writer, p.Request, savedPath)},
-						}),
 						&h.Div{
-							Class: "row-fluid",
+							Class: "span8",
 							Inner: h.Frag{
-								&h.Div{
-									Class: "span8",
-									Inner: h.Frag{
-										&editorTop{
-											Context: p.Context,
-											Env:     p.Env,
-											Example: p.Example,
-										},
-										&editorArea{
-											Context: p.Context,
-											Env:     p.Env,
-											Example: p.Example,
-										},
-										&editorBottom{
-											Context: p.Context,
-											Env:     p.Env,
-											Example: p.Example,
-										},
-									},
+								&editorTop{
+									Context: p.Context,
+									Env:     p.Env,
+									Example: p.Example,
 								},
-								&h.Div{
-									Class: "span4",
-									Inner: h.Frag{
-										&contextEditor{
-											Context: p.Context,
-											Env:     p.Env,
-											Example: p.Example,
-										},
-										&logContainer{},
-									},
+								&editorArea{
+									Context: p.Context,
+									Env:     p.Env,
+									Example: p.Example,
 								},
+								&editorBottom{
+									Context: p.Context,
+									Env:     p.Env,
+									Example: p.Example,
+								},
+							},
+						},
+						&h.Div{
+							Class: "span4",
+							Inner: h.Frag{
+								&contextEditor{
+									Context: p.Context,
+									Env:     p.Env,
+									Example: p.Example,
+								},
+								&logContainer{},
 							},
 						},
 					},
@@ -407,23 +339,6 @@ func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
 			"trigger":   "manual",
 		}
 	}
-	var saveButton h.HTML
-	if rellenv.IsEmployee(e.Context) {
-		saveButton = h.Frag{
-			h.String(" "),
-			&h.Div{
-				Class: "btn-group",
-				Inner: &h.Button{
-					Class: "btn",
-					Type:  "submit",
-					Inner: h.Frag{
-						&h.I{Class: "icon-file"},
-						h.String(" Save Code"),
-					},
-				},
-			},
-		}
-	}
 	return &h.Div{
 		Class: "row-fluid form-inline",
 		Inner: h.Frag{
@@ -444,7 +359,6 @@ func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
 							Env:     e.Env,
 							Example: e.Example,
 						},
-						saveButton,
 						h.String(" "),
 						&h.Div{
 							Class: "btn-group",
