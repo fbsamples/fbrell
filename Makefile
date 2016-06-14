@@ -1,7 +1,3 @@
-docker:
-	@docker build -t rell-builder .
-	@docker run rell-builder | docker build -t daaku/rell -
-
 install:
 	@go install github.com/daaku/rell
 
