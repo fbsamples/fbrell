@@ -27,6 +27,7 @@ var hidden = map[string]bool{
 	"tests":  true,
 	"xfbml":  true,
 	"canvas": true,
+	"saved":  true,
 }
 
 type Store struct {
