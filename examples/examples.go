@@ -100,12 +100,18 @@ func MakeDB(dir string) (*DB, error) {
 			if err != nil {
 				return fmt.Errorf("Failed to read example %s: %s", exampleFile, err)
 			}
+
+			autoRun := true
+			if categoryName == "saved" {
+				autoRun = false
+			}
+
 			content := string(contentBytes)
 			cleanName := exampleName[:len(exampleName)-5] // drop .html
 			example := &Example{
 				Name:    cleanName,
 				Content: content,
-				AutoRun: true,
+				AutoRun: autoRun,
 				Title:   categoryName + " · " + cleanName,
 				URL:     path.Join("/", categoryName, cleanName),
 			}
