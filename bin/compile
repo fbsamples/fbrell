@@ -7,6 +7,7 @@ trap 'echo "${0} line ${LINENO} Status: ${?}"' ERR
 mkdir -p "$1" "$2"
 BUILD_DIR=$(cd "$1/" && pwd)
 CACHE_DIR=$(cd "$2/" && pwd)
+ENV_DIR=$(cd "$3/" && pwd)
 
 GO_IMPORT_PATH=github.com/daaku/rell
 GO_VERSION=1.6.2
@@ -40,6 +41,14 @@ mv $BUILD_DIR/* $GO_PACKAGE_DIR/
 mv $GO_PACKAGE_DIR/Procfile $BUILD_DIR/
 mv $GO_PACKAGE_DIR/public $BUILD_DIR/public
 mv $GO_PACKAGE_DIR/examples/db $BUILD_DIR/examples
+
+openssl aes-256-cbc -d -a \
+  -pass "pass:$(cat $ENV_DIR/RELL_SAVED_PASSWORD)" \
+  -in $GO_PACKAGE_DIR/examples/saved.zip \
+  -out $BUILD_DIR/saved.zip
+unzip -q $BUILD_DIR/saved.zip -d $BUILD_DIR/examples/db
+rm $BUILD_DIR/saved.zip
+
 echo " done"
 
 echo -n "-----> Building: go build $GO_IMPORT_PATH..."
