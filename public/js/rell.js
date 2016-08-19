@@ -116,7 +116,7 @@ var Rell = {
   },
 
   disconnect: function() {
-    FB.api({ method: 'Auth.revokeAuthorization' }, Log.debug.bind('revokeAuthorization callback'))
+    FB.api('/me/permissions', 'DELETE', Log.debug.bind('revokeAuthorization callback'))
   },
 
   setCurrentViewMode: function() {
