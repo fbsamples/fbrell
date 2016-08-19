@@ -1,6 +1,6 @@
 package h
 
-import "golang.org/x/net/context"
+import "context"
 
 // XMLNS auto prefixes each attribute key with "xmlns:" in the output.
 type XMLNS map[string]string
@@ -360,6 +360,7 @@ type Input struct {
 	Style       string                 `h:"attr"`
 	Type        string                 `h:"attr"`
 	Value       string                 `h:"attr"`
+	Src         string                 `h:"attr"`
 	Placeholder string                 `h:"attr"`
 	Checked     bool                   `h:"attr"`
 	Multiple    bool                   `h:"attr"`
@@ -574,6 +575,7 @@ type Th struct {
 	ID    string `h:"attr"`
 	Class string `h:"attr"`
 	Style string `h:"attr"`
+	Scope string `h:"attr"`
 	Inner HTML   `h:"inner"`
 }
 
@@ -810,4 +812,33 @@ type FigCaption struct {
 // HTML renders the content.
 func (p *FigCaption) HTML(ctx context.Context) (HTML, error) {
 	return &ReflectNode{Tag: "figcaption", Node: p}, nil
+}
+
+var _ HTML = (*Address)(nil)
+
+// Address renders a HTML <address> tag.
+type Address struct {
+	ID    string                 `h:"attr"`
+	Class string                 `h:"attr"`
+	Style string                 `h:"attr"`
+	Data  map[string]interface{} `h:"dict"`
+	Inner HTML                   `h:"inner"`
+}
+
+// HTML renders the content.
+func (p *Address) HTML(ctx context.Context) (HTML, error) {
+	return &ReflectNode{Tag: "address", Node: p}, nil
+}
+
+var _ HTML = (*Br)(nil)
+
+// Br renders a HTML <br> tag.
+type Br struct{}
+
+// HTML renders the content.
+func (p *Br) HTML(ctx context.Context) (HTML, error) {
+	return &Node{
+		Tag:         "br",
+		SelfClosing: true,
+	}, nil
 }

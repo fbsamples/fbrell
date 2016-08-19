@@ -2,9 +2,8 @@
 package fb
 
 import (
+	"context"
 	"encoding/json"
-
-	"golang.org/x/net/context"
 
 	"github.com/daaku/go.h"
 )

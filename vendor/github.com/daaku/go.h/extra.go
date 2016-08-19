@@ -1,10 +1,9 @@
 package h
 
 import (
+	"context"
 	"errors"
 	"net/url"
-
-	"golang.org/x/net/context"
 )
 
 var errLinkStyleMissingHREF = errors.New("h: LinkStyle missing HREF")

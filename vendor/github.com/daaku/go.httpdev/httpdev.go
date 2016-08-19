@@ -3,6 +3,7 @@
 package httpdev
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,8 +11,6 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"golang.org/x/net/context"
 
 	"github.com/daaku/go.h"
 )

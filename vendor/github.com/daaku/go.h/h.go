@@ -12,14 +12,13 @@ package h
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"html"
 	"io"
 	"log"
 	"reflect"
 	"strconv"
-
-	"golang.org/x/net/context"
 )
 
 // HTML that renders HTML. HTML is a recursive type which is eventually made

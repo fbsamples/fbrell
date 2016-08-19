@@ -6,7 +6,7 @@
 // types are still plain errors, and the errors are only augmented when the
 // caller wants them to be augmented. It does so by leveraging context.Context.
 // This is nice for various reasons. One is cleanliness -- those who don't wish
-// to these use augmented errors don't do so. The cost is when turned off is 1
+// to these use augmented errors don't do so. The cost when turned off is 1
 // context.Context Value lookup. Since capturing this information is often
 // expensive, this also allows for sampling if you have enough volume.
 // Similarly this enables a much nicer development process where stack traces
@@ -14,13 +14,13 @@
 package ctxerr
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/facebookgo/stack"
-	"golang.org/x/net/context"
 )
 
-// StackMode defines the variable available modes for capturing stack traces.
+// StackMode defines the modes for capturing stack traces.
 // The default mode prevents all wrapping all together.
 type StackMode int
 
@@ -28,8 +28,8 @@ const (
 	// StackModeNone is the default and will result in no stack being included.
 	StackModeNone StackMode = iota
 
-	// StackModeSingleFrame triggers inclusion of a single frame, that is only 1
-	// callers information.
+	// StackModeSingleFrame triggers inclusion of a single frame, that is only
+	// the immediate callers information.
 	StackModeSingleFrame
 
 	// StackModeSingleStack triggers inclusion of a single set of stack frames,

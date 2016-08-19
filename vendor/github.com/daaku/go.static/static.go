@@ -5,6 +5,7 @@ package static
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
@@ -21,8 +22,6 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/daaku/go.h"
 )
 
@@ -32,8 +31,9 @@ const (
 )
 
 var (
-	errZeroNames = errors.New("static: zero names given")
-	cacheControl = fmt.Sprintf("public, max-age=%d", int(maxAge.Seconds()))
+	errZeroNames          = errors.New("static: zero names given")
+	errNoHandlerInContext = errors.New("static: no handler in context")
+	cacheControl          = fmt.Sprintf("public, max-age=%d", int(maxAge.Seconds()))
 )
 
 func disableCaching(w http.ResponseWriter) {
@@ -348,6 +348,44 @@ func (l *Favicon) HTML(ctx context.Context) (h.HTML, error) {
 	}, nil
 }
 
+// Input renders a HTML <input> tag with the Src URL transformed.
+type Input struct {
+	ID          string
+	Class       string
+	Name        string
+	Style       string
+	Type        string
+	Value       string
+	Src         string
+	Placeholder string
+	Checked     bool
+	Multiple    bool
+	Data        map[string]interface{}
+	Inner       h.HTML
+}
+
+// HTML renders the content.
+func (i *Input) HTML(ctx context.Context) (h.HTML, error) {
+	src, err := URL(ctx, i.Src)
+	if err != nil {
+		return nil, err
+	}
+	return &h.Input{
+		ID:          i.ID,
+		Class:       i.Class,
+		Name:        i.Name,
+		Style:       i.Style,
+		Type:        i.Type,
+		Value:       i.Value,
+		Src:         src,
+		Placeholder: i.Placeholder,
+		Checked:     i.Checked,
+		Multiple:    i.Multiple,
+		Data:        i.Data,
+		Inner:       i.Inner,
+	}, nil
+}
+
 type ctxKey int
 
 const handlerCtxKey ctxKey = 0
@@ -362,5 +400,9 @@ func FromContext(ctx context.Context) *Handler {
 }
 
 func URL(ctx context.Context, names ...string) (string, error) {
-	return FromContext(ctx).URL(names...)
+	h := FromContext(ctx)
+	if h == nil {
+		return "", errNoHandlerInContext
+	}
+	return h.URL(names...)
 }

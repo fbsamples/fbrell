@@ -2,9 +2,8 @@
 package ga
 
 import (
+	"context"
 	"errors"
-
-	"golang.org/x/net/context"
 
 	"github.com/daaku/go.h"
 )

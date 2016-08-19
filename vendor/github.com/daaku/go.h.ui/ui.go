@@ -1,13 +1,13 @@
 package ui
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	"io"
 	"log"
 
 	"github.com/daaku/go.h"
-	"golang.org/x/net/context"
 )
 
 func MakeID(prefix string) string {

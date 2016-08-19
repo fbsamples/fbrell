@@ -1,13 +1,12 @@
 package h
 
 import (
+	"context"
 	"fmt"
 	"html"
 	"io"
 	"reflect"
 	"strings"
-
-	"golang.org/x/net/context"
 )
 
 func errHTMLOnPrimitive(name string) error {
