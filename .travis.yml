@@ -4,6 +4,17 @@ sudo: false
 go:
   - 1.7
 
+env:
+  - VENDOR=0
+  - VENDOR=1
+
+matrix:
+  allow_failures:
+    - VENDOR=0
+
+before_install:
+  - test "$VENDOR" == "0" && rm -rf vendor || true
+
 install:
   - go install -race -v std
   - go get -race -t -v ./...
