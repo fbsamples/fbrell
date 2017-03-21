@@ -13,7 +13,7 @@ Development Environment
 You'll need [Go](https://golang.org/) to work on rell. Once you have it:
 
 ```sh
-go get github.com/daaku/rell
+go get github.com/fbsamples/fbrell
 rell
 ```
 

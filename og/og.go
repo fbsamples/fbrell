@@ -17,7 +17,7 @@ import (
 
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.static"
-	"github.com/daaku/rell/rellenv"
+	"github.com/fbsamples/fbrell/rellenv"
 )
 
 // The representation of of <meta property="{key}" content="{value}">.

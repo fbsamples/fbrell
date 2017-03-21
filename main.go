@@ -15,23 +15,23 @@ import (
 	"github.com/daaku/go.browserid"
 	"github.com/daaku/go.static"
 	"github.com/daaku/go.trustforward"
-	"github.com/daaku/rell/adminweb"
-	"github.com/daaku/rell/examples"
-	"github.com/daaku/rell/examples/viewexamples"
-	"github.com/daaku/rell/oauth"
-	"github.com/daaku/rell/og"
-	"github.com/daaku/rell/og/viewog"
-	"github.com/daaku/rell/rellenv"
-	"github.com/daaku/rell/rellenv/appns"
-	"github.com/daaku/rell/rellenv/empcheck"
-	"github.com/daaku/rell/rellenv/viewcontext"
-	"github.com/daaku/rell/web"
 	"github.com/facebookgo/devrestarter"
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
 	"github.com/facebookgo/flagenv"
 	"github.com/facebookgo/httpcontrol"
 	"github.com/facebookgo/httpdown"
+	"github.com/fbsamples/fbrell/adminweb"
+	"github.com/fbsamples/fbrell/examples"
+	"github.com/fbsamples/fbrell/examples/viewexamples"
+	"github.com/fbsamples/fbrell/oauth"
+	"github.com/fbsamples/fbrell/og"
+	"github.com/fbsamples/fbrell/og/viewog"
+	"github.com/fbsamples/fbrell/rellenv"
+	"github.com/fbsamples/fbrell/rellenv/appns"
+	"github.com/fbsamples/fbrell/rellenv/empcheck"
+	"github.com/fbsamples/fbrell/rellenv/viewcontext"
+	"github.com/fbsamples/fbrell/web"
 	"github.com/golang/groupcache/lru"
 )
 
@@ -64,9 +64,9 @@ func main() {
 	empCheckerAppID := flagSet.Uint64("empcheck-app-id", 0, "empcheck application id")
 	empCheckerAppSecret := flagSet.String("empcheck-app-secret", "", "empcheck application secret")
 	publicDir := flagSet.String(
-		"public-dir", pkgDir("github.com/daaku/rell/public"), "public files directory")
+		"public-dir", pkgDir("github.com/fbsamples/fbrell/public"), "public files directory")
 	examplesDir := flagSet.String(
-		"examples-dir", pkgDir("github.com/daaku/rell/examples/db"), "example files directory")
+		"examples-dir", pkgDir("github.com/fbsamples/fbrell/examples/db"), "example files directory")
 
 	flagSet.Parse(os.Args[1:])
 	if err := flagenv.ParseSet("RELL_", flagSet); err != nil {

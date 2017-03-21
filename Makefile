@@ -1,5 +1,5 @@
 install:
-	@go install github.com/daaku/rell
+	@go install github.com/fbsamples/fbrell
 
 test:
-	@go test $$ARGS $(shell go list github.com/daaku/rell/... | grep -v /vendor/)
+	@go test $$ARGS $(shell go list github.com/fbsamples/fbrell/... | grep -v /vendor/)

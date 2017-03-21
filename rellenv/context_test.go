@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/daaku/go.trustforward"
-	"github.com/daaku/rell/rellenv"
 	"github.com/facebookgo/ensure"
 	"github.com/facebookgo/fbapp"
+	"github.com/fbsamples/fbrell/rellenv"
 )
 
 const (

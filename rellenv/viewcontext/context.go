@@ -6,7 +6,7 @@ import (
 	"runtime"
 
 	"github.com/daaku/go.httpdev"
-	"github.com/daaku/rell/rellenv"
+	"github.com/fbsamples/fbrell/rellenv"
 )
 
 var rev string

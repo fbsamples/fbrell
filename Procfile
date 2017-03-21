@@ -1,1 +1,1 @@
-web: /app/rell
+web: /app/fbrell

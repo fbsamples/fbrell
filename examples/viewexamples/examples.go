@@ -19,11 +19,11 @@ import (
 	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/go.static"
-	"github.com/daaku/rell/examples"
-	"github.com/daaku/rell/rellenv"
-	"github.com/daaku/rell/view"
 	"github.com/daaku/sortutil"
 	"github.com/facebookgo/counting"
+	"github.com/fbsamples/fbrell/examples"
+	"github.com/fbsamples/fbrell/rellenv"
+	"github.com/fbsamples/fbrell/view"
 )
 
 var (

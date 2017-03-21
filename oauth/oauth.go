@@ -16,8 +16,8 @@ import (
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
 	"github.com/daaku/go.static"
-	"github.com/daaku/rell/rellenv"
 	"github.com/facebookgo/fbapp"
+	"github.com/fbsamples/fbrell/rellenv"
 )
 
 const (

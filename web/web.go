@@ -12,14 +12,14 @@ import (
 	"github.com/daaku/ctxmux"
 	"github.com/daaku/go.signedrequest/appdata"
 	"github.com/daaku/go.static"
-	"github.com/daaku/rell/adminweb"
-	"github.com/daaku/rell/examples/viewexamples"
-	"github.com/daaku/rell/oauth"
-	"github.com/daaku/rell/og/viewog"
-	"github.com/daaku/rell/rellenv"
-	"github.com/daaku/rell/rellenv/viewcontext"
-	"github.com/daaku/rell/view"
 	"github.com/facebookgo/fbapp"
+	"github.com/fbsamples/fbrell/adminweb"
+	"github.com/fbsamples/fbrell/examples/viewexamples"
+	"github.com/fbsamples/fbrell/oauth"
+	"github.com/fbsamples/fbrell/og/viewog"
+	"github.com/fbsamples/fbrell/rellenv"
+	"github.com/fbsamples/fbrell/rellenv/viewcontext"
+	"github.com/fbsamples/fbrell/view"
 )
 
 // The rell web application.
