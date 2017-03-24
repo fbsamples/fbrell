@@ -39,12 +39,9 @@ type PageConfig struct {
 var DefaultPageConfig = &PageConfig{
 	GA: &ga.Track{Account: "UA-15507059-1"},
 	Style: []string{
-		"css/bootstrap.min.css",
-		"css/bootstrap-responsive.min.css",
 		"css/rell.css",
 	},
 	Script: []string{
-		"js/bootstrap.min.js",
 		"js/log.js",
 		"js/rell.js",
 	},
@@ -78,6 +75,9 @@ func (p *Page) HTML(ctx context.Context) (h.HTML, error) {
 						h.String(p.Title),
 						h.Unsafe(" &mdash; Facebook Read Eval Log Loop"),
 					},
+					&h.LinkStyle{
+						HREF: "https://maxcdn.bootstrapcdn.com/twitter-bootstrap/2.2.0/css/bootstrap-combined.min.css",
+					},
 					&static.LinkStyle{
 						HREF: p.config().Style,
 					},
@@ -91,11 +91,13 @@ func (p *Page) HTML(ctx context.Context) (h.HTML, error) {
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},
 					&h.Script{
+						Src: "https://maxcdn.bootstrapcdn.com/twitter-bootstrap/2.2.0/js/bootstrap.min.js",
+					},
+					&h.Script{
 						Src: "https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js",
 					},
 					&static.Script{
 						Src:   p.config().Script,
-						Async: true,
 					},
 					p.config().GA,
 				},
