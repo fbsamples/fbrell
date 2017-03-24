@@ -44,7 +44,6 @@ var DefaultPageConfig = &PageConfig{
 		"css/rell.css",
 	},
 	Script: []string{
-		"js/jquery-1.8.2.min.js",
 		"js/bootstrap.min.js",
 		"js/log.js",
 		"js/rell.js",
@@ -91,6 +90,9 @@ func (p *Page) HTML(ctx context.Context) (h.HTML, error) {
 					p.Body,
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},
+					&h.Script{
+						Src: "https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js",
+					},
 					&static.Script{
 						Src:   p.config().Script,
 						Async: true,
