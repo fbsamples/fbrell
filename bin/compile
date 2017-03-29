@@ -52,5 +52,6 @@ rm $BUILD_DIR/saved.zip
 echo " done"
 
 echo -n "-----> Building: go build $GO_IMPORT_PATH..."
+go get $GO_IMPORT_PATH
 go build "-ldflags=$GO_LDFLAGS" -o $OUTPUT_BIN $GO_IMPORT_PATH
 echo " done"

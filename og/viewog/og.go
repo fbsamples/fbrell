@@ -184,6 +184,9 @@ func renderObject(ctx context.Context, env *rellenv.Env, s *static.Handler, o *o
 				Inner: h.Frag{
 					&h.Meta{Charset: "utf-8"},
 					title,
+					&h.LinkStyle{
+						HREF: "https://maxcdn.bootstrapcdn.com/twitter-bootstrap/2.2.0/css/bootstrap-combined.min.css",
+                                        },
 					&static.LinkStyle{
 						HREF: view.DefaultPageConfig.Style,
 					},
