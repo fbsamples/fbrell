@@ -48,14 +48,14 @@ a {
  * Login Button
  */
 #rell-login {
-  background: url(https://s-static.ak.fbcdn.net/images/connect_sprite.png) no-repeat scroll left -188px #29447E;
+  background: url(https://static.xx.fbcdn.net/images/connect_sprite.png) no-repeat scroll left -188px #29447E;
   display: inline-block;
   line-height: 14px;
   outline: medium none;
   padding: 0 0 0 1px;
 }
 #rell-login span {
-  background: url(https://s-static.ak.fbcdn.net/images/connect_sprite.png) repeat scroll 0 0 #5F78AB;
+  background: url(https://static.xx.fbcdn.net/images/connect_sprite.png) repeat scroll 0 0 #5F78AB;
   border-bottom: 1px solid #1A356E;
   border-top: 1px solid #879AC0;
   color: #FFFFFF;
