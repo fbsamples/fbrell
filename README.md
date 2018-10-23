@@ -1,14 +1,14 @@
-rell [![Build Status](https://secure.travis-ci.org/daaku/rell.svg)](https://travis-ci.org/daaku/rell)
-====
+# fbrell
+
+[![Build Status](https://secure.travis-ci.org/fbsamples/fbrell.svg)](https://travis-ci.org/fbsamples/fbrell)
 
 Facebook Read Eval Log Loop is an interactive environment for exploring the
-Facebook Connect JavaScript SDK. The SDK is available
+Facebook JavaScript SDK. The SDK is available
 [here](https://developers.facebook.com/docs/reference/javascript/).
 
 [Try it out](https://www.fbrell.com/examples/).
 
-Development Environment
------------------------
+## Development Environment
 
 You'll need [Go](https://golang.org/) to work on rell. Once you have it:
 
@@ -21,8 +21,7 @@ Then go to [http://localhost:43600/](http://localhost:43600/). Look at the help
 text from `rell -h` to see what other options are available. You'll need your
 own [Facebook Application](https://developers.facebook.com/).
 
-Heroku
-------
+## Heroku
 
 The application can be run on Heroku:
 
