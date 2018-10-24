@@ -61,6 +61,7 @@ type Env struct {
 	level                string
 	locale               string
 	Env                  string
+	Version              string
 	Status               bool
 	FrictionlessRequests bool
 	Host                 string
@@ -83,6 +84,7 @@ var defaultContext = &Env{
 	ViewMode:             Website,
 	Module:               "all",
 	Init:                 true,
+	Version:              "v3.2",
 }
 
 type EmpChecker interface {
@@ -127,6 +129,9 @@ func (p *Parser) FromRequest(r *http.Request) (*Env, error) {
 	}
 	if env := r.FormValue("server"); env != "" {
 		e.Env = env
+	}
+	if version := r.FormValue("version"); version != "" {
+		e.Version = version
 	}
 	if viewMode := r.FormValue("view-mode"); viewMode != "" {
 		e.ViewMode = viewMode
@@ -239,6 +244,9 @@ func (c *Env) Values() url.Values {
 	if c.Env != defaultContext.Env {
 		values.Set("server", c.Env)
 	}
+	if c.Version != defaultContext.Version {
+		values.Set("version", c.Version)
+	}
 	if c.locale != defaultContext.locale {
 		values.Set("locale", c.locale)
 	}
@@ -289,6 +297,7 @@ func (c *Env) ViewURL(path string) string {
 func (c *Env) MarshalJSON() ([]byte, error) {
 	data := map[string]interface{}{
 		"appID":                strconv.FormatUint(c.appID, 10),
+		"version":              c.Version,
 		"level":                c.level,
 		"status":               c.Status,
 		"frictionlessRequests": c.FrictionlessRequests,
