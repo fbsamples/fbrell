@@ -54,7 +54,8 @@ var Rell = {
     }
 
     var options = {
-      appId : window.rellConfig.appID,
+      appId: window.rellConfig.appID,
+      version: window.rellConfig.version,
       cookie: true,
       status: window.rellConfig.status,
       frictionlessRequests: window.rellConfig.frictionlessRequests
