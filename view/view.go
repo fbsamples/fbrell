@@ -91,10 +91,10 @@ func (p *Page) HTML(ctx context.Context) (h.HTML, error) {
 					&h.Div{ID: "fb-root"},
 					&h.Div{ID: "FB_HiddenContainer"},
 					&h.Script{
-						Src: "https://maxcdn.bootstrapcdn.com/twitter-bootstrap/2.2.0/js/bootstrap.min.js",
+						Src: "https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js",
 					},
 					&h.Script{
-						Src: "https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js",
+						Src: "https://maxcdn.bootstrapcdn.com/twitter-bootstrap/2.2.0/js/bootstrap.min.js",
 					},
 					&static.Script{
 						Src:   p.config().Script,
