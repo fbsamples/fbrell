@@ -82,7 +82,6 @@ var Rell = {
     if (example && !example.autoRun) {
       Rell.setupAutoRunPopover()
     }
-    $('.has-tooltip').tooltip()
   },
 
   onStatusChange: function(response) {
