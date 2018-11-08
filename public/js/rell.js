@@ -30,12 +30,6 @@ var Rell = {
    * go go go
    */
   init: function() {
-    // Ensure we run once FB SDK has loaded.
-    if (!('FB' in window)) {
-      window.fbAsyncInit = Rell.init
-      return
-    }
-
     var example = window.rellExample
 
     window.location.hash = ''
@@ -142,4 +136,4 @@ var Rell = {
   }
 }
 
-Rell.init()
+window.fbAsyncInit = Rell.init
