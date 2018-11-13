@@ -12,12 +12,17 @@ Facebook JavaScript SDK. The SDK is available
 
 You'll need [Go](https://golang.org/) to work on rell. Once you have it:
 
-- `git clone https://github.com/fbsamples/fbrell.git`
-- `cd fbrell`
-- `go build` (This will create a fbrell executable file)
-- `./fbrell`
-- navigate to http://localhost:43600/
-- hazzah!
+```bash
+git clone https://github.com/fbsamples/fbrell.git
+cd fbrell
+go get ./... # this will install your dependencies
+go build # This will create a fbrell executable file
+./fbrell
+```
+
+Then, navigate to http://localhost:43600/
+
+Hazzah!
 
 Then go to [http://localhost:43600/](http://localhost:43600/). Look at the help
 text from `rell -h` to see what other options are available. You'll need your
