@@ -11,7 +11,7 @@
 document.getElementById('login-btn').onclick = function() {
   FB.login(function(response) {
     Log.info('FB.login response', response);
-  }, {scope: 'user_friends, publish_actions'});
+  }, {scope: 'email, manage_pages'});
   return false;
 }
 </script>
@@ -20,7 +20,7 @@ document.getElementById('login-btn').onclick = function() {
 
 <p>You can also use the <a href="https://developers.facebook.com/docs/plugins/login-button/">Login Button social plugin</a> to request additional permissions:</p>
 
-<div class="fb-login-button" data-scope="user_friends, publish_actions" data-max-rows="1" data-size="medium"></div>
+<div class="fb-login-button" data-scope="email, manage_pages" data-max-rows="1" data-size="medium"></div>
 
 <h3>Related Guides</h3>
 

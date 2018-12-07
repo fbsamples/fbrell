@@ -46,7 +46,7 @@ document.getElementById('fb-permissions').onclick = function() {
     function(response) {
       Log.info('FB.login with permissions callback', response);
     },
-    { scope: 'publish_actions' }
+    { scope: 'manage_pages' }
   );
 };
 
