@@ -89,6 +89,10 @@ func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		values.Set("scope", scope)
 	}
 
+	if assetScope := r.FormValue("asset-scope"); assetScope != "" {
+		values.Set("asset-scope", assetScope)
+	}
+
 	if c.ViewMode == rellenv.Website {
 		values.Set("redirect_uri", redirectURI(c))
 		values.Set("state", a.state(w, r))
