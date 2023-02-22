@@ -11,7 +11,7 @@
 document.getElementById('login-btn').onclick = function() {
   FB.login(function(response) {
     Log.info('FB.login response', response);
-  }, {scope: 'email, manage_pages'});
+  }, {scope: 'email, pages_show_list'});
   return false;
 }
 </script>
