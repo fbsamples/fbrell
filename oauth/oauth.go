@@ -26,7 +26,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -46,9 +46,9 @@ const (
 )
 
 var (
-	errOAuthFail     = errors.New("OAuth code exchange failure.")
-	errInvalidState  = errors.New("Invalid state")
-	errEmployeesOnly = errors.New("This endpoint is for employees only.")
+	errOAuthFail     = errors.New("oauth: code exchange failure")
+	errInvalidState  = errors.New("oauth: invalid state")
+	errEmployeesOnly = errors.New("oauth: endpoint is for employees only")
 )
 
 type Handler struct {
@@ -109,7 +109,7 @@ func (a *Handler) Start(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	if c.ViewMode == rellenv.Website {
-		http.Redirect(w, r, dialogURL.String(), 302)
+		http.Redirect(w, r, dialogURL.String(), http.StatusFound)
 	} else {
 		b, _ := json.Marshal(dialogURL.String())
 		_, err := h.Write(ctx, w, &h.Script{
@@ -152,7 +152,7 @@ func (a *Handler) Response(ctx context.Context, w http.ResponseWriter, r *http.R
 		return ctxerr.Wrap(ctx, err)
 	}
 	defer res.Body.Close()
-	bd, err := ioutil.ReadAll(res.Body)
+	bd, err := io.ReadAll(res.Body)
 	if err != nil {
 		return ctxerr.Wrap(ctx, err)
 	}

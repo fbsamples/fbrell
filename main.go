@@ -27,7 +27,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
 	"time"
 
@@ -63,24 +62,22 @@ func defaultAddr() string {
 
 func main() {
 	const signedRequestMaxAge = time.Hour * 24
-	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	flagSet := flag.NewFlagSet(filepath.Base(os.Args[0]), flag.ExitOnError)
-	dev := flagSet.Bool("dev", runtime.GOOS != "linux", "development mode")
-	addr := flagSet.String("addr", defaultAddr(), "server address to bind to")
-	adminPath := flagSet.String("admin-path", "", "secret admin path")
-	facebookAppID := flagSet.Uint64("fb-app-id", 342526215814610, "facebook application id")
-	facebookAppSecret := flagSet.String("fb-app-secret", "", "facebook application secret")
-	facebookAppNS := flagSet.String("fb-app-ns", "", "facebook application namespace")
-	empCheckerAppID := flagSet.Uint64("empcheck-app-id", 0, "empcheck application id")
-	empCheckerAppSecret := flagSet.String("empcheck-app-secret", "", "empcheck application secret")
-	publicDir := flagSet.String(
+	dev := flag.Bool("dev", runtime.GOOS != "linux", "development mode")
+	addr := flag.String("addr", defaultAddr(), "server address to bind to")
+	adminPath := flag.String("admin-path", "", "secret admin path")
+	facebookAppID := flag.Uint64("fb-app-id", 342526215814610, "facebook application id")
+	facebookAppSecret := flag.String("fb-app-secret", "", "facebook application secret")
+	facebookAppNS := flag.String("fb-app-ns", "", "facebook application namespace")
+	empCheckerAppID := flag.Uint64("empcheck-app-id", 0, "empcheck application id")
+	empCheckerAppSecret := flag.String("empcheck-app-secret", "", "empcheck application secret")
+	publicDir := flag.String(
 		"public-dir", "./public", "public files directory")
-	examplesDir := flagSet.String(
+	examplesDir := flag.String(
 		"examples-dir", "./examples/db", "example files directory")
 
-	flagSet.Parse(os.Args[1:])
-	if err := flagenv.ParseSet("RELL_", flagSet); err != nil {
+	flag.Parse()
+	if err := flagenv.ParseSet("RELL_", flag.CommandLine); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
 	}
@@ -92,7 +89,7 @@ func main() {
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 	// for systemd started servers we can skip the date/time since journald
 	// already shows it
-	if os.Getppid() == 1 {
+	if os.Getenv("JOURNAL_STREAM") != "" {
 		logger.SetFlags(0)
 	}
 
@@ -142,6 +139,12 @@ func main() {
 	exampleStore := &examples.Store{
 		DB: examples.MustMakeDB(*examplesDir),
 	}
+	adminHandler := &adminweb.Handler{
+		Forwarded: forwarded,
+		Path:      *adminPath,
+		SkipHTTPS: *dev,
+	}
+	adminHandler.Init()
 	webHandler := &web.Handler{
 		Static: static,
 		App:    fbApp,
@@ -169,13 +172,13 @@ func main() {
 			HttpTransport: httpTransport,
 			Static:        static,
 		},
-		AdminHandler: &adminweb.Handler{
-			Forwarded: forwarded,
-			Path:      *adminPath,
-			SkipHTTPS: *dev,
-		},
+		AdminHandler: adminHandler,
 		SignedRequestMaxAge: signedRequestMaxAge,
 	}
+	if err := webHandler.Init(); err != nil {
+		logger.Fatal(err)
+	}
+
 	httpServer := &http.Server{
 		Addr:    *addr,
 		Handler: webHandler,

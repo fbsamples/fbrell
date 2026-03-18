@@ -26,7 +26,6 @@ import (
 	"net/http/pprof"
 	"os"
 	"path"
-	"sync"
 
 	"github.com/daaku/go.httpdev"
 	"github.com/daaku/go.trustforward"
@@ -38,31 +37,32 @@ type Handler struct {
 	SkipHTTPS bool
 	Path      string
 
-	mux  http.Handler
-	once sync.Once
+	mux http.Handler
 }
 
 var httpsRequired = []byte("https required\n")
+
+// Init builds the admin mux and should be called before serving requests.
+func (h *Handler) Init() {
+	root := path.Join("/", h.Path) + "/"
+	mux := http.NewServeMux()
+	mux.HandleFunc(root+"debug/pprof/", pprof.Index)
+	mux.HandleFunc(root+"debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc(root+"debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc(root+"debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc(root+"vars/", viewvar.Json)
+	mux.HandleFunc(root+"env/", h.envHandler)
+	mux.HandleFunc(root+"sleep/", httpdev.Sleep)
+	h.mux = mux
+}
 
 // Serve HTTP requests for the admin port.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !h.SkipHTTPS && h.Forwarded.Scheme(r) != "https" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(httpsRequired))
+		w.Write(httpsRequired)
 		return
 	}
-	h.once.Do(func() {
-		root := path.Join("/", h.Path) + "/"
-		mux := http.NewServeMux()
-		mux.HandleFunc(root+"debug/pprof/", pprof.Index)
-		mux.HandleFunc(root+"debug/pprof/cmdline", pprof.Cmdline)
-		mux.HandleFunc(root+"debug/pprof/profile", pprof.Profile)
-		mux.HandleFunc(root+"debug/pprof/symbol", pprof.Symbol)
-		mux.HandleFunc(root+"vars/", viewvar.Json)
-		mux.HandleFunc(root+"env/", h.envHandler)
-		mux.HandleFunc(root+"sleep/", httpdev.Sleep)
-		h.mux = mux
-	})
 	h.mux.ServeHTTP(w, r)
 }
 

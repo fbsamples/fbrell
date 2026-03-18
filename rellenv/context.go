@@ -287,20 +287,28 @@ func (c *Env) ViewURL(path string) string {
 
 // JSON representation of Context.
 func (c *Env) MarshalJSON() ([]byte, error) {
-	data := map[string]interface{}{
-		"appID":                strconv.FormatUint(c.appID, 10),
-		"version":              c.Version,
-		"level":                c.level,
-		"status":               c.Status,
-		"frictionlessRequests": c.FrictionlessRequests,
-		"signedRequest":        c.SignedRequest,
-		"viewMode":             c.ViewMode,
-		"init":                 c.Init,
+	type envJSON struct {
+		AppID                string                `json:"appID"`
+		Version              string                `json:"version"`
+		Level                string                `json:"level"`
+		Status               bool                  `json:"status"`
+		FrictionlessRequests bool                  `json:"frictionlessRequests"`
+		SignedRequest        *fbsr.SignedRequest    `json:"signedRequest"`
+		ViewMode             string                `json:"viewMode"`
+		Init                 bool                  `json:"init"`
+		IsEmployee           bool                  `json:"isEmployee,omitempty"`
 	}
-	if c.isEmployee {
-		data["isEmployee"] = true
-	}
-	return json.Marshal(data)
+	return json.Marshal(envJSON{
+		AppID:                strconv.FormatUint(c.appID, 10),
+		Version:              c.Version,
+		Level:                c.level,
+		Status:               c.Status,
+		FrictionlessRequests: c.FrictionlessRequests,
+		SignedRequest:        c.SignedRequest,
+		ViewMode:             c.ViewMode,
+		Init:                 c.Init,
+		IsEmployee:           c.isEmployee,
+	})
 }
 
 type contextEnvKeyT int
@@ -335,8 +343,8 @@ func (c *Env) Locale() string {
 
 // IsEmployee returns true if the Context is known to be that of an employee.
 func IsEmployee(ctx context.Context) bool {
-	if ctx, err := FromContext(ctx); err == nil {
-		return ctx.isEmployee
+	if env, err := FromContext(ctx); err == nil {
+		return env.isEmployee
 	}
 	return false
 }
@@ -348,16 +356,15 @@ var defaultFbApp = fbapp.New(342526215814610, "", "")
 // employees this is a meta-tool of sorts and this makes complex things
 // possible.
 func FbApp(ctx context.Context) fbapp.App {
-	// TODO: secret?
-	if ctx, err := FromContext(ctx); err == nil {
-		return fbapp.New(ctx.appID, "", ctx.appNamespace)
+	if env, err := FromContext(ctx); err == nil {
+		return fbapp.New(env.appID, "", env.appNamespace)
 	}
 	return defaultFbApp
 }
 
 func FbEnv(ctx context.Context) string {
-	if ctx, err := FromContext(ctx); err == nil {
-		return ctx.Env
+	if env, err := FromContext(ctx); err == nil {
+		return env.Env
 	}
 	return ""
 }

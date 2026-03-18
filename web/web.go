@@ -25,7 +25,6 @@ import (
 	"log"
 	"net/http"
 	"path"
-	"sync"
 	"time"
 
 	"github.com/daaku/ctxerr"
@@ -57,54 +56,54 @@ type Handler struct {
 	Static          *static.Handler
 	AdminHandler    *adminweb.Handler
 
-	mux  http.Handler
-	once sync.Once
+	mux http.Handler
+}
+
+// Init builds the mux and should be called before serving requests.
+func (a *Handler) Init() error {
+	const public = "/public/"
+
+	fileserver := http.FileServer(a.PublicFS)
+
+	mux, err := ctxmux.New(
+		ctxmux.MuxErrorHandler(a.handleError),
+		ctxmux.MuxNotFoundHandler(a.ExamplesHandler.Example),
+		ctxmux.MuxRedirectTrailingSlash(),
+		ctxmux.MuxContextChanger(a.contextChanger),
+	)
+	if err != nil {
+		return err
+	}
+
+	mux.GET(a.Static.Path+"*rest", ctxmux.HTTPHandler(a.Static))
+	mux.GET("/favicon.ico", ctxmux.HTTPHandler(fileserver))
+	mux.GET("/f8.jpg", ctxmux.HTTPHandler(fileserver))
+	mux.GET("/robots.txt", ctxmux.HTTPHandler(fileserver))
+	mux.GET("/.well-known/apple-app-site-association", ctxmux.HTTPHandler(fileserver))
+	mux.GET(public+"*rest", ctxmux.HTTPHandler(http.StripPrefix(public, fileserver)))
+	mux.GET("/info/*rest", a.ContextHandler.Info)
+	mux.POST("/info/*rest", a.ContextHandler.Info)
+	mux.GET("/examples/", a.ExamplesHandler.List)
+	mux.GET("/og/*rest", a.OgHandler.Values)
+	mux.GET("/rog/*rest", a.OgHandler.Base64)
+	mux.GET("/rog-redirect/*rest", a.OgHandler.Redirect)
+	mux.GET(oauth.Path+"*rest", a.OauthHandler.Handler)
+
+	if a.AdminHandler.Path != "" {
+		adminPath := path.Join("/", a.AdminHandler.Path) + "/*rest"
+		mux.GET(adminPath, ctxmux.HTTPHandler(a.AdminHandler))
+	}
+
+	a.mux = &appdata.Handler{
+		Handler: mux,
+		Secret:  a.App.SecretByte(),
+		MaxAge:  a.SignedRequestMaxAge,
+	}
+	return nil
 }
 
 // Serve HTTP requests for the main port.
 func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.once.Do(func() {
-		const public = "/public/"
-
-		fileserver := http.FileServer(a.PublicFS)
-
-		mux, err := ctxmux.New(
-			ctxmux.MuxErrorHandler(a.handleError),
-			ctxmux.MuxNotFoundHandler(a.ExamplesHandler.Example),
-			ctxmux.MuxRedirectTrailingSlash(),
-			ctxmux.MuxContextChanger(a.contextChanger),
-		)
-		if err != nil {
-			panic(err)
-		}
-
-		mux.GET(a.Static.Path+"*rest", ctxmux.HTTPHandler(a.Static))
-		mux.GET("/favicon.ico", ctxmux.HTTPHandler(fileserver))
-		mux.GET("/f8.jpg", ctxmux.HTTPHandler(fileserver))
-		mux.GET("/robots.txt", ctxmux.HTTPHandler(fileserver))
-		mux.GET("/.well-known/apple-app-site-association", ctxmux.HTTPHandler(fileserver))
-		mux.GET(public+"*rest", ctxmux.HTTPHandler(http.StripPrefix(public, fileserver)))
-		mux.GET("/info/*rest", a.ContextHandler.Info)
-		mux.POST("/info/*rest", a.ContextHandler.Info)
-		mux.GET("/examples/", a.ExamplesHandler.List)
-		mux.GET("/og/*rest", a.OgHandler.Values)
-		mux.GET("/rog/*rest", a.OgHandler.Base64)
-		mux.GET("/rog-redirect/*rest", a.OgHandler.Redirect)
-		mux.GET(oauth.Path+"*rest", a.OauthHandler.Handler)
-
-		if a.AdminHandler.Path != "" {
-			adminPath := path.Join("/", a.AdminHandler.Path) + "/*rest"
-			mux.GET(adminPath, ctxmux.HTTPHandler(a.AdminHandler))
-		}
-
-		var handler http.Handler
-		handler = &appdata.Handler{
-			Handler: mux,
-			Secret:  a.App.SecretByte(),
-			MaxAge:  a.SignedRequestMaxAge,
-		}
-		a.mux = handler
-	})
 	a.mux.ServeHTTP(w, r)
 }
 
