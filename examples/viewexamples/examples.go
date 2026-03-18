@@ -28,6 +28,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"strconv"
 	"io"
 	"log"
 	"net/http"
@@ -61,6 +62,36 @@ var (
 		rellenv.Website: "Website",
 		rellenv.PageTab: "Page Tab",
 		rellenv.Canvas:  "Canvas",
+	}
+	localeOptions = []string{
+		"en_US", "af_ZA", "ak_GH", "am_ET", "ar_AR", "as_IN", "ay_BO", "az_AZ",
+		"be_BY", "bg_BG", "bm_ML", "bn_IN", "bp_IN", "br_FR", "bs_BA", "bv_DE",
+		"ca_ES", "cb_IQ", "ck_US", "co_FR", "cs_CZ", "cx_PH", "cy_GB",
+		"da_DK", "de_DE",
+		"eh_IN", "el_GR", "em_ZM", "en_GB", "en_IN", "en_OP", "en_PI", "en_UD", "en_XA", "eo_EO",
+		"es_CL", "es_CO", "es_ES", "es_LA", "es_MX", "es_VE", "et_EE", "eu_ES",
+		"fa_IR", "fb_AA", "fb_AC", "fb_AR", "fb_HA", "fb_HX", "fb_LL", "fb_LS", "fb_LT", "fb_RL", "fb_ZH", "fbt_AC",
+		"ff_NG", "fi_FI", "fn_IT", "fo_FO", "fr_CA", "fr_FR", "fv_NG", "fy_NL",
+		"ga_IE", "gl_ES", "gn_PY", "gu_IN", "gx_GR",
+		"ha_NG", "he_IL", "hi_FB", "hi_IN", "hr_HR", "ht_HT", "hu_HU", "hy_AM",
+		"id_ID", "ig_NG", "ik_US", "is_IS", "it_IT", "iu_CA",
+		"ja_JP", "ja_KS", "jv_ID",
+		"ka_GE", "kk_KZ", "km_KH", "kn_IN", "ko_KR", "ks_IN", "ku_TR", "ky_KG",
+		"la_VA", "lg_UG", "li_NL", "ln_CD", "lo_LA", "lr_IT", "lt_LT", "lv_LV",
+		"mg_MG", "mi_NZ", "mk_MK", "ml_IN", "mn_MN", "mos_BF", "mr_IN", "ms_MY", "mt_MT", "my_MM",
+		"nb_NO", "nd_ZW", "ne_NP", "nh_MX", "nl_BE", "nl_NL", "nn_NO", "nr_ZA", "ns_ZA", "ny_MW",
+		"om_ET", "or_IN",
+		"pa_IN", "pcm_NG", "pl_PL", "ps_AF", "pt_BR", "pt_PT",
+		"qb_DE", "qc_GT", "qe_US", "qk_DZ", "qr_GR", "qs_DE", "qt_US", "qu_PE", "qv_IT", "qz_MM",
+		"rm_CH", "rn_BI", "ro_RO", "ru_RU", "rw_RW",
+		"sa_IN", "sc_IT", "se_NO", "si_LK", "sk_SK", "sl_SI", "sn_ZW", "so_SO", "sq_AL", "sr_RS", "ss_SZ", "st_ZA", "su_ID", "sv_SE", "sw_KE", "sy_SY", "sz_PL",
+		"ta_IN", "te_IN", "tg_TJ", "th_TH", "ti_ET", "tk_TM", "tl_PH", "tl_ST", "tn_BW", "tq_AR", "tpi_PG", "tr_TR", "ts_ZA", "tt_RU", "tz_MA",
+		"uk_UA", "ur_PK", "uz_UZ",
+		"ve_ZA", "vi_VN",
+		"wo_SN",
+		"xh_ZA",
+		"yi_DE", "yo_NG",
+		"zh_CN", "zh_HK", "zh_TW", "zu_ZA", "zz_TR",
 	}
 )
 
@@ -138,6 +169,11 @@ func (p *page) HTML(ctx context.Context) (h.HTML, error) {
 							Class: "span8",
 							Inner: h.Frag{
 								&editorTop{
+									Context: p.Context,
+									Env:     p.Env,
+									Example: p.Example,
+								},
+								&settingsPanel{
 									Context: p.Context,
 									Env:     p.Env,
 									Example: p.Example,
@@ -412,6 +448,236 @@ func (e *logContainer) HTML(ctx context.Context) (h.HTML, error) {
 				Inner: h.String("Clear"),
 			},
 			&h.Div{ID: "log"},
+		},
+	}, nil
+}
+
+type settingsPanel struct {
+	Context context.Context
+	Env     *rellenv.Env
+	Example *examples.Example
+}
+
+func (s *settingsPanel) HTML(ctx context.Context) (h.HTML, error) {
+	appID := strconv.FormatUint(rellenv.FbApp(s.Context).ID(), 10)
+
+	// Build level dropdown options
+	levelOptions := h.Frag{}
+	for _, lvl := range []string{"debug", "info", "warn", "error"} {
+		levelOptions = append(levelOptions, &h.Option{
+			Value:    lvl,
+			Selected: s.Env.Level() == lvl,
+			Inner:    h.String(lvl),
+		})
+	}
+
+	// Build view-mode dropdown options
+	viewModeOpts := h.Frag{}
+	for _, mode := range []string{rellenv.Website, rellenv.Canvas, rellenv.PageTab} {
+		viewModeOpts = append(viewModeOpts, &h.Option{
+			Value:    mode,
+			Selected: s.Env.ViewMode == mode,
+			Inner:    h.String(viewModeOptions[mode]),
+		})
+	}
+
+	// Build locale dropdown options
+	localeOpts := h.Frag{}
+	for _, loc := range localeOptions {
+		localeOpts = append(localeOpts, &h.Option{
+			Value:    loc,
+			Selected: s.Env.Locale() == loc,
+			Inner:    h.String(loc),
+		})
+	}
+
+	return h.Frag{
+		&h.Div{
+			Class: "row-fluid",
+			Style: "margin-bottom: 5px",
+			Inner: &h.A{
+				ID:    "rell-settings-toggle",
+				Class: "btn btn-small",
+				Data: map[string]interface{}{
+					"toggle": "collapse",
+					"target": "#rell-settings",
+				},
+				Inner: h.Frag{
+					&h.I{Class: "icon-cog"},
+					h.String(" Settings "),
+					&h.Span{Class: "caret"},
+				},
+			},
+		},
+		&h.Div{
+			ID:    "rell-settings",
+			Class: "collapse",
+			Inner: &h.Div{
+				Class: "well well-small",
+				Inner: h.Frag{
+					&h.Div{
+						Class: "row-fluid",
+						Inner: h.Frag{
+							&h.Div{
+								Class: "span6",
+								Inner: h.Frag{
+									&settingsField{
+										Label:       "App ID",
+										Name:        "appid",
+										Value:       appID,
+										Placeholder: "342526215814610",
+									},
+									&settingsField{
+										Label:       "Server",
+										Name:        "server",
+										Value:       s.Env.Env,
+										Placeholder: "e.g. beta, latest, intern",
+									},
+									&settingsField{
+										Label:       "Version",
+										Name:        "version",
+										Value:       s.Env.Version,
+										Placeholder: "v25.0",
+									},
+									&settingsSelect{
+										Label:   "Locale",
+										Name:    "locale",
+										Options: localeOpts,
+									},
+								},
+							},
+							&h.Div{
+								Class: "span6",
+								Inner: h.Frag{
+									&settingsSelect{
+										Label:   "Log Level",
+										Name:    "level",
+										Options: levelOptions,
+									},
+									&settingsSelect{
+										Label:   "View Mode",
+										Name:    "view-mode",
+										Options: viewModeOpts,
+									},
+									&settingsCheckbox{
+										Label:   "Auto Init SDK",
+										Name:    "init",
+										Checked: s.Env.Init,
+									},
+									&settingsCheckbox{
+										Label:   "Auto Status Ping",
+										Name:    "status",
+										Checked: s.Env.Status,
+									},
+									&settingsCheckbox{
+										Label:   "Frictionless Requests",
+										Name:    "frictionlessRequests",
+										Checked: s.Env.FrictionlessRequests,
+									},
+								},
+							},
+						},
+					},
+					&h.Div{
+						ID:    "rell-url-preview",
+						Class: "rell-url-preview",
+						Inner: &h.Small{
+							Inner: h.String(s.Env.URL(s.Example.URL).String()),
+						},
+					},
+					&h.Div{
+						Style: "margin-top: 8px",
+						Inner: &h.Button{
+							ID:    "rell-settings-update",
+							Class: "btn btn-primary btn-small",
+							Inner: h.Frag{
+								&h.I{Class: "icon-refresh icon-white"},
+								h.String(" Update"),
+							},
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+type settingsField struct {
+	Label       string
+	Name        string
+	Value       string
+	Placeholder string
+}
+
+func (f *settingsField) HTML(ctx context.Context) (h.HTML, error) {
+	return &h.Div{
+		Class: "control-group control-group-sm",
+		Inner: h.Frag{
+			&h.Label{
+				Class: "control-label-sm",
+				Inner: h.String(f.Label),
+			},
+			&h.Input{
+				Class:       "rell-setting input-medium",
+				Type:        "text",
+				Name:        f.Name,
+				Value:       f.Value,
+				Placeholder: f.Placeholder,
+				Data: map[string]interface{}{
+					"default": f.Placeholder,
+				},
+			},
+		},
+	}, nil
+}
+
+type settingsSelect struct {
+	Label   string
+	Name    string
+	Options h.HTML
+}
+
+func (s *settingsSelect) HTML(ctx context.Context) (h.HTML, error) {
+	return &h.Div{
+		Class: "control-group control-group-sm",
+		Inner: h.Frag{
+			&h.Label{
+				Class: "control-label-sm",
+				Inner: h.String(s.Label),
+			},
+			&h.Select{
+				Class: "rell-setting input-medium",
+				Name:  s.Name,
+				Inner: s.Options,
+			},
+		},
+	}, nil
+}
+
+type settingsCheckbox struct {
+	Label   string
+	Name    string
+	Checked bool
+}
+
+func (c *settingsCheckbox) HTML(ctx context.Context) (h.HTML, error) {
+	return &h.Div{
+		Class: "control-group control-group-sm",
+		Inner: &h.Label{
+			Class: "checkbox",
+			Inner: h.Frag{
+				&h.Input{
+					Class:   "rell-setting",
+					Type:    "checkbox",
+					Name:    c.Name,
+					Value:   "true",
+					Checked: c.Checked,
+					Data: map[string]interface{}{
+						"default": "true",
+					},
+				},
+				h.String(" " + c.Label),
+			},
 		},
 	}, nil
 }

@@ -86,3 +86,50 @@ a {
 .og-info td {
   word-break: break-all;
 }
+
+/**
+ * Settings Panel
+ */
+#rell-settings-toggle {
+  cursor: pointer;
+}
+
+#rell-settings .well {
+  padding: 10px;
+  margin-bottom: 5px;
+}
+
+#rell-settings .control-group-sm {
+  margin-bottom: 5px;
+}
+
+#rell-settings .control-label-sm {
+  display: block;
+  font-size: 11px;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 2px;
+}
+
+#rell-settings .input-medium {
+  width: 95%;
+  box-sizing: border-box;
+}
+
+#rell-settings .checkbox {
+  font-size: 12px;
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+
+.rell-url-preview {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  padding: 5px 8px;
+  margin-top: 8px;
+  font-family: monospace;
+  font-size: 11px;
+  word-break: break-all;
+  color: #555;
+}

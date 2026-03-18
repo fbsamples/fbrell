@@ -82,7 +82,7 @@ var defaultContext = &Env{
 	Scheme:               "http",
 	ViewMode:             Website,
 	Init:                 true,
-	Version:              "v3.2",
+	Version:              "v25.0",
 }
 
 type EmpChecker interface {
@@ -321,6 +321,16 @@ func FromContext(ctx context.Context) (*Env, error) {
 // WithEnv adds the given env to the context.
 func WithEnv(ctx context.Context, env *Env) context.Context {
 	return context.WithValue(ctx, contextEnvKey, env)
+}
+
+// Level returns the log level.
+func (c *Env) Level() string {
+	return c.level
+}
+
+// Locale returns the locale.
+func (c *Env) Locale() string {
+	return c.locale
 }
 
 // IsEmployee returns true if the Context is known to be that of an employee.

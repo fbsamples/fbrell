@@ -137,3 +137,49 @@ var Rell = {
 }
 
 window.fbAsyncInit = Rell.init
+
+// Settings panel: live URL preview and update button
+$(function() {
+  var defaults = {
+    appid: '342526215814610',
+    server: '',
+    version: 'v25.0',
+    locale: 'en_US',
+    level: 'debug',
+    'view-mode': 'website',
+    init: 'true',
+    status: 'true',
+    frictionlessRequests: 'true'
+  }
+
+  function buildSettingsUrl() {
+    var params = {}
+    $('.rell-setting').each(function() {
+      var $el = $(this)
+      var name = $el.attr('name')
+      var val
+      if ($el.is(':checkbox')) {
+        val = $el.is(':checked') ? 'true' : 'false'
+      } else {
+        val = $el.val()
+      }
+      if (val !== '' && val !== defaults[name]) {
+        params[name] = val
+      }
+    })
+    var path = window.location.pathname
+    var qs = $.param(params)
+    return qs ? path + '?' + qs : path
+  }
+
+  function updatePreview() {
+    var url = buildSettingsUrl()
+    $('#rell-url-preview').html('<small>' + url + '</small>')
+  }
+
+  $('.rell-setting').on('change input', updatePreview)
+
+  $('#rell-settings-update').on('click', function() {
+    window.location = buildSettingsUrl()
+  })
+})
