@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
@@ -43,6 +44,7 @@ type Fetcher struct {
 	Apps        []fbapp.App
 	Logger      Logger
 	Cache       *lru.Cache
+	mu          sync.Mutex
 }
 
 // Get the App Namespace, fetching it using the Graph API if necessary.
@@ -53,7 +55,10 @@ func (c *Fetcher) Get(id uint64) string {
 		}
 	}
 
-	if ns, ok := c.Cache.Get(cacheKey(id)); ok {
+	c.mu.Lock()
+	ns, ok := c.Cache.Get(cacheKey(id))
+	c.mu.Unlock()
+	if ok {
 		return ns.(string)
 	}
 
@@ -68,6 +73,8 @@ func (c *Fetcher) Get(id uint64) string {
 		return ""
 	}
 
+	c.mu.Lock()
 	c.Cache.Add(cacheKey(id), res.Namespace)
+	c.mu.Unlock()
 	return res.Namespace
 }

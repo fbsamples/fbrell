@@ -21,7 +21,6 @@
 package view
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"strings"
@@ -52,8 +51,8 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if usePlainText(r) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(code)
-		io.Copy(w, strings.NewReader(err.err.Error()))
-		w.Write([]byte("\n"))
+		_, _ = io.Copy(w, strings.NewReader(err.err.Error()))
+		_, _ = w.Write([]byte("\n"))
 	} else {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(code)
@@ -63,7 +62,7 @@ func (err errorCodeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				&h.Script{Inner: h.Unsafe("window.location.hash = ''")},
 			},
 		}
-		h.Write(context.TODO(), w, page)
+		h.Write(r.Context(), w, page)
 	}
 }
 

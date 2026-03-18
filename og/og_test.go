@@ -70,8 +70,8 @@ func TestParseBase64(t *testing.T) {
 		{"og:title", "song1"},
 		{"og:type", "song"},
 		{"og:url", "http://www.fbrell.com/rog/" + song1},
-		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0.jpg"},
-		{"og:description", stockDescriptions[0]},
+		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy9mbG93ZXJfc2VycmFzY2xpbWJfMzk5OTEyNTUwMC5qcGciLCJhZWEwZTQxOSJdXQ.jpg"},
+		{"og:description", stockDescriptions[3]},
 	}}
 
 	object, err := defaultParser().FromBase64(context.Background(), defaultContext, song1)
@@ -92,8 +92,8 @@ func TestParseValues(t *testing.T) {
 		{"og:type", ogType},
 		{"og:title", ogTitle},
 		{"og:url", "http://www.fbrell.com/og/" + ogType + "/" + ogTitle},
-		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy90YXhpX3JvdGlhXzI4MDYzMzkxMjUuanBnIiwiMTdkMTlmNDUiXV0.jpg"},
-		{"og:description", stockDescriptions[6]},
+		{"og:image", "http://www.fbrell.com/static/W1siL2ltYWdlcy9iZWFjaF9za3lzZWVrZXJfMzE4NDkxNC5qcGciLCJlNDczNWI5ZiJdXQ.jpg"},
+		{"og:description", stockDescriptions[2]},
 	}}
 
 	object, err := defaultParser().FromValues(context.Background(), defaultContext, values)

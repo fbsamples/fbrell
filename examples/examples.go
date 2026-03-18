@@ -22,9 +22,8 @@
 package examples
 
 import (
-	"crypto/md5"
 	"fmt"
-	"io/ioutil"
+	"hash/fnv"
 	"log"
 	"net/http"
 	"net/url"
@@ -116,7 +115,7 @@ func MakeDB(dir string) (*DB, error) {
 				db.Category[categoryName] = category
 			}
 
-			contentBytes, err := ioutil.ReadFile(exampleFile)
+			contentBytes, err := os.ReadFile(exampleFile)
 			if err != nil {
 				return fmt.Errorf("Failed to read example %s: %s", exampleFile, err)
 			}
@@ -187,10 +186,10 @@ func (c *Category) FindExample(name string) *Example {
 }
 
 func ContentID(content string) string {
-	h := md5.New()
+	h := fnv.New128a()
 	_, err := fmt.Fprint(h, content)
 	if err != nil {
-		log.Fatalf("Error comupting md5 sum: %s", err)
+		log.Fatalf("Error computing hash: %s", err)
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))
 }

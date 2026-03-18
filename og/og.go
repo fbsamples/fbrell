@@ -24,11 +24,10 @@ package og
 
 import (
 	"context"
-	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
+	"hash/fnv"
 	"log"
 	"net/url"
 	"sort"
@@ -83,7 +82,7 @@ func sortedEncode(v url.Values) string {
 // Make a copy of url.Values.
 func copyValues(source url.Values) url.Values {
 	dest := url.Values{}
-	for key, _ := range source {
+	for key := range source {
 		switch key {
 		case "action_object_map":
 		case "action_ref_map":
@@ -318,27 +317,22 @@ func (o *Object) AddPair(key, value string) {
 // the given URL. This allows for "persistant defaults" for fields.
 func hashedPick(rawurl string, choices []string) string {
 	var key string
-	url, err := url.Parse(rawurl)
+	u, err := url.Parse(rawurl)
 	if err != nil {
-		log.Printf("Failed to parse URL %s in hashed pick: %s", url, err)
+		log.Printf("Failed to parse URL %s in hashed pick: %s", rawurl, err)
 		key = ""
 	} else {
-		key = url.Path
+		key = u.Path
 		// TODO figure out if fixing this will break things before removing it
-		if url.RawQuery == "" {
+		if u.RawQuery == "" {
 			key += "undefined"
 		} else {
-			key += url.RawQuery
+			key += u.RawQuery
 		}
 	}
-	md5 := md5.New()
-	io.WriteString(md5, key)
-	hex := fmt.Sprintf("%x", md5.Sum(nil))
-	pick, err := strconv.ParseUint(hex[:8], 16, 64)
-	if err != nil {
-		log.Printf("Failed to parse hex \"%s\" with error: %s", hex[:8], err)
-	}
-	index := pick % uint64(len(choices))
+	h := fnv.New64a()
+	fmt.Fprint(h, key)
+	index := h.Sum64() % uint64(len(choices))
 	return choices[index]
 }
 

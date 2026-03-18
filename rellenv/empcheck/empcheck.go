@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 
 	"github.com/facebookgo/fbapi"
 	"github.com/facebookgo/fbapp"
@@ -48,12 +49,16 @@ type Checker struct {
 	App         fbapp.App
 	Logger      Logger
 	Cache       *lru.Cache
+	mu          sync.Mutex
 }
 
 // Check if the user is a Facebook Employee. This only available by
 // special permission granted to an application by Facebook.
 func (c *Checker) Check(id uint64) bool {
-	if is, ok := c.Cache.Get(cacheKey(id)); ok {
+	c.mu.Lock()
+	is, ok := c.Cache.Get(cacheKey(id))
+	c.mu.Unlock()
+	if ok {
 		return is.(bool)
 	}
 
@@ -80,6 +85,8 @@ func (c *Checker) Check(id uint64) bool {
 		return false
 	}
 
+	c.mu.Lock()
 	c.Cache.Add(cacheKey(id), user.IsEmployee)
+	c.mu.Unlock()
 	return user.IsEmployee
 }
