@@ -68,7 +68,6 @@ type Env struct {
 	Scheme               string
 	SignedRequest        *fbsr.SignedRequest
 	ViewMode             string
-	Module               string
 	isEmployee           bool
 	Init                 bool
 }
@@ -82,7 +81,6 @@ var defaultContext = &Env{
 	Host:                 "www.fbrell.com",
 	Scheme:               "http",
 	ViewMode:             Website,
-	Module:               "all",
 	Init:                 true,
 	Version:              "v3.2",
 }
@@ -135,9 +133,6 @@ func (p *Parser) FromRequest(r *http.Request) (*Env, error) {
 	}
 	if viewMode := r.FormValue("view-mode"); viewMode != "" {
 		e.ViewMode = viewMode
-	}
-	if module := r.FormValue("module"); module != "" {
-		e.Module = module
 	}
 	if status, err := strconv.ParseBool(r.FormValue("status")); err == nil {
 		e.Status = status
@@ -196,9 +191,9 @@ func (c *Env) Copy() *Env {
 func (c *Env) SdkURL() string {
 	server := "connect.facebook.net"
 	if c.Env != "" {
-		server = fburl.Hostname("static", c.Env) + "/assets.php"
+		server = fmt.Sprintf("connect.%s.facebook.net", c.Env)
 	}
-	return fmt.Sprintf("%s://%s/%s/%s.js", c.Scheme, server, c.locale, c.Module)
+	return fmt.Sprintf("https://%s/%s/sdk.js", server, c.locale)
 }
 
 // Get the URL for loading this application in a Page Tab on Facebook.
@@ -249,9 +244,6 @@ func (c *Env) Values() url.Values {
 	}
 	if c.locale != defaultContext.locale {
 		values.Set("locale", c.locale)
-	}
-	if c.Module != defaultContext.Module {
-		values.Set("module", c.Module)
 	}
 	if c.Init != defaultContext.Init {
 		values.Set("init", strconv.FormatBool(c.Init))
