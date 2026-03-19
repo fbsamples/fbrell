@@ -105,6 +105,7 @@ var Rell = {
       appId: window.rellConfig.appID,
       version: window.rellConfig.version,
       cookie: true,
+      xfbml: true,
       status: window.rellConfig.status,
       frictionlessRequests: window.rellConfig.frictionlessRequests
     };
@@ -123,9 +124,7 @@ var Rell = {
     Rell.updateStatusBar();
 
     // Bind click handlers (vanilla JS)
-    Rell.bindClick('rell-login', Rell.login);
     Rell.bindClick('rell-disconnect', Rell.disconnect);
-    Rell.bindClick('rell-logout', Rell.logout);
     Rell.bindClick('rell-run-code', Rell.runCode);
     Rell.bindClick('rell-log-clear', Rell.clearLog);
 

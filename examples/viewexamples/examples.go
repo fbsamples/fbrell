@@ -170,15 +170,18 @@ type headerBar struct {
 
 func (hb *headerBar) HTML(ctx context.Context) (h.HTML, error) {
 	authControls := h.Frag{
-		&h.A{
-			ID:    "rell-login",
-			Class: "btn btn-login",
-			Inner: h.String("Log In"),
+		&h.Div{
+			Class: "fb-login-button",
+			Data: map[string]interface{}{
+				"size":              "medium",
+				"button-type":       "continue_with",
+				"use-continue-as":   "true",
+				"auto-logout-link":  "true",
+			},
 		},
 		&h.Span{Class: "auth-label", Inner: h.String("Status:")},
 		&h.Span{ID: "auth-status", Class: "auth-badge", Inner: h.String("waiting")},
 		&h.A{ID: "rell-disconnect", Class: "btn-link", Inner: h.String("Disconnect")},
-		&h.A{ID: "rell-logout", Class: "btn-link", Inner: h.String("Logout")},
 	}
 
 	headerRight := h.Frag{
