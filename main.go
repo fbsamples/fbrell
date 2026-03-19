@@ -187,6 +187,8 @@ func main() {
 		StopTimeout: 9 * time.Second, // heroku provides 10 seconds to terminate
 	}
 
+	logger.Printf("fbrell running at http://localhost%s", *addr)
+
 	if err := httpdown.ListenAndServe(httpServer, hdConfig); err != nil {
 		logger.Fatal(err)
 	}

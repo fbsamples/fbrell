@@ -28,16 +28,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"strconv"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
+	"strconv"
 
 	"github.com/daaku/ctxerr"
 	"github.com/daaku/go.fburl"
 	"github.com/daaku/go.h"
-	"github.com/daaku/go.h.ui"
 	"github.com/daaku/go.htmlwriter"
 	"github.com/daaku/go.static"
 	"github.com/daaku/sortutil"
@@ -142,323 +142,261 @@ func (a *Handler) Example(w http.ResponseWriter, r *http.Request) error {
 		Env:     env,
 		Static:  a.Static,
 		Example: example,
+		DB:      a.ExampleStore.DB,
 	})
 	return err
 }
 
-type page struct {
-	Writer  http.ResponseWriter
-	Request *http.Request
-	Context context.Context
-	Env     *rellenv.Env
-	Static  *static.Handler
-	Example *examples.Example
-}
-
-func (p *page) HTML(ctx context.Context) (h.HTML, error) {
-	return &view.Page{
-		Title: p.Example.Title,
-		Class: "main",
-		Body: &h.Div{
-			Class: "container-fluid",
-			Inner: h.Frag{
-				&h.Div{
-					Class: "row-fluid",
-					Inner: h.Frag{
-						&h.Div{
-							Class: "span8",
-							Inner: h.Frag{
-								&editorTop{
-									Context: p.Context,
-									Env:     p.Env,
-									Example: p.Example,
-								},
-								&settingsPanel{
-									Context: p.Context,
-									Env:     p.Env,
-									Example: p.Example,
-								},
-								&editorArea{
-									Context: p.Context,
-									Env:     p.Env,
-									Example: p.Example,
-								},
-								&editorBottom{
-									Context: p.Context,
-									Env:     p.Env,
-									Example: p.Example,
-								},
-							},
-						},
-						&h.Div{
-							Class: "span4",
-							Inner: h.Frag{
-								&contextEditor{
-									Context: p.Context,
-									Env:     p.Env,
-									Example: p.Example,
-								},
-								&logContainer{},
-							},
-						},
-					},
-				},
-				&h.Div{
-					Class: "row-fluid",
-					Inner: &h.Div{
-						Class: "span12",
-						Inner: &editorOutput{},
-					},
-				},
-				&JsInit{
-					Context: p.Context,
-					Env:     p.Env,
-					Example: p.Example,
-				},
-			},
-		},
-	}, nil
-}
-
-type editorTop struct {
-	Context context.Context
-	Env     *rellenv.Env
-	Example *examples.Example
-}
-
-func (e *editorTop) HTML(ctx context.Context) (h.HTML, error) {
-	left := h.Frag{
-		&h.A{
-			ID: "rell-login",
-			Inner: &h.Span{
-				Inner: h.String(" Log In"),
-			},
-		},
-		h.String(" "),
-		&h.Span{ID: "auth-status-label", Inner: h.String("Status:")},
-		h.String(" "),
-		&h.Span{ID: "auth-status", Inner: h.String("waiting")},
-		h.String(" "),
-		&h.Span{Class: "bar", Inner: h.String("|")},
-		h.String(" "),
-		&h.A{
-			ID:    "rell-disconnect",
-			Inner: h.String("Disconnect"),
-		},
-		h.String(" "),
-		&h.Span{Class: "bar", Inner: h.String("|")},
-		h.String(" "),
-		&h.A{
-			ID:    "rell-logout",
-			Inner: h.String("Logout"),
-		},
-	}
-
-	if rellenv.IsEmployee(e.Context) {
-		return &h.Div{
-			Class: "row-fluid form-inline",
-			Inner: h.Frag{
-				&h.Div{
-					Class: "span8",
-					Inner: left,
-				},
-				&h.Div{
-					Class: "span4",
-					Inner: &h.Div{
-						Class: "pull-right",
-						Inner: &envSelector{
-							Context: e.Context,
-							Env:     e.Env,
-							Example: e.Example,
-						},
-					},
-				},
-			},
-		}, nil
-	}
-	return &h.Div{
-		Class: "row-fluid form-inline",
-		Inner: h.Frag{
-			&h.Div{
-				Class: "span12",
-				Inner: left,
-			},
-		},
-	}, nil
-}
-
-type editorArea struct {
-	Context context.Context
-	Env     *rellenv.Env
-	Example *examples.Example
-}
-
-func (e *editorArea) HTML(ctx context.Context) (h.HTML, error) {
-	return &h.Div{
-		Class: "row-fluid",
-		Inner: &h.Textarea{
-			ID:   "jscode",
-			Name: "code",
-			Inner: &exampleContent{
-				Context: e.Context,
-				Env:     e.Env,
-				Example: e.Example,
-			},
-		},
-	}, nil
-}
-
-type viewModeDropdown struct {
-	Context context.Context
-	Env     *rellenv.Env
-	Example *examples.Example
-}
-
-func (d *viewModeDropdown) HTML(ctx context.Context) (h.HTML, error) {
-	return &h.Div{
-		Class: "btn-group",
-		Inner: h.Frag{
-			&h.Button{
-				Class: "btn",
-				Inner: h.Frag{
-					&h.I{Class: "icon-eye-open"},
-					h.String(" "),
-					h.String(viewModeOptions[d.Env.ViewMode]),
-				},
-			},
-			&h.Button{
-				Class: "btn dropdown-toggle",
-				Data: map[string]interface{}{
-					"toggle": "dropdown",
-				},
-				Inner: &h.Span{
-					Class: "caret",
-				},
-			},
-			&h.Ul{
-				Class: "dropdown-menu",
-				Inner: h.Frag{
-					&h.Li{
-						Inner: &h.A{
-							Inner:  h.String(viewModeOptions[rellenv.Website]),
-							Target: "_top",
-							HREF:   d.Env.URL(d.Example.URL).String(),
-						},
-					},
-					&h.Li{
-						Inner: &h.A{
-							Inner:  h.String(viewModeOptions[rellenv.Canvas]),
-							Target: "_top",
-							HREF:   d.Env.CanvasURL(d.Example.URL),
-						},
-					},
-					&h.Li{
-						Inner: &h.A{
-							Inner:  h.String(viewModeOptions[rellenv.PageTab]),
-							Target: "_top",
-							HREF:   d.Env.PageTabURL(d.Example.URL),
-						},
-					},
-				},
-			},
-			&h.Div{
-				Style: "display:none",
-				Inner: &h.Input{
-					Type:  "hidden",
-					ID:    "rell-view-mode",
-					Name:  "view-mode",
-					Value: d.Env.ViewMode,
-				},
-			},
-		},
-	}, nil
-}
-
-type editorBottom struct {
-	Context context.Context
-	Env     *rellenv.Env
-	Example *examples.Example
-}
-
-func (e *editorBottom) HTML(ctx context.Context) (h.HTML, error) {
-	runButton := &h.A{
-		ID:    "rell-run-code",
-		Class: "btn btn-primary",
-		Inner: h.Frag{
-			&h.I{Class: "icon-play icon-white"},
-			h.String(" Run Code"),
-		},
-	}
-	if !e.Example.AutoRun {
-		runButton.Rel = "popover"
-		runButton.Data = map[string]interface{}{
-			"title":     "Click to Run",
-			"content":   "This example does not run automatically. Click this button to run it.",
-			"placement": "top",
-			"trigger":   "manual",
+// sortedCategories returns the DB categories sorted by name, excluding hidden ones.
+func sortedCategories(db *examples.DB) []*examples.Category {
+	var cats []*examples.Category
+	for _, cat := range db.Category {
+		if !cat.Hidden {
+			cats = append(cats, cat)
 		}
 	}
-	return &h.Div{
-		Class: "row-fluid form-inline",
-		Inner: h.Frag{
-			&h.Strong{
-				Class: "span4",
-				Inner: &h.A{
-					HREF:  e.Env.URL("/examples/").String(),
-					Inner: h.String("Examples"),
-				},
-			},
-			&h.Div{
-				Class: "span8",
-				Inner: &h.Div{
-					Class: "btn-toolbar pull-right",
-					Inner: h.Frag{
-						&viewModeDropdown{
-							Context: e.Context,
-							Env:     e.Env,
-							Example: e.Example,
-						},
-						h.String(" "),
-						&h.Div{
-							Class: "btn-group",
-							Inner: runButton,
-						},
-					},
-				},
-			},
-		},
-	}, nil
+	sort.Slice(cats, func(i, j int) bool {
+		return cats[i].Name < cats[j].Name
+	})
+	return cats
 }
 
-type editorOutput struct{}
-
-func (e *editorOutput) HTML(ctx context.Context) (h.HTML, error) {
-	return &h.Div{Class: "row-fluid", ID: "jsroot"}, nil
-}
-
-type logContainer struct{}
-
-func (e *logContainer) HTML(ctx context.Context) (h.HTML, error) {
-	return &h.Div{
-		ID: "log-container",
-		Inner: h.Frag{
-			&h.Button{
-				ID:    "rell-log-clear",
-				Class: "btn",
-				Inner: h.String("Clear"),
-			},
-			&h.Div{ID: "log"},
-		},
-	}, nil
-}
-
-type settingsPanel struct {
+// headerBar renders the top navigation bar.
+type headerBar struct {
 	Context context.Context
 	Env     *rellenv.Env
 	Example *examples.Example
 }
 
-func (s *settingsPanel) HTML(ctx context.Context) (h.HTML, error) {
+func (hb *headerBar) HTML(ctx context.Context) (h.HTML, error) {
+	authControls := h.Frag{
+		&h.A{
+			ID:    "rell-login",
+			Class: "btn btn-login",
+			Inner: h.String("Log In"),
+		},
+		&h.Span{Class: "auth-label", Inner: h.String("Status:")},
+		&h.Span{ID: "auth-status", Class: "auth-badge", Inner: h.String("waiting")},
+		&h.A{ID: "rell-disconnect", Class: "btn-link", Inner: h.String("Disconnect")},
+		&h.A{ID: "rell-logout", Class: "btn-link", Inner: h.String("Logout")},
+	}
+
+	headerRight := h.Frag{
+		&h.Button{ID: "theme-toggle", Class: "btn-icon", Inner: h.Unsafe("&#9788;")},
+		&h.Button{ID: "settings-toggle", Class: "btn-icon", Inner: h.Unsafe("&#9881;")},
+		&h.Div{Class: "auth-controls", Inner: authControls},
+	}
+
+	examplesURL := "/"
+	if hb.Env != nil {
+		examplesURL = hb.Env.URL("/examples/").String()
+	}
+
+	headerLeft := h.Frag{
+		&h.A{
+			Class: "logo",
+			HREF:  "/",
+			Inner: h.Frag{
+				h.String("fbrell"),
+				&h.Span{Class: "logo-accent", Inner: h.String(">_")},
+			},
+		},
+		&h.Button{
+			ID:    "sidebar-toggle",
+			Class: "btn-icon sidebar-toggle",
+			Inner: h.Unsafe("&#9776;"),
+		},
+		&h.Div{
+			Class: "header-nav",
+			Inner: h.Frag{
+				&h.A{
+					Class: "nav-link",
+					HREF:  examplesURL,
+					Inner: h.String("Examples"),
+				},
+				&h.A{
+					Class:  "nav-link",
+					HREF:   "https://developers.facebook.com/docs/javascript/",
+					Target: "_blank",
+					Inner:  h.String("Docs"),
+				},
+			},
+		},
+	}
+
+	if rellenv.IsEmployee(hb.Context) && hb.Example != nil {
+		fbEnv := rellenv.FbEnv(hb.Context)
+		title := envOptions[fbEnv]
+		if title == "" {
+			title = fbEnv
+		}
+
+		var envItems h.Frag
+		for _, pair := range sortutil.StringMapByValue(envOptions) {
+			if fbEnv == pair.Key {
+				continue
+			}
+			ctxCopy := hb.Env.Copy()
+			ctxCopy.Env = pair.Key
+			envItems = append(envItems, &h.A{
+				Class:  "env-option",
+				Target: "_top",
+				HREF:   ctxCopy.ViewURL(hb.Example.URL),
+				Inner:  h.String(pair.Value),
+			})
+		}
+
+		envSelector := &h.Div{
+			Class: "env-selector",
+			Inner: h.Frag{
+				&h.Button{
+					Class: "btn btn-env",
+					Inner: h.String(title),
+				},
+				&h.Div{
+					Class: "env-dropdown",
+					Inner: envItems,
+				},
+				h.HiddenInputs(url.Values{
+					"server": []string{fbEnv},
+				}),
+			},
+		}
+
+		headerRight = append(h.Frag{envSelector}, headerRight...)
+	}
+
+	return &h.Header{
+		Class: "header",
+		Inner: h.Frag{
+			&h.Div{
+				Class: "header-left",
+				Inner: headerLeft,
+			},
+			&h.Div{
+				Class: "header-right",
+				Inner: headerRight,
+			},
+		},
+	}, nil
+}
+
+// sidebarNav renders the sidebar with example tree navigation.
+type sidebarNav struct {
+	Context context.Context
+	Env     *rellenv.Env
+	DB      *examples.DB
+}
+
+func (s *sidebarNav) HTML(ctx context.Context) (h.HTML, error) {
+	cats := sortedCategories(s.DB)
+	var categories h.Frag
+	for _, category := range cats {
+		var items h.Frag
+		for _, example := range category.Example {
+			items = append(items, &h.A{
+				Class: "sidebar-item",
+				HREF:  s.Env.URL(example.URL).String(),
+				Inner: h.String(example.Name),
+			})
+		}
+		categories = append(categories, &h.Div{
+			Class: "sidebar-category",
+			Inner: h.Frag{
+				&h.Div{
+					Class: "sidebar-category-header",
+					Inner: h.Frag{
+						&h.Span{Class: "sidebar-toggle", Inner: h.Unsafe("&#9660;")},
+						&h.Span{Class: "sidebar-category-name", Inner: h.String(category.Name)},
+					},
+				},
+				&h.Div{
+					Class: "sidebar-category-items",
+					Inner: items,
+				},
+			},
+		})
+	}
+	return &h.Div{
+		ID:    "sidebar",
+		Class: "sidebar",
+		Inner: h.Frag{
+			&h.Div{
+				Class: "sidebar-header",
+				Inner: &h.Input{
+					ID:          "sidebar-search",
+					Class:       "sidebar-search",
+					Type:        "text",
+					Placeholder: "Search examples...",
+				},
+			},
+			&h.Div{
+				ID:    "sidebar-tree",
+				Class: "sidebar-tree",
+				Inner: categories,
+			},
+		},
+	}, nil
+}
+
+// logPanel renders the log column with filter and action buttons.
+type logPanel struct{}
+
+
+func (l *logPanel) HTML(ctx context.Context) (h.HTML, error) {
+	return &h.Div{
+		Class: "log-column",
+		Inner: h.Frag{
+			&h.Div{
+				Class: "log-header",
+				Inner: h.Frag{
+					&h.Span{Class: "log-title", Inner: h.String("Log")},
+					&h.Span{ID: "log-error-count", Class: "log-count", Style: "display:none"},
+					&h.Div{
+						Class: "log-actions",
+						Inner: h.Frag{
+							&h.Button{ID: "rell-log-clear", Class: "btn-icon", Inner: h.Unsafe("&#128465;")},
+							&h.Button{ID: "rell-log-copy", Class: "btn-icon", Inner: h.Unsafe("&#128203;")},
+						},
+					},
+				},
+			},
+			&h.Div{ID: "log", Class: "log-entries"},
+		},
+	}, nil
+}
+
+// statusBar renders the bottom status bar.
+type statusBar struct{}
+
+func (s *statusBar) HTML(ctx context.Context) (h.HTML, error) {
+	return &h.Div{
+		Class: "status-bar",
+		Inner: h.Frag{
+			&h.Span{ID: "sdk-status", Class: "status-item", Inner: h.Frag{
+				&h.Span{Class: "status-dot status-dot-warning"},
+				h.String(" Loading SDK..."),
+			}},
+			&h.Span{ID: "sdk-version", Class: "status-item"},
+			&h.Span{ID: "app-id-display", Class: "status-item"},
+			&h.A{
+				Class:  "status-item status-link",
+				HREF:   "https://github.com/fbsamples/fbrell",
+				Target: "_blank",
+				Inner:  h.String("GitHub"),
+			},
+		},
+	}, nil
+}
+
+// settingsDrawer renders the settings panel as a slide-out drawer.
+type settingsDrawer struct {
+	Context context.Context
+	Env     *rellenv.Env
+	Example *examples.Example
+}
+
+func (s *settingsDrawer) HTML(ctx context.Context) (h.HTML, error) {
 	appID := strconv.FormatUint(rellenv.FbApp(s.Context).ID(), 10)
 
 	// Build level dropdown options
@@ -491,93 +429,77 @@ func (s *settingsPanel) HTML(ctx context.Context) (h.HTML, error) {
 		})
 	}
 
-	return h.Frag{
-		&h.Div{
-			Class: "row-fluid",
-			Style: "margin-bottom: 5px",
-			Inner: &h.A{
-				ID:    "rell-settings-toggle",
-				Class: "btn btn-small",
-				Data: map[string]interface{}{
-					"toggle": "collapse",
-					"target": "#rell-settings",
-				},
+	return &h.Div{
+		ID:    "settings-drawer",
+		Class: "settings-drawer",
+		Inner: h.Frag{
+			&h.Div{
+				Class: "drawer-header",
 				Inner: h.Frag{
-					&h.I{Class: "icon-cog"},
-					h.String(" Settings "),
-					&h.Span{Class: "caret"},
+					&h.Span{Inner: h.String("Settings")},
+					&h.Button{
+						ID:    "settings-close",
+						Class: "btn-icon",
+						Inner: h.Unsafe("&#10005;"),
+					},
 				},
 			},
-		},
-		&h.Div{
-			ID:    "rell-settings",
-			Class: "collapse",
-			Inner: &h.Div{
-				Class: "well well-small",
+			&h.Div{
+				Class: "drawer-body",
 				Inner: h.Frag{
-					&h.Div{
-						Class: "row-fluid",
-						Inner: h.Frag{
-							&h.Div{
-								Class: "span6",
-								Inner: h.Frag{
-									&settingsField{
-										Label:       "App ID",
-										Name:        "appid",
-										Value:       appID,
-										Placeholder: "342526215814610",
-									},
-									&settingsField{
-										Label:       "Server",
-										Name:        "server",
-										Value:       s.Env.Env,
-										Placeholder: "e.g. beta, latest, intern",
-									},
-									&settingsField{
-										Label:       "Version",
-										Name:        "version",
-										Value:       s.Env.Version,
-										Placeholder: "v25.0",
-									},
-									&settingsSelect{
-										Label:   "Locale",
-										Name:    "locale",
-										Options: localeOpts,
-									},
-								},
-							},
-							&h.Div{
-								Class: "span6",
-								Inner: h.Frag{
-									&settingsSelect{
-										Label:   "Log Level",
-										Name:    "level",
-										Options: levelOptions,
-									},
-									&settingsSelect{
-										Label:   "View Mode",
-										Name:    "view-mode",
-										Options: viewModeOpts,
-									},
-									&settingsCheckbox{
-										Label:   "Auto Init SDK",
-										Name:    "init",
-										Checked: s.Env.Init,
-									},
-									&settingsCheckbox{
-										Label:   "Auto Status Ping",
-										Name:    "status",
-										Checked: s.Env.Status,
-									},
-									&settingsCheckbox{
-										Label:   "Frictionless Requests",
-										Name:    "frictionlessRequests",
-										Checked: s.Env.FrictionlessRequests,
-									},
-								},
-							},
-						},
+					&settingsField{
+						Label:       "App ID",
+						Name:        "appid",
+						Value:       appID,
+						Placeholder: "342526215814610",
 					},
+					&settingsField{
+						Label:       "Server",
+						Name:        "server",
+						Value:       s.Env.Env,
+						Placeholder: "e.g. beta, latest, intern",
+					},
+					&settingsField{
+						Label:       "Version",
+						Name:        "version",
+						Value:       s.Env.Version,
+						Placeholder: "v25.0",
+					},
+					&settingsSelect{
+						Label:   "Locale",
+						Name:    "locale",
+						Options: localeOpts,
+					},
+					&settingsSelect{
+						Label:   "Log Level",
+						Name:    "level",
+						Options: levelOptions,
+					},
+					&settingsSelect{
+						Label:   "View Mode",
+						Name:    "view-mode",
+						Options: viewModeOpts,
+					},
+					&settingsCheckbox{
+						Label:   "Auto Init SDK",
+						Name:    "init",
+						Checked: s.Env.Init,
+					},
+					&settingsCheckbox{
+						Label:   "Auto Status Ping",
+						Name:    "status",
+						Checked: s.Env.Status,
+					},
+					&settingsCheckbox{
+						Label:   "Frictionless Requests",
+						Name:    "frictionlessRequests",
+						Checked: s.Env.FrictionlessRequests,
+					},
+				},
+			},
+			&h.Div{
+				Class: "drawer-footer",
+				Inner: h.Frag{
 					&h.Div{
 						ID:    "rell-url-preview",
 						Class: "rell-url-preview",
@@ -585,16 +507,10 @@ func (s *settingsPanel) HTML(ctx context.Context) (h.HTML, error) {
 							Inner: h.String(s.Env.URL(s.Example.URL).String()),
 						},
 					},
-					&h.Div{
-						Style: "margin-top: 8px",
-						Inner: &h.Button{
-							ID:    "rell-settings-update",
-							Class: "btn btn-primary btn-small",
-							Inner: h.Frag{
-								&h.I{Class: "icon-refresh icon-white"},
-								h.String(" Update"),
-							},
-						},
+					&h.Button{
+						ID:    "rell-settings-update",
+						Class: "btn btn-primary",
+						Inner: h.String("Update"),
 					},
 				},
 			},
@@ -611,14 +527,14 @@ type settingsField struct {
 
 func (f *settingsField) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
-		Class: "control-group control-group-sm",
+		Class: "setting-group",
 		Inner: h.Frag{
 			&h.Label{
-				Class: "control-label-sm",
+				Class: "setting-label",
 				Inner: h.String(f.Label),
 			},
 			&h.Input{
-				Class:       "rell-setting input-medium",
+				Class:       "rell-setting",
 				Type:        "text",
 				Name:        f.Name,
 				Value:       f.Value,
@@ -639,14 +555,14 @@ type settingsSelect struct {
 
 func (s *settingsSelect) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
-		Class: "control-group control-group-sm",
+		Class: "setting-group",
 		Inner: h.Frag{
 			&h.Label{
-				Class: "control-label-sm",
+				Class: "setting-label",
 				Inner: h.String(s.Label),
 			},
 			&h.Select{
-				Class: "rell-setting input-medium",
+				Class: "rell-setting",
 				Name:  s.Name,
 				Inner: s.Options,
 			},
@@ -662,9 +578,9 @@ type settingsCheckbox struct {
 
 func (c *settingsCheckbox) HTML(ctx context.Context) (h.HTML, error) {
 	return &h.Div{
-		Class: "control-group control-group-sm",
+		Class: "setting-group setting-group-checkbox",
 		Inner: &h.Label{
-			Class: "checkbox",
+			Class: "setting-label",
 			Inner: h.Frag{
 				&h.Input{
 					Class:   "rell-setting",
@@ -682,59 +598,98 @@ func (c *settingsCheckbox) HTML(ctx context.Context) (h.HTML, error) {
 	}, nil
 }
 
-type contextEditor struct {
+type page struct {
+	Writer  http.ResponseWriter
+	Request *http.Request
 	Context context.Context
 	Env     *rellenv.Env
+	Static  *static.Handler
 	Example *examples.Example
+	DB      *examples.DB
 }
 
-func (e *contextEditor) HTML(ctx context.Context) (h.HTML, error) {
-	if !rellenv.IsEmployee(e.Context) {
-		return h.HiddenInputs(e.Env.Values()), nil
-	}
-	return &h.Div{
-		Class: "well form-horizontal",
-		Inner: h.Frag{
-			&ui.TextInput{
-				Label:      h.String("Application ID"),
-				Name:       "appid",
-				Value:      rellenv.FbApp(e.Context).ID(),
-				InputClass: "input-medium",
-				Tooltip:    "Make sure the base domain in the application settings for the specified ID allows fbrell.com.",
-			},
-			&ui.ToggleGroup{
-				Inner: h.Frag{
-					&ui.ToggleItem{
-						Name:        "init",
-						Checked:     e.Env.Init,
-						Description: h.String("Automatically initialize SDK."),
-						Tooltip:     "This controls if FB.init() is automatically called. If off, you'll need to call it in your code.",
-					},
-					&ui.ToggleItem{
-						Name:        "status",
-						Checked:     e.Env.Status,
-						Description: h.String("Automatically trigger status ping."),
-						Tooltip:     "This controls the \"status\" parameter to FB.init.",
-					},
-					&ui.ToggleItem{
-						Name:        "frictionlessRequests",
-						Checked:     e.Env.FrictionlessRequests,
-						Description: h.String("Enable frictionless requests."),
-						Tooltip:     "This controls the \"frictionlessRequests\" parameter to FB.init.",
+func (p *page) HTML(ctx context.Context) (h.HTML, error) {
+	return &view.Page{
+		Title: p.Example.Title,
+		Class: "main",
+		Body: &h.Div{
+			Class: "app",
+			Inner: h.Frag{
+				&headerBar{
+					Context: p.Context,
+					Env:     p.Env,
+					Example: p.Example,
+				},
+				&h.Div{
+					Class: "main-layout",
+					Inner: h.Frag{
+						&sidebarNav{
+							Context: p.Context,
+							Env:     p.Env,
+							DB:      p.DB,
+						},
+						&h.Div{
+							Class: "editor-column",
+							Inner: h.Frag{
+								&h.Div{
+									Class: "editor-toolbar",
+									Inner: h.Frag{
+										&h.Div{
+											Class: "toolbar-left",
+											Inner: &h.Span{
+												Class: "example-title",
+												Inner: h.String(p.Example.Title),
+											},
+										},
+										&h.Div{
+											Class: "toolbar-right",
+											Inner: &h.Button{
+												ID:    "rell-run-code",
+												Class: "btn btn-primary",
+												Inner: h.Unsafe("&#9654; Run"),
+											},
+										},
+									},
+								},
+								&h.Div{
+									ID:    "editor-pane",
+									Class: "editor-pane",
+									Inner: &h.Textarea{
+										ID:   "jscode",
+										Name: "code",
+										Inner: &exampleContent{
+											Context: p.Context,
+											Env:     p.Env,
+											Example: p.Example,
+										},
+									},
+								},
+								&h.Div{ID: "resize-v", Class: "resize-handle resize-handle-v"},
+								&h.Div{
+									ID:    "jsroot",
+									Class: "output-pane",
+									Inner: &h.Div{
+										Class: "empty-state",
+										Inner: h.String("// Output will appear here. Press Cmd+Enter to run."),
+									},
+								},
+							},
+						},
+						&h.Div{ID: "resize-h", Class: "resize-handle resize-handle-h"},
+						&logPanel{},
 					},
 				},
-			},
-			&h.Div{
-				Class: "form-actions",
-				Inner: h.Frag{
-					&h.Button{
-						Type:  "submit",
-						Class: "btn btn-primary",
-						Inner: h.Frag{
-							&h.I{Class: "icon-refresh icon-white"},
-							h.String(" Update"),
-						},
-					},
+				&statusBar{},
+				&h.Div{ID: "settings-overlay", Class: "settings-overlay"},
+				&settingsDrawer{
+					Context: p.Context,
+					Env:     p.Env,
+					Example: p.Example,
+				},
+				&JsInit{
+					Context: p.Context,
+					Env:     p.Env,
+					Example: p.Example,
 				},
 			},
 		},
@@ -749,118 +704,88 @@ type examplesList struct {
 }
 
 func (l *examplesList) HTML(ctx context.Context) (h.HTML, error) {
-	var categories h.Frag
-	for _, category := range l.DB.Category {
-		if !category.Hidden {
-			categories = append(categories, &exampleCategory{
-				Context:  l.Context,
-				Env:      l.Env,
-				Category: category,
+	cats := sortedCategories(l.DB)
+	var cards h.Frag
+	for _, category := range cats {
+		var links h.Frag
+		for _, example := range category.Example {
+			links = append(links, &h.A{
+				Class: "example-link",
+				HREF:  l.Env.URL(example.URL).String(),
+				Inner: &h.Span{
+					Class: "example-name",
+					Inner: h.String(example.Name),
+				},
 			})
 		}
+		cards = append(cards, &h.Div{
+			Class: "example-category-card",
+			Inner: h.Frag{
+				&h.Div{
+					Class: "category-header",
+					Inner: h.Frag{
+						&h.Span{Class: "category-icon", Inner: h.String(categoryIcon(category.Name))},
+						&h.H2{Inner: h.String(category.Name)},
+					},
+				},
+				&h.Div{
+					Class: "category-examples",
+					Inner: links,
+				},
+			},
+		})
 	}
+
 	return &view.Page{
 		Title: "Examples",
 		Class: "examples",
 		Body: &h.Div{
-			Class: "container",
-			Inner: &h.Div{
-				Class: "row",
-				Inner: &h.Div{
-					Class: "span12",
+			Class: "app",
+			Inner: h.Frag{
+				&headerBar{
+					Context: l.Context,
+					Env:     l.Env,
+				},
+				&h.Div{
+					Class: "examples-page",
 					Inner: h.Frag{
-						&h.H1{Inner: h.String("Examples")},
-						categories,
+						&h.Div{
+							Class: "examples-header",
+							Inner: h.Frag{
+								&h.H1{Inner: h.String("Examples")},
+								&h.Input{
+									ID:          "examples-search",
+									Class:       "examples-search",
+									Type:        "text",
+									Placeholder: "Search examples...",
+								},
+							},
+						},
+						&h.Div{
+							Class: "examples-grid",
+							Inner: cards,
+						},
 					},
 				},
+				&statusBar{},
 			},
 		},
 	}, nil
 }
 
-type exampleCategory struct {
-	Context  context.Context
-	Env      *rellenv.Env
-	Category *examples.Category
-}
-
-func (c *exampleCategory) HTML(ctx context.Context) (h.HTML, error) {
-	var li h.Frag
-	for _, example := range c.Category.Example {
-		li = append(li, &h.Li{
-			Inner: &h.A{
-				HREF:  c.Env.URL(example.URL).String(),
-				Inner: h.String(example.Name),
-			},
-		})
+func categoryIcon(name string) string {
+	switch name {
+	case "Facebook Login":
+		return "\xf0\x9f\x94\x91" // key
+	case "Graph API":
+		return "\xf0\x9f\x93\x8a" // chart
+	case "Sharing":
+		return "\xf0\x9f\x94\x97" // link
+	case "auth":
+		return "\xf0\x9f\x94\x90" // lock
+	default:
+		return "\xf0\x9f\x93\x9d" // memo
 	}
-	return h.Frag{
-		&h.H2{Inner: h.String(c.Category.Name)},
-		&h.Ul{Inner: li},
-	}, nil
-}
-
-type envSelector struct {
-	Context context.Context
-	Env     *rellenv.Env
-	Example *examples.Example
-}
-
-func (e *envSelector) HTML(ctx context.Context) (h.HTML, error) {
-	if !rellenv.IsEmployee(e.Context) {
-		return nil, nil
-	}
-	fbEnv := rellenv.FbEnv(e.Context)
-	frag := h.Frag{
-		h.HiddenInputs(url.Values{
-			"server": []string{fbEnv},
-		}),
-	}
-	for _, pair := range sortutil.StringMapByValue(envOptions) {
-		if fbEnv == pair.Key {
-			continue
-		}
-		ctxCopy := e.Env.Copy()
-		ctxCopy.Env = pair.Key
-		frag = append(frag, &h.Li{
-			Inner: &h.A{
-				Inner:  h.String(pair.Value),
-				Target: "_top",
-				HREF:   ctxCopy.ViewURL(e.Example.URL),
-			},
-		})
-	}
-
-	title := envOptions[fbEnv]
-	if title == "" {
-		title = fbEnv
-	}
-	return &h.Div{
-		Class: "btn-group",
-		Inner: h.Frag{
-			&h.Button{
-				Class: "btn",
-				Inner: h.Frag{
-					&h.I{Class: "icon-road"},
-					h.String(" "),
-					h.String(title),
-				},
-			},
-			&h.Button{
-				Class: "btn dropdown-toggle",
-				Data: map[string]interface{}{
-					"toggle": "dropdown",
-				},
-				Inner: &h.Span{
-					Class: "caret",
-				},
-			},
-			&h.Ul{
-				Class: "dropdown-menu",
-				Inner: frag,
-			},
-		},
-	}, nil
 }
 
 type exampleContent struct {
