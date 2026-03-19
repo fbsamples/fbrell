@@ -67,17 +67,13 @@ var Rell = {
   editor: null, // CodeMirror instance
 
   /**
-   * Initialize the application. Called by FB SDK via window.fbAsyncInit.
-   * Sets up logging, editor, theme, resize, sidebar, FB SDK, and event listeners.
+   * Initialize UI components. Called on DOMContentLoaded — does NOT require FB SDK.
    */
-  init: function() {
+  initUI: function() {
     var example = window.rellExample;
-    window.location.hash = '';
-    window.rellConfig.autoRun = example ? example.autoRun : false;
 
     // Initialize log
-    Log.init(document.getElementById('log'), window.rellConfig.level);
-    Log.debug('Configuration', window.rellConfig);
+    Log.init(document.getElementById('log'), window.rellConfig ? window.rellConfig.level : 'debug');
 
     // Initialize CodeMirror editor
     Rell.initEditor();
@@ -91,6 +87,41 @@ var Rell = {
     // Initialize sidebar
     Sidebar.init();
 
+    // Bind click handlers (vanilla JS)
+    Rell.bindClick('rell-run-code', Rell.runCode);
+    Rell.bindClick('rell-log-clear', Rell.clearLog);
+    Rell.bindClick('rell-disconnect', Rell.disconnect);
+
+    // Initialize settings drawer
+    Rell.initSettings();
+
+    // Keyboard shortcut: Cmd/Ctrl+Enter to run code
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        Rell.runCode();
+      }
+    });
+
+    // Auto-run hint on the run button
+    if (example && !example.autoRun) {
+      var runBtn = document.getElementById('rell-run-code');
+      if (runBtn) runBtn.title = 'Click to Run \u2014 this example does not run automatically';
+    }
+  },
+
+  /**
+   * Initialize FB SDK integration. Called via window.fbAsyncInit when SDK loads.
+   */
+  initSDK: function() {
+    var example = window.rellExample;
+    if (window.rellConfig) {
+      window.rellConfig.autoRun = example ? example.autoRun : false;
+    }
+    window.location.hash = '';
+
+    Log.debug('Configuration', window.rellConfig);
+
     // Subscribe to FB SDK events
     FB.Event.subscribe('fb.log', Log.info.bind('fb.log'));
     FB.Event.subscribe('auth.login', function(response) {
@@ -98,9 +129,8 @@ var Rell = {
     });
     FB.Event.subscribe('auth.statusChange', Rell.onStatusChange);
 
-    if (!window.rellConfig.init) return;
+    if (!window.rellConfig || !window.rellConfig.init) return;
 
-    // Initialize FB SDK
     var options = {
       appId: window.rellConfig.appID,
       version: window.rellConfig.version,
@@ -120,30 +150,7 @@ var Rell = {
       FB.getLoginStatus(Rell.onStatusChange);
     }
 
-    // Update status bar with SDK info
     Rell.updateStatusBar();
-
-    // Bind click handlers (vanilla JS)
-    Rell.bindClick('rell-disconnect', Rell.disconnect);
-    Rell.bindClick('rell-run-code', Rell.runCode);
-    Rell.bindClick('rell-log-clear', Rell.clearLog);
-
-    // Initialize settings drawer
-    Rell.initSettings();
-
-    // Keyboard shortcut: Cmd/Ctrl+Enter to run code
-    document.addEventListener('keydown', function(e) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault();
-        Rell.runCode();
-      }
-    });
-
-    // Auto-run hint on the run button
-    if (example && !example.autoRun) {
-      var runBtn = document.getElementById('rell-run-code');
-      if (runBtn) runBtn.title = 'Click to Run \u2014 this example does not run automatically';
-    }
   },
 
   /**
@@ -400,15 +407,17 @@ var Rell = {
   }
 };
 
-// ---------------------------------------------------------------------------
-// SDK loading indicator - shown while FB SDK is loading, before fbAsyncInit fires
-// ---------------------------------------------------------------------------
-(function() {
-  var sdkStatus = document.getElementById('sdk-status');
-  if (sdkStatus) {
-    sdkStatus.innerHTML = '<span class="status-dot status-dot-warning"></span> Loading SDK...';
-  }
-})();
+// Initialize UI immediately (no SDK dependency)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', Rell.initUI);
+} else {
+  Rell.initUI();
+}
 
 // FB SDK calls this when loaded
-window.fbAsyncInit = Rell.init;
+window.fbAsyncInit = Rell.initSDK;
+
+// If the SDK already loaded before this script ran, call initSDK now
+if (typeof FB !== 'undefined') {
+  Rell.initSDK();
+}
