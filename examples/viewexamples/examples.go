@@ -172,6 +172,7 @@ func (hb *headerBar) HTML(ctx context.Context) (h.HTML, error) {
 	authControls := h.Frag{
 		&h.Div{
 			Class: "fb-login-button",
+			ID:    "fb-login-plugin",
 			Data: map[string]interface{}{
 				"size":              "medium",
 				"button-type":       "continue_with",
@@ -179,13 +180,17 @@ func (hb *headerBar) HTML(ctx context.Context) (h.HTML, error) {
 				"auto-logout-link":  "true",
 			},
 		},
+		&h.Button{
+			ID:    "fb-login-custom",
+			Class: "btn btn-login",
+			Inner: h.String("Log in with Facebook"),
+		},
 		&h.Span{Class: "auth-label", Inner: h.String("Status:")},
 		&h.Span{ID: "auth-status", Class: "auth-badge", Inner: h.String("waiting")},
 		&h.A{ID: "rell-disconnect", Class: "btn-link", Inner: h.String("Disconnect")},
 	}
 
 	headerRight := h.Frag{
-		&h.Button{ID: "theme-toggle", Class: "btn-icon", Inner: h.Unsafe("&#9788;")},
 		&h.Button{ID: "settings-toggle", Class: "btn-icon", Inner: h.Unsafe("&#9881;")},
 		&h.Div{Class: "auth-controls", Inner: authControls},
 	}
@@ -382,6 +387,7 @@ func (s *statusBar) HTML(ctx context.Context) (h.HTML, error) {
 			}},
 			&h.Span{ID: "sdk-version", Class: "status-item"},
 			&h.Span{ID: "app-id-display", Class: "status-item"},
+			&h.Button{ID: "theme-toggle", Class: "btn-icon status-item", Inner: h.Unsafe("&#9788;")},
 			&h.A{
 				Class:  "status-item status-link",
 				HREF:   "https://github.com/fbsamples/fbrell",
@@ -497,6 +503,11 @@ func (s *settingsDrawer) HTML(ctx context.Context) (h.HTML, error) {
 						Label:   "Frictionless Requests",
 						Name:    "frictionlessRequests",
 						Checked: s.Env.FrictionlessRequests,
+					},
+					&settingsCheckbox{
+						Label:   "Custom Login Button",
+						Name:    "customLogin",
+						Checked: s.Env.CustomLogin,
 					},
 				},
 			},

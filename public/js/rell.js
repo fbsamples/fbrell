@@ -94,9 +94,16 @@ var Rell = {
     Rell.bindClick('rell-run-code', Rell.runCode);
     Rell.bindClick('rell-log-clear', Rell.clearLog);
     Rell.bindClick('rell-disconnect', Rell.disconnect);
+    Rell.bindClick('fb-login-custom', Rell.loginToggle);
 
     // Initialize settings drawer
     Rell.initSettings();
+
+    // When custom login is disabled, switch to XFBML plugin mode
+    if (window.rellConfig && !window.rellConfig.customLogin) {
+      var authControls = document.querySelector('.auth-controls');
+      if (authControls) authControls.classList.add('plugin-login-active');
+    }
 
     // Keyboard shortcut: Cmd/Ctrl+Enter to run code
     document.addEventListener('keydown', function(e) {
@@ -214,12 +221,35 @@ var Rell = {
    * Handle FB auth status changes. Updates the auth badge in the toolbar.
    * @param {Object} response - FB auth status response
    */
+  _authStatus: 'unknown',
+
   onStatusChange: function(response) {
     var status = response.status;
+    Rell._authStatus = status;
     var el = document.getElementById('auth-status');
     if (el) {
       el.className = 'auth-badge auth-' + status;
       el.textContent = status;
+    }
+    // Update custom login button
+    Rell.updateCustomLoginButtons(status);
+  },
+
+  updateCustomLoginButtons: function(status) {
+    var isLoggedIn = status === 'connected';
+    var btn = document.getElementById('fb-login-custom');
+    if (btn) {
+      btn.textContent = isLoggedIn ? 'Log out' : 'Log in with Facebook';
+      btn.classList.toggle('logged-in', isLoggedIn);
+    }
+  },
+
+  loginToggle: function() {
+    if (typeof FB === 'undefined') { Log.error('FB SDK not loaded'); return; }
+    if (Rell._authStatus === 'connected') {
+      FB.logout(Log.debug.bind('FB.logout callback'));
+    } else {
+      FB.login(Log.debug.bind('FB.login callback'));
     }
   },
 
@@ -360,7 +390,8 @@ var Rell = {
       'view-mode': 'website',
       init: 'true',
       status: 'true',
-      frictionlessRequests: 'true'
+      frictionlessRequests: 'true',
+      customLogin: 'true'
     };
 
     /**
@@ -456,6 +487,9 @@ var Rell = {
           logColumn.classList.add('mobile-hidden');
           logColumn.classList.remove('mobile-full');
         }
+        // Re-run the code so XFBML plugins render at correct dimensions —
+        // they were originally parsed while the output pane was hidden.
+        Rell.runCode();
       } else if (tabName === 'log') {
         // Show log column full height, hide editor column
         if (editorColumn) editorColumn.classList.add('mobile-hidden');

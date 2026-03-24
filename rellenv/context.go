@@ -70,6 +70,7 @@ type Env struct {
 	ViewMode             string
 	isEmployee           bool
 	Init                 bool
+	CustomLogin          bool
 }
 
 // Defaults for the context.
@@ -82,6 +83,7 @@ var defaultContext = &Env{
 	Scheme:               "http",
 	ViewMode:             Website,
 	Init:                 true,
+	CustomLogin:          true,
 	Version:              "v25.0",
 }
 
@@ -142,6 +144,9 @@ func (p *Parser) FromRequest(r *http.Request) (*Env, error) {
 	}
 	if init, err := strconv.ParseBool(r.FormValue("init")); err == nil {
 		e.Init = init
+	}
+	if customLogin, err := strconv.ParseBool(r.FormValue("customLogin")); err == nil {
+		e.CustomLogin = customLogin
 	}
 
 	var err error
@@ -254,6 +259,9 @@ func (c *Env) Values() url.Values {
 	if c.FrictionlessRequests != defaultContext.FrictionlessRequests {
 		values.Set("frictionlessRequests", strconv.FormatBool(c.FrictionlessRequests))
 	}
+	if c.CustomLogin != defaultContext.CustomLogin {
+		values.Set("customLogin", strconv.FormatBool(c.CustomLogin))
+	}
 	return values
 }
 
@@ -296,6 +304,7 @@ func (c *Env) MarshalJSON() ([]byte, error) {
 		SignedRequest        *fbsr.SignedRequest    `json:"signedRequest"`
 		ViewMode             string                `json:"viewMode"`
 		Init                 bool                  `json:"init"`
+		CustomLogin          bool                  `json:"customLogin"`
 		IsEmployee           bool                  `json:"isEmployee,omitempty"`
 	}
 	return json.Marshal(envJSON{
@@ -307,6 +316,7 @@ func (c *Env) MarshalJSON() ([]byte, error) {
 		SignedRequest:        c.SignedRequest,
 		ViewMode:             c.ViewMode,
 		Init:                 c.Init,
+		CustomLogin:          c.CustomLogin,
 		IsEmployee:           c.isEmployee,
 	})
 }
