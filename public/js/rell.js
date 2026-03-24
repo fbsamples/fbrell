@@ -132,10 +132,6 @@ var Rell = {
     if (window.rellConfig) {
       window.rellConfig.autoRun = example ? example.autoRun : false;
     }
-    if (window.location.hash) {
-      history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-
     Log.debug('Configuration', window.rellConfig);
 
     // Subscribe to FB SDK events
@@ -156,8 +152,16 @@ var Rell = {
       frictionlessRequests: window.rellConfig.frictionlessRequests
     };
 
+    // NOTE: Do NOT strip the URL hash before FB.init(). On mobile Safari,
+    // FB.login() uses a full-page redirect and the access token is returned
+    // in the hash fragment. The SDK must see it during init.
     FB.init(options);
     if (top !== self) FB.Canvas.setAutoGrow(true);
+
+    // Clean up the hash after the SDK has processed it
+    if (window.location.hash) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
 
     if (!window.rellConfig.status) {
       Rell.autoRunCode();
