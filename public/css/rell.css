@@ -161,6 +161,7 @@ code, pre, .mono {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;  /* iOS Safari dynamic viewport */
   overflow: hidden;
 }
 
@@ -1232,7 +1233,30 @@ input[type="checkbox"].rell-setting {
 }
 
 /* ----------------------------------------------------------
-   20. Scrollbar Styling
+   20. Sidebar Overlay
+   ---------------------------------------------------------- */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: calc(var(--z-sidebar) - 1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ----------------------------------------------------------
+   20a. Mobile Tab Bar
+   ---------------------------------------------------------- */
+.mobile-tab-bar { display: none; }
+
+/* ----------------------------------------------------------
+   21. Scrollbar Styling
    ---------------------------------------------------------- */
 ::-webkit-scrollbar {
   width: 8px;
@@ -1331,6 +1355,10 @@ body,
     display: none;
   }
 
+  .resize-handle-v {
+    height: 12px;
+  }
+
   .log-column {
     border-left: none;
     border-top: 1px solid var(--border);
@@ -1342,10 +1370,36 @@ body,
    23. Responsive — Mobile (max-width: 768px)
    ---------------------------------------------------------- */
 @media (max-width: 768px) {
-  .main-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+  /* Allow page scrolling on mobile */
+  .app {
+    overflow-y: auto;
+    overflow-x: hidden;
   }
+
+  .main-layout {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    min-height: 0;
+  }
+
+  .editor-column {
+    overflow: visible;
+    min-height: 0;
+  }
+
+  .editor-pane {
+    height: 250px;
+    flex: none;
+  }
+
+  .output-pane {
+    min-height: 80px;
+    flex: none;
+  }
+
+  /* Hide resize handle on mobile */
+  .resize-handle-v { display: none; }
 
   .header {
     padding: 0 var(--sp-3);
@@ -1360,8 +1414,66 @@ body,
     display: none;
   }
 
+  /* Touch-friendly targets */
+  .btn-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .sidebar-item {
+    padding: var(--sp-2) var(--sp-3);
+    padding-left: var(--sp-7);
+  }
+
+  .log-entry-header {
+    padding: var(--sp-3) var(--sp-3);
+  }
+
+  /* Log column sizing */
   .log-column {
-    max-height: 250px;
+    max-height: 150px;
+  }
+
+  .log-column.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    border-top: none;
+  }
+
+  /* Mobile tab bar */
+  .mobile-tab-bar {
+    display: flex;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .mobile-tab {
+    flex: 1;
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .mobile-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Hide inactive panels on mobile when tabs are in use */
+  .editor-column.mobile-hidden,
+  .log-column.mobile-hidden { display: none; }
+
+  /* When showing log tab, allow full height */
+  .log-column.mobile-full {
+    max-height: none;
+    flex: 1;
   }
 
   .settings-drawer {

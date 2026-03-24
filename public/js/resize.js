@@ -80,14 +80,14 @@ var Resize = {
     var logCol = mainLayout.querySelector('.log-column');
     if (!editorCol || !logCol) return;
 
-    // Get the sidebar width to preserve it in grid calculations
     var sidebar = mainLayout.querySelector('.sidebar');
-    var sidebarWidth = sidebar ? sidebar.getBoundingClientRect().width : 240;
 
     Resize._makeDraggable(handle, {
       onDrag: function(e, startInfo) {
         var layoutRect = mainLayout.getBoundingClientRect();
         var handleWidth = 6;
+        // Read sidebar width dynamically (it may be hidden/resized)
+        var sidebarWidth = sidebar ? sidebar.getBoundingClientRect().width : 0;
         // Available width after sidebar and handle
         var available = layoutRect.width - sidebarWidth - handleWidth;
         // Mouse position relative to area after sidebar

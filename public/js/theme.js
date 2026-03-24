@@ -48,9 +48,9 @@ var Theme = {
       toggle.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
     }
 
-    // Update CodeMirror theme if editor exists
+    // CodeMirror theme is handled by CSS custom properties — refresh to repaint
     if (window.rellEditor) {
-      window.rellEditor.setOption('theme', theme === 'dark' ? 'default' : 'default');
+      window.rellEditor.refresh();
     }
   }
 };

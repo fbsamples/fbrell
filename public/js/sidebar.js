@@ -5,13 +5,15 @@
  *   - Collapsible category sections
  *   - Live search/filter of examples
  *   - Active-state highlighting based on current URL
- *   - Mobile sidebar toggle
+ *   - Mobile sidebar toggle with backdrop overlay
  *   - Persisted collapsed state via localStorage
+ *   - Swipe gesture to open/close sidebar on mobile
  *
  * DOM contract:
  *   #sidebar                    - sidebar container
  *   #sidebar-search             - text input for filtering
  *   #sidebar-toggle             - mobile hamburger button (in header)
+ *   #sidebar-overlay            - backdrop overlay for mobile sidebar
  *   .sidebar-category           - each category section
  *   .sidebar-category-header    - clickable header to collapse/expand
  *   .sidebar-category-name      - text name of the category (for persistence)
@@ -56,8 +58,10 @@ var Sidebar = {
 
         // Hide categories with no visible items
         categories.forEach(function(cat) {
-          var visibleItems = cat.querySelectorAll('.sidebar-item:not([style*="display: none"])');
-          cat.style.display = visibleItems.length > 0 || !query ? '' : 'none';
+          var allItems = cat.querySelectorAll('.sidebar-item');
+          var hasVisible = false;
+          allItems.forEach(function(item) { if (item.style.display !== 'none') hasVisible = true; });
+          cat.style.display = hasVisible || !query ? '' : 'none';
           // Expand categories when searching so results are visible
           if (query) cat.classList.remove('collapsed');
         });
@@ -74,16 +78,69 @@ var Sidebar = {
       if (parentCategory) parentCategory.classList.remove('collapsed');
     }
 
-    // Mobile toggle
+    // Mobile toggle with overlay
     var toggle = document.getElementById('sidebar-toggle');
+    var overlay = document.getElementById('sidebar-overlay');
+
     if (toggle) {
       toggle.addEventListener('click', function() {
         sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('open');
       });
     }
 
+    // Close sidebar when overlay is tapped
+    if (overlay) {
+      overlay.addEventListener('click', function() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+      });
+    }
+
+    // Swipe gesture to open/close sidebar on mobile (≤1024px)
+    Sidebar._initSwipe(sidebar, overlay);
+
     // Restore previously collapsed state
     Sidebar.restoreState();
+  },
+
+  /**
+   * Initialize swipe gesture for sidebar open/close.
+   * Swipe right from left edge opens; swipe left while open closes.
+   */
+  _initSwipe: function(sidebar, overlay) {
+    var touchStartX = 0;
+    var touchStartY = 0;
+
+    document.addEventListener('touchstart', function(e) {
+      if (window.innerWidth > 1024) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+      if (window.innerWidth > 1024) return;
+
+      var touchEndX = e.changedTouches[0].clientX;
+      var touchEndY = e.changedTouches[0].clientY;
+      var deltaX = touchEndX - touchStartX;
+      var deltaY = touchEndY - touchStartY;
+
+      // Ignore if vertical swipe is dominant
+      if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+
+      // Swipe right from left edge to open
+      if (touchStartX < 30 && deltaX > 60 && !sidebar.classList.contains('open')) {
+        sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('open');
+      }
+
+      // Swipe left to close
+      if (deltaX < -60 && sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('open');
+      }
+    }, { passive: true });
   },
 
   /**

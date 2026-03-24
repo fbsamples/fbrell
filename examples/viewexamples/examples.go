@@ -632,6 +632,14 @@ func (p *page) HTML(ctx context.Context) (h.HTML, error) {
 							DB:      p.DB,
 						},
 						&h.Div{
+							Class: "mobile-tab-bar",
+							Inner: h.Frag{
+								&h.Button{Class: "mobile-tab active", Data: map[string]interface{}{"tab": "editor"}, Inner: h.String("Editor")},
+								&h.Button{Class: "mobile-tab", Data: map[string]interface{}{"tab": "output"}, Inner: h.String("Output")},
+								&h.Button{Class: "mobile-tab", Data: map[string]interface{}{"tab": "log"}, Inner: h.String("Log")},
+							},
+						},
+						&h.Div{
 							Class: "editor-column",
 							Inner: h.Frag{
 								&h.Div{
@@ -683,6 +691,7 @@ func (p *page) HTML(ctx context.Context) (h.HTML, error) {
 					},
 				},
 				&statusBar{},
+				&h.Div{ID: "sidebar-overlay", Class: "sidebar-overlay"},
 				&h.Div{ID: "settings-overlay", Class: "settings-overlay"},
 				&settingsDrawer{
 					Context: p.Context,

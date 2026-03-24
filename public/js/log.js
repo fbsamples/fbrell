@@ -236,6 +236,8 @@ var Log = (function() {
     /**
      * Returns a callback function that, when called, logs with the given title.
      * Usage: FB.Event.subscribe('fb.log', Log.info.bind('fb.log'));
+     * Note: This intentionally shadows Function.prototype.bind to preserve
+     * the original rell API: Log.info.bind('title') returns a logger callback.
      * @param {string} title
      * @returns {Function}
      */
