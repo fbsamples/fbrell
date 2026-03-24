@@ -158,16 +158,23 @@ var Rell = {
     FB.init(options);
     if (top !== self) FB.Canvas.setAutoGrow(true);
 
-    // Clean up the hash after the SDK has processed it
-    if (window.location.hash) {
-      history.replaceState(null, '', window.location.pathname + window.location.search);
-    }
-
-    if (!window.rellConfig.status) {
-      Rell.autoRunCode();
+    if (window.location.hash && window.location.hash.indexOf('access_token') !== -1) {
+      // Mobile redirect return — force fresh status check, then clean hash
+      FB.getLoginStatus(function(response) {
+        Rell.onStatusChange(response);
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        Rell.autoRunCode();
+      }, true); // true = force roundtrip, don't use cached status
     } else {
-      FB.getLoginStatus(function() { Rell.autoRunCode(); });
-      FB.getLoginStatus(Rell.onStatusChange);
+      if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+      if (!window.rellConfig.status) {
+        Rell.autoRunCode();
+      } else {
+        FB.getLoginStatus(function() { Rell.autoRunCode(); });
+        FB.getLoginStatus(Rell.onStatusChange);
+      }
     }
 
     Rell.updateStatusBar();
@@ -251,9 +258,20 @@ var Rell = {
   loginToggle: function() {
     if (typeof FB === 'undefined') { Log.error('FB SDK not loaded'); return; }
     if (Rell._authStatus === 'connected') {
-      FB.logout(Log.debug.bind('FB.logout callback'));
+      FB.logout(function(response) {
+        Log.debug('FB.logout callback', response);
+        Rell.onStatusChange(response);
+      });
     } else {
-      FB.login(Log.debug.bind('FB.login callback'));
+      FB.login(function(response) {
+        Log.debug('FB.login callback', response);
+        // On mobile Safari, the cookie-based auth.statusChange event
+        // may not fire due to ITP blocking third-party cookies.
+        // The callback still receives the auth data.
+        if (response.authResponse) {
+          Rell.onStatusChange(response);
+        }
+      });
     }
   },
 
@@ -321,14 +339,22 @@ var Rell = {
    * Trigger FB login dialog.
    */
   login: function() {
-    FB.login(Log.debug.bind('FB.login callback'));
+    FB.login(function(response) {
+      Log.debug('FB.login callback', response);
+      if (response.authResponse) {
+        Rell.onStatusChange(response);
+      }
+    });
   },
 
   /**
    * Log the user out of Facebook.
    */
   logout: function() {
-    FB.logout(Log.debug.bind('FB.logout callback'));
+    FB.logout(function(response) {
+      Log.debug('FB.logout callback', response);
+      Rell.onStatusChange(response);
+    });
   },
 
   /**
