@@ -87,13 +87,23 @@ var Rell = {
     // Initialize sidebar
     Sidebar.init();
 
+    // Initialize mobile tab switching
+    Rell.initMobileTabs();
+
     // Bind click handlers (vanilla JS)
     Rell.bindClick('rell-run-code', Rell.runCode);
     Rell.bindClick('rell-log-clear', Rell.clearLog);
     Rell.bindClick('rell-disconnect', Rell.disconnect);
+    Rell.bindClick('fb-login-custom', Rell.loginToggle);
 
     // Initialize settings drawer
     Rell.initSettings();
+
+    // When custom login is disabled, switch to XFBML plugin mode
+    if (window.rellConfig && !window.rellConfig.customLogin) {
+      var authControls = document.querySelector('.auth-controls');
+      if (authControls) authControls.classList.add('plugin-login-active');
+    }
 
     // Keyboard shortcut: Cmd/Ctrl+Enter to run code
     document.addEventListener('keydown', function(e) {
@@ -110,15 +120,21 @@ var Rell = {
     }
   },
 
+  _sdkInitialized: false,
+
   /**
    * Initialize FB SDK integration. Called via window.fbAsyncInit when SDK loads.
    */
   initSDK: function() {
+    if (Rell._sdkInitialized) return;
+    Rell._sdkInitialized = true;
     var example = window.rellExample;
     if (window.rellConfig) {
       window.rellConfig.autoRun = example ? example.autoRun : false;
     }
-    window.location.hash = '';
+    if (window.location.hash) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
 
     Log.debug('Configuration', window.rellConfig);
 
@@ -188,7 +204,7 @@ var Rell = {
       tabSize: 2,
       indentWithTabs: false,
       lineWrapping: true,
-      viewportMargin: Infinity,
+      viewportMargin: window.innerWidth < 768 ? 10 : Infinity,
       extraKeys: {
         'Cmd-Enter': function() { Rell.runCode(); },
         'Ctrl-Enter': function() { Rell.runCode(); },
@@ -205,12 +221,35 @@ var Rell = {
    * Handle FB auth status changes. Updates the auth badge in the toolbar.
    * @param {Object} response - FB auth status response
    */
+  _authStatus: 'unknown',
+
   onStatusChange: function(response) {
     var status = response.status;
+    Rell._authStatus = status;
     var el = document.getElementById('auth-status');
     if (el) {
       el.className = 'auth-badge auth-' + status;
       el.textContent = status;
+    }
+    // Update custom login button
+    Rell.updateCustomLoginButtons(status);
+  },
+
+  updateCustomLoginButtons: function(status) {
+    var isLoggedIn = status === 'connected';
+    var btn = document.getElementById('fb-login-custom');
+    if (btn) {
+      btn.textContent = isLoggedIn ? 'Log out' : 'Log in with Facebook';
+      btn.classList.toggle('logged-in', isLoggedIn);
+    }
+  },
+
+  loginToggle: function() {
+    if (typeof FB === 'undefined') { Log.error('FB SDK not loaded'); return; }
+    if (Rell._authStatus === 'connected') {
+      FB.logout(Log.debug.bind('FB.logout callback'));
+    } else {
+      FB.login(Log.debug.bind('FB.login callback'));
     }
   },
 
@@ -244,7 +283,9 @@ var Rell = {
 
     try {
       ScriptSoup.set(root, Rell.getCode());
-      FB.XFBML.parse(root);
+      if (typeof FB !== 'undefined' && FB.XFBML) {
+        FB.XFBML.parse(root);
+      }
 
       // Success flash
       if (runBtn) {
@@ -290,6 +331,7 @@ var Rell = {
    * Revoke the app's authorization (disconnect).
    */
   disconnect: function() {
+    if (typeof FB === 'undefined') { Log.error('FB SDK not loaded'); return; }
     FB.api('/me/permissions', 'DELETE', Log.debug.bind('revokeAuthorization callback'));
   },
 
@@ -348,7 +390,8 @@ var Rell = {
       'view-mode': 'website',
       init: 'true',
       status: 'true',
-      frictionlessRequests: 'true'
+      frictionlessRequests: 'true',
+      customLogin: 'true'
     };
 
     /**
@@ -395,6 +438,91 @@ var Rell = {
         window.location = buildSettingsUrl();
       });
     }
+  },
+
+  /**
+   * Initialize mobile tab switching between Editor, Output, and Log panels.
+   * Only active on viewports ≤768px.
+   */
+  initMobileTabs: function() {
+    var tabBar = document.querySelector('.mobile-tab-bar');
+    if (!tabBar) return;
+
+    var tabs = tabBar.querySelectorAll('.mobile-tab');
+    var editorColumn = document.querySelector('.editor-column');
+    var editorToolbar = document.querySelector('.editor-toolbar');
+    var editorPane = document.getElementById('editor-pane');
+    var outputPane = document.querySelector('.output-pane');
+    var logColumn = document.querySelector('.log-column');
+
+    function isMobile() {
+      return window.innerWidth < 768;
+    }
+
+    function switchTab(tabName) {
+      if (!isMobile()) return;
+
+      // Update active tab
+      tabs.forEach(function(t) {
+        t.classList.toggle('active', t.getAttribute('data-tab') === tabName);
+      });
+
+      if (tabName === 'editor') {
+        // Show editor toolbar + editor pane, hide output + log
+        if (editorColumn) editorColumn.classList.remove('mobile-hidden');
+        if (editorToolbar) editorToolbar.style.display = '';
+        if (editorPane) editorPane.style.display = '';
+        if (outputPane) outputPane.style.display = 'none';
+        if (logColumn) {
+          logColumn.classList.add('mobile-hidden');
+          logColumn.classList.remove('mobile-full');
+        }
+      } else if (tabName === 'output') {
+        // Show output pane full height, hide editor pane + toolbar + log
+        if (editorColumn) editorColumn.classList.remove('mobile-hidden');
+        if (editorToolbar) editorToolbar.style.display = 'none';
+        if (editorPane) editorPane.style.display = 'none';
+        if (outputPane) outputPane.style.display = '';
+        if (logColumn) {
+          logColumn.classList.add('mobile-hidden');
+          logColumn.classList.remove('mobile-full');
+        }
+        // Re-run the code so XFBML plugins render at correct dimensions —
+        // they were originally parsed while the output pane was hidden.
+        Rell.runCode();
+      } else if (tabName === 'log') {
+        // Show log column full height, hide editor column
+        if (editorColumn) editorColumn.classList.add('mobile-hidden');
+        if (logColumn) {
+          logColumn.classList.remove('mobile-hidden');
+          logColumn.classList.add('mobile-full');
+        }
+      }
+    }
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        switchTab(this.getAttribute('data-tab'));
+      });
+    });
+
+    // Apply initial tab state on mobile
+    if (isMobile()) {
+      switchTab('editor');
+    }
+
+    // Reset visibility when resizing back to desktop
+    window.addEventListener('resize', function() {
+      if (!isMobile()) {
+        if (editorColumn) editorColumn.classList.remove('mobile-hidden');
+        if (logColumn) {
+          logColumn.classList.remove('mobile-hidden', 'mobile-full');
+        }
+        if (editorToolbar) editorToolbar.style.display = '';
+        if (editorPane) editorPane.style.display = '';
+        if (outputPane) outputPane.style.display = '';
+      }
+    });
   },
 
   /**
