@@ -71,6 +71,9 @@ type Env struct {
 	isEmployee           bool
 	Init                 bool
 	CustomLogin          bool
+	FedCM                bool
+	FedCMAutoPrompt      bool
+	FedCMContext          string
 }
 
 // Defaults for the context.
@@ -84,6 +87,9 @@ var defaultContext = &Env{
 	ViewMode:             Website,
 	Init:                 true,
 	CustomLogin:          true,
+	FedCM:                false,
+	FedCMAutoPrompt:      false,
+	FedCMContext:          "",
 	Version:              "v25.0",
 }
 
@@ -147,6 +153,15 @@ func (p *Parser) FromRequest(r *http.Request) (*Env, error) {
 	}
 	if customLogin, err := strconv.ParseBool(r.FormValue("customLogin")); err == nil {
 		e.CustomLogin = customLogin
+	}
+	if fedcm, err := strconv.ParseBool(r.FormValue("fedcm")); err == nil {
+		e.FedCM = fedcm
+	}
+	if fedcmAutoPrompt, err := strconv.ParseBool(r.FormValue("fedcmAutoPrompt")); err == nil {
+		e.FedCMAutoPrompt = fedcmAutoPrompt
+	}
+	if fedcmContext := r.FormValue("fedcmContext"); fedcmContext != "" {
+		e.FedCMContext = fedcmContext
 	}
 
 	var err error
@@ -262,6 +277,15 @@ func (c *Env) Values() url.Values {
 	if c.CustomLogin != defaultContext.CustomLogin {
 		values.Set("customLogin", strconv.FormatBool(c.CustomLogin))
 	}
+	if c.FedCM != defaultContext.FedCM {
+		values.Set("fedcm", strconv.FormatBool(c.FedCM))
+	}
+	if c.FedCMAutoPrompt != defaultContext.FedCMAutoPrompt {
+		values.Set("fedcmAutoPrompt", strconv.FormatBool(c.FedCMAutoPrompt))
+	}
+	if c.FedCMContext != defaultContext.FedCMContext {
+		values.Set("fedcmContext", c.FedCMContext)
+	}
 	return values
 }
 
@@ -305,6 +329,9 @@ func (c *Env) MarshalJSON() ([]byte, error) {
 		ViewMode             string                `json:"viewMode"`
 		Init                 bool                  `json:"init"`
 		CustomLogin          bool                  `json:"customLogin"`
+		FedCM                bool                  `json:"fedcm"`
+		FedCMAutoPrompt      bool                  `json:"fedcmAutoPrompt"`
+		FedCMContext          string                `json:"fedcmContext,omitempty"`
 		IsEmployee           bool                  `json:"isEmployee,omitempty"`
 	}
 	return json.Marshal(envJSON{
@@ -317,6 +344,9 @@ func (c *Env) MarshalJSON() ([]byte, error) {
 		ViewMode:             c.ViewMode,
 		Init:                 c.Init,
 		CustomLogin:          c.CustomLogin,
+		FedCM:                c.FedCM,
+		FedCMAutoPrompt:      c.FedCMAutoPrompt,
+		FedCMContext:          c.FedCMContext,
 		IsEmployee:           c.isEmployee,
 	})
 }

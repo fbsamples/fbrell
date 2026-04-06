@@ -121,6 +121,7 @@ var Rell = {
   },
 
   _sdkInitialized: false,
+  _fbInitCalled: false,
 
   /**
    * Initialize FB SDK integration. Called via window.fbAsyncInit when SDK loads.
@@ -152,10 +153,34 @@ var Rell = {
       frictionlessRequests: window.rellConfig.frictionlessRequests
     };
 
+    if (window.rellConfig.fedcm) {
+      if (window.rellConfig.fedcmAutoPrompt || window.rellConfig.fedcmContext) {
+        var fedcmOptions = {};
+        if (window.rellConfig.fedcmAutoPrompt) {
+          fedcmOptions.autoPrompt = true;
+        }
+        if (window.rellConfig.fedcmContext) {
+          fedcmOptions.context = window.rellConfig.fedcmContext;
+        }
+        options.fedCM = fedcmOptions;
+      } else {
+        options.fedCM = true;
+      }
+    }
+
     // NOTE: Do NOT strip the URL hash before FB.init(). On mobile Safari,
     // FB.login() uses a full-page redirect and the access token is returned
     // in the hash fragment. The SDK must see it during init.
-    FB.init(options);
+    try {
+      FB.init(options);
+      // Verify the SDK actually accepted the version by calling getLoginStatus,
+      // which will throw "init not called with valid version" if the version was rejected.
+      FB.getLoginStatus(function() {});
+      Rell._fbInitCalled = true;
+    } catch (e) {
+      Log.error('FB.init() failed: ' + e.message + '. The SDK version "' + options.version + '" may not be supported by this server.');
+      return;
+    }
     if (top !== self) FB.Canvas.setAutoGrow(true);
 
     if (window.location.hash && window.location.hash.indexOf('access_token') !== -1) {
@@ -256,22 +281,29 @@ var Rell = {
   },
 
   loginToggle: function() {
-    if (typeof FB === 'undefined') { Log.error('FB SDK not loaded'); return; }
+    if (typeof FB === 'undefined' || !Rell._fbInitCalled) {
+      Log.error('FB SDK not ready — FB.init() has not been called. Check that "Auto Init SDK" is enabled in settings.');
+      return;
+    }
     if (Rell._authStatus === 'connected') {
       FB.logout(function(response) {
         Log.debug('FB.logout callback', response);
         Rell.onStatusChange(response);
       });
     } else {
-      FB.login(function(response) {
-        Log.debug('FB.login callback', response);
-        // On mobile Safari, the cookie-based auth.statusChange event
-        // may not fire due to ITP blocking third-party cookies.
-        // The callback still receives the auth data.
-        if (response.authResponse) {
-          Rell.onStatusChange(response);
-        }
-      });
+      try {
+        FB.login(function(response) {
+          Log.debug('FB.login callback', response);
+          // On mobile Safari, the cookie-based auth.statusChange event
+          // may not fire due to ITP blocking third-party cookies.
+          // The callback still receives the auth data.
+          if (response.authResponse) {
+            Rell.onStatusChange(response);
+          }
+        });
+      } catch (e) {
+        Log.error('FB.login() failed: ' + e.message + '. The SDK version "' + (window.rellConfig && window.rellConfig.version) + '" may not be supported by this server. Try changing the version in settings.');
+      }
     }
   },
 
@@ -421,7 +453,10 @@ var Rell = {
       init: 'true',
       status: 'true',
       frictionlessRequests: 'true',
-      customLogin: 'true'
+      customLogin: 'true',
+      fedcm: 'false',
+      fedcmAutoPrompt: 'false',
+      fedcmContext: ''
     };
 
     /**
