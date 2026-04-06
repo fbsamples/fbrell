@@ -438,6 +438,17 @@ func (s *settingsDrawer) HTML(ctx context.Context) (h.HTML, error) {
 		})
 	}
 
+	fedcmContextOpts := h.Frag{
+		&h.Option{Value: "", Selected: s.Env.FedCMContext == "", Inner: h.String("(none)")},
+	}
+	for _, fctx := range []string{"signin", "signup", "use"} {
+		fedcmContextOpts = append(fedcmContextOpts, &h.Option{
+			Value:    fctx,
+			Selected: s.Env.FedCMContext == fctx,
+			Inner:    h.String(fctx),
+		})
+	}
+
 	return &h.Div{
 		ID:    "settings-drawer",
 		Class: "settings-drawer",
@@ -508,6 +519,23 @@ func (s *settingsDrawer) HTML(ctx context.Context) (h.HTML, error) {
 						Label:   "Custom Login Button",
 						Name:    "customLogin",
 						Checked: s.Env.CustomLogin,
+					},
+					&settingsCheckbox{
+						Label:   "FedCM",
+						Name:    "fedcm",
+						Checked: s.Env.FedCM,
+						Default: "false",
+					},
+					&settingsCheckbox{
+						Label:   "FedCM Auto Prompt",
+						Name:    "fedcmAutoPrompt",
+						Checked: s.Env.FedCMAutoPrompt,
+						Default: "false",
+					},
+					&settingsSelect{
+						Label:   "FedCM Context",
+						Name:    "fedcmContext",
+						Options: fedcmContextOpts,
 					},
 				},
 			},
@@ -588,9 +616,14 @@ type settingsCheckbox struct {
 	Label   string
 	Name    string
 	Checked bool
+	Default string // "true" or "false"; defaults to "true" if empty
 }
 
 func (c *settingsCheckbox) HTML(ctx context.Context) (h.HTML, error) {
+	def := c.Default
+	if def == "" {
+		def = "true"
+	}
 	return &h.Div{
 		Class: "setting-group setting-group-checkbox",
 		Inner: &h.Label{
@@ -603,7 +636,7 @@ func (c *settingsCheckbox) HTML(ctx context.Context) (h.HTML, error) {
 					Value:   "true",
 					Checked: c.Checked,
 					Data: map[string]interface{}{
-						"default": "true",
+						"default": def,
 					},
 				},
 				h.String(" " + c.Label),
