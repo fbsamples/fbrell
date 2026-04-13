@@ -211,7 +211,8 @@ func (c *Env) Copy() *Env {
 func (c *Env) SdkURL() string {
 	server := "connect.facebook.net"
 	if c.Env != "" {
-		server = fmt.Sprintf("connect.%s.facebook.net", c.Env)
+		// Necessary for multiple-OD resolution
+		server = fburl.Hostname("static", c.Env) + "/assets.php"
 	}
 	return fmt.Sprintf("https://%s/%s/sdk.js", server, c.locale)
 }
