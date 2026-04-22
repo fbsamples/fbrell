@@ -22,7 +22,7 @@ go build # This will create a fbrell executable file
 
 Then, navigate to http://localhost:43600/
 
-Hazzah!
+Huzzah!
 
 Then go to [http://localhost:43600/](http://localhost:43600/). Look at the help
 text from `rell -h` to see what other options are available. You'll need your
