@@ -19,6 +19,8 @@
  */
 
 // Package oauth implements an OAuth handler for Facebook.
+// FBRell acts as a client of Facebook's OAuth here. For the reverse (FBRell
+// acting as an OAuth provider for testing), see the mockoauth package.
 package oauth
 
 import (

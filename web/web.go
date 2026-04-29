@@ -34,6 +34,7 @@ import (
 	"github.com/facebookgo/fbapp"
 	"github.com/fbsamples/fbrell/adminweb"
 	"github.com/fbsamples/fbrell/examples/viewexamples"
+	"github.com/fbsamples/fbrell/mockoauth"
 	"github.com/fbsamples/fbrell/oauth"
 	"github.com/fbsamples/fbrell/og/viewog"
 	"github.com/fbsamples/fbrell/rellenv"
@@ -53,6 +54,7 @@ type Handler struct {
 	ExamplesHandler *viewexamples.Handler
 	OgHandler       *viewog.Handler
 	OauthHandler    *oauth.Handler
+	MockOauthHandler *mockoauth.Handler
 	Static          *static.Handler
 	AdminHandler    *adminweb.Handler
 
@@ -88,6 +90,8 @@ func (a *Handler) Init() error {
 	mux.GET("/rog/*rest", a.OgHandler.Base64)
 	mux.GET("/rog-redirect/*rest", a.OgHandler.Redirect)
 	mux.GET(oauth.Path+"*rest", a.OauthHandler.Handler)
+	mux.GET(mockoauth.Path+"*rest", a.MockOauthHandler.Handle)
+	mux.POST(mockoauth.Path+"*rest", a.MockOauthHandler.Handle)
 
 	if a.AdminHandler.Path != "" {
 		adminPath := path.Join("/", a.AdminHandler.Path) + "/*rest"

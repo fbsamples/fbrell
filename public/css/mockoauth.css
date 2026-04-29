@@ -1,0 +1,102 @@
+/* Mock OAuth Provider — consent screen styles */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #f0f2f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  width: 420px;
+  max-width: 95vw;
+  overflow: hidden;
+}
+.header {
+  background: #1877f2;
+  color: #fff;
+  padding: 20px 24px;
+  text-align: center;
+}
+.header h1 { font-size: 18px; font-weight: 600; }
+.subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+.body { padding: 24px; }
+.app-info {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e4e6eb;
+}
+.app-icon {
+  width: 56px; height: 56px;
+  background: #e4e6eb;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+.app-id { font-size: 12px; color: #65676b; margin-top: 2px; }
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #65676b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.scope-list { list-style: none; margin-bottom: 20px; }
+.scope-item {
+  padding: 10px 12px;
+  background: #f0f2f5;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #1c1e21;
+}
+.no-scopes {
+  padding: 10px 12px;
+  background: #f0f2f5;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #65676b;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+}
+.btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-authorize {
+  background: #1877f2;
+  color: #fff;
+}
+.btn-authorize:hover { background: #166fe5; }
+.btn-deny {
+  background: #e4e6eb;
+  color: #1c1e21;
+}
+.btn-deny:hover { background: #d8dadf; }
+.mock-badge {
+  text-align: center;
+  padding: 12px;
+  background: #fff3cd;
+  font-size: 12px;
+  color: #856404;
+}

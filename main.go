@@ -42,6 +42,7 @@ import (
 	"github.com/fbsamples/fbrell/adminweb"
 	"github.com/fbsamples/fbrell/examples"
 	"github.com/fbsamples/fbrell/examples/viewexamples"
+	"github.com/fbsamples/fbrell/mockoauth"
 	"github.com/fbsamples/fbrell/oauth"
 	"github.com/fbsamples/fbrell/og"
 	"github.com/fbsamples/fbrell/og/viewog"
@@ -172,7 +173,8 @@ func main() {
 			HttpTransport: httpTransport,
 			Static:        static,
 		},
-		AdminHandler: adminHandler,
+		MockOauthHandler: &mockoauth.Handler{},
+		AdminHandler:     adminHandler,
 		SignedRequestMaxAge: signedRequestMaxAge,
 	}
 	if err := webHandler.Init(); err != nil {
