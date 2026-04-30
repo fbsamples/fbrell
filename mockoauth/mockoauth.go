@@ -22,11 +22,13 @@
 // Meta's 3P partner integration flows. Unlike the oauth package (where FBRell is
 // a client of Facebook's OAuth), here FBRell acts as the partner's OAuth provider.
 //
-// GET/POST /mock-oauth/authorize renders a consent screen and issues an
-// authorization code on user approval.
+// Two endpoints implement the authorization code grant (RFC 6749 §4.1):
+//   - GET/POST /mock-oauth/authorize — renders a consent screen and issues an
+//     authorization code on user approval.
+//   - POST /mock-oauth/token — exchanges an authorization code for an access token.
 //
-// Codes are non-cryptographic, human-readable strings encoding the client ID,
-// granted scopes, and configurable behavior (valid/expired/invalid).
+// Codes and tokens are non-cryptographic, human-readable strings encoding the
+// client ID, granted scopes, and configurable behavior (valid/expired/invalid).
 package mockoauth
 
 import (
@@ -49,6 +51,10 @@ var (
 	errMissingResponseType = errors.New("mock-oauth: missing response_type parameter")
 	errInvalidResponseType = errors.New("mock-oauth: response_type must be 'code'")
 	errRedirectURIFragment = errors.New("mock-oauth: redirect_uri must not contain a fragment")
+	errMissingCode         = errors.New("mock-oauth: missing code parameter")
+	errInvalidCode         = errors.New("mock-oauth: invalid or malformed authorization code")
+	errExpiredCode         = errors.New("mock-oauth: authorization code has expired")
+	errInvalidGrantType    = errors.New("mock-oauth: grant_type must be authorization_code")
 	errInvalidClientIDChar = errors.New("mock-oauth: client_id must not contain '|'")
 	errInvalidScopeChar    = errors.New("mock-oauth: scope values must not contain '|'")
 )
@@ -73,6 +79,12 @@ func (a *Handler) Handle(w http.ResponseWriter, r *http.Request) error {
 			return a.AuthorizeSubmit(w, r)
 		}
 		return a.AuthorizeForm(w, r)
+	case Path + "token":
+		if r.Method != http.MethodPost {
+			return writeError(w, http.StatusMethodNotAllowed, "invalid_request",
+				"mock-oauth: token endpoint requires POST")
+		}
+		return a.Token(w, r)
 	default:
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
@@ -233,6 +245,62 @@ func (a *Handler) AuthorizeSubmit(w http.ResponseWriter, r *http.Request) error 
 	return nil
 }
 
+// Token handles POST /mock-oauth/token.
+// Accepts the mock authorization code and returns a mock access token
+// embedding the same scopes from the code.
+func (h *Handler) Token(w http.ResponseWriter, r *http.Request) error {
+	grantType := r.FormValue("grant_type")
+	if grantType != "" && grantType != "authorization_code" {
+		return writeError(w, http.StatusBadRequest, "unsupported_grant_type", errInvalidGrantType.Error())
+	}
+
+	code := r.FormValue("code")
+	if code == "" {
+		return writeError(w, http.StatusBadRequest, "invalid_request", errMissingCode.Error())
+	}
+
+	clientID, scope, behavior, err := ParseCode(code)
+	if err != nil {
+		return writeError(w, http.StatusBadRequest, "invalid_grant", errInvalidCode.Error())
+	}
+
+	switch behavior {
+	case BehaviorExpired:
+		return writeError(w, http.StatusBadRequest, "invalid_grant", errExpiredCode.Error())
+	case BehaviorInvalid:
+		return writeError(w, http.StatusUnauthorized, "invalid_client", "mock-oauth: invalid client credentials")
+	}
+
+	token := buildToken(clientID, scope)
+
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(tokenResponse{
+		AccessToken: token,
+		TokenType:   "bearer",
+		ExpiresIn:   3600,
+		Scope:       scope,
+	})
+}
+
+type tokenResponse struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
+	Scope       string `json:"scope,omitempty"`
+}
+
+// buildToken creates a deterministic, human-readable access token.
+// Format: mock_token|{clientID}|{scope}
+func buildToken(clientID, scope string) string {
+	parts := []string{"mock_token", clientID}
+	if scope != "" {
+		parts = append(parts, scope)
+	} else {
+		parts = append(parts, "noscope")
+	}
+	return strings.Join(parts, "|")
+}
+
 // BuildCode creates a deterministic, human-readable authorization code.
 // Format: mock_code|{clientID}|{scope}|{behavior}|{timestamp}
 func BuildCode(clientID, scope string, behavior TokenBehavior) string {
@@ -245,6 +313,28 @@ func BuildCode(clientID, scope string, behavior TokenBehavior) string {
 	parts = append(parts, string(behavior))
 	parts = append(parts, fmt.Sprintf("%d", time.Now().Unix()))
 	return strings.Join(parts, "|")
+}
+
+// ParseCode extracts client_id, scope, and behavior from a mock authorization code.
+func ParseCode(code string) (clientID, scope string, behavior TokenBehavior, err error) {
+	if !strings.HasPrefix(code, "mock_code|") {
+		return "", "", "", errInvalidCode
+	}
+
+	trimmed := strings.TrimPrefix(code, "mock_code|")
+	parts := strings.Split(trimmed, "|")
+	if len(parts) < 3 {
+		return "", "", "", errInvalidCode
+	}
+
+	clientID = parts[0]
+	scope = parts[1]
+	if scope == "noscope" {
+		scope = ""
+	}
+	behavior = TokenBehavior(parts[2])
+
+	return clientID, scope, behavior, nil
 }
 
 func parseBehavior(s string) TokenBehavior {
