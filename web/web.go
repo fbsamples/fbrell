@@ -35,6 +35,7 @@ import (
 	"github.com/fbsamples/fbrell/adminweb"
 	"github.com/fbsamples/fbrell/examples/viewexamples"
 	"github.com/fbsamples/fbrell/mockoauth"
+	"github.com/fbsamples/fbrell/mockpartner/capisetup"
 	"github.com/fbsamples/fbrell/oauth"
 	"github.com/fbsamples/fbrell/og/viewog"
 	"github.com/fbsamples/fbrell/rellenv"
@@ -54,7 +55,8 @@ type Handler struct {
 	ExamplesHandler *viewexamples.Handler
 	OgHandler       *viewog.Handler
 	OauthHandler    *oauth.Handler
-	MockOauthHandler *mockoauth.Handler
+	MockOauthHandler    *mockoauth.Handler
+	CAPISetupHandler    *capisetup.Handler
 	Static          *static.Handler
 	AdminHandler    *adminweb.Handler
 
@@ -92,6 +94,8 @@ func (a *Handler) Init() error {
 	mux.GET(oauth.Path+"*rest", a.OauthHandler.Handler)
 	mux.GET(mockoauth.Path+"*rest", a.MockOauthHandler.Handle)
 	mux.POST(mockoauth.Path+"*rest", a.MockOauthHandler.Handle)
+	mux.GET(capisetup.Path+"*rest", a.CAPISetupHandler.Handle)
+	mux.POST(capisetup.Path+"*rest", a.CAPISetupHandler.Handle)
 
 	if a.AdminHandler.Path != "" {
 		adminPath := path.Join("/", a.AdminHandler.Path) + "/*rest"
