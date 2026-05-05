@@ -29,6 +29,13 @@
 //
 // Codes and tokens are non-cryptographic, human-readable strings encoding the
 // client ID, granted scopes, and configurable behavior (valid/expired/invalid).
+//
+// Client authentication on the token endpoint follows RFC 6749 §2.3.1. Both
+// HTTP Basic Auth and form-body credentials are accepted. The expected
+// client_secret for any client_id is deterministic and stateless: callers
+// configure their OAuth client with `mock_secret_<client_id>`. This avoids
+// the need for server-side credential storage while still exercising the
+// credential round-trip behavior of real OAuth clients.
 package mockoauth
 
 import (
@@ -43,21 +50,39 @@ import (
 	"github.com/daaku/go.h"
 )
 
-const Path = "/mock-oauth/"
+const (
+	Path = "/mock-oauth/"
+
+	// secretPrefix is the deterministic prefix used to derive the expected
+	// client_secret for a given client_id. See ValidateClient.
+	secretPrefix = "mock_secret_"
+)
 
 var (
-	errMissingClientID     = errors.New("mock-oauth: missing client_id parameter")
-	errMissingRedirectURI  = errors.New("mock-oauth: missing redirect_uri parameter")
-	errMissingResponseType = errors.New("mock-oauth: missing response_type parameter")
-	errInvalidResponseType = errors.New("mock-oauth: response_type must be 'code'")
-	errRedirectURIFragment = errors.New("mock-oauth: redirect_uri must not contain a fragment")
-	errMissingCode         = errors.New("mock-oauth: missing code parameter")
-	errInvalidCode         = errors.New("mock-oauth: invalid or malformed authorization code")
-	errExpiredCode         = errors.New("mock-oauth: authorization code has expired")
-	errInvalidGrantType    = errors.New("mock-oauth: grant_type must be authorization_code")
-	errInvalidClientIDChar = errors.New("mock-oauth: client_id must not contain '|'")
-	errInvalidScopeChar    = errors.New("mock-oauth: scope values must not contain '|'")
+	errMissingClientID          = errors.New("mock-oauth: missing client_id parameter")
+	errMissingClientSecret      = errors.New("mock-oauth: missing client_secret parameter")
+	errInvalidClientCredentials = errors.New("mock-oauth: client authentication failed")
+	errClientIDMismatch         = errors.New("mock-oauth: client_id does not match the authorization code")
+	errCredentialsConflict      = errors.New("mock-oauth: conflicting credentials in Basic auth header and request body")
+	errMissingRedirectURI       = errors.New("mock-oauth: missing redirect_uri parameter")
+	errMissingResponseType      = errors.New("mock-oauth: missing response_type parameter")
+	errInvalidResponseType      = errors.New("mock-oauth: response_type must be 'code'")
+	errRedirectURIFragment      = errors.New("mock-oauth: redirect_uri must not contain a fragment")
+	errMissingCode              = errors.New("mock-oauth: missing code parameter")
+	errInvalidCode              = errors.New("mock-oauth: invalid or malformed authorization code")
+	errExpiredCode              = errors.New("mock-oauth: authorization code has expired")
+	errInvalidGrantType         = errors.New("mock-oauth: grant_type must be authorization_code")
+	errInvalidClientIDChar      = errors.New("mock-oauth: client_id must not contain '|'")
+	errInvalidScopeChar         = errors.New("mock-oauth: scope values must not contain '|'")
 )
+
+// ValidateClient reports whether the given client_secret is correct for the
+// given client_id under the mock's deterministic, stateless secret format.
+// Configure your OAuth client (e.g. MC3P Authoring Tool) with the secret
+// `mock_secret_<client_id>` to authenticate against this mock.
+func ValidateClient(clientID, secret string) bool {
+	return secret == secretPrefix+clientID
+}
 
 // TokenBehavior controls what kind of token the /token endpoint returns.
 type TokenBehavior string
@@ -246,12 +271,30 @@ func (a *Handler) AuthorizeSubmit(w http.ResponseWriter, r *http.Request) error 
 }
 
 // Token handles POST /mock-oauth/token.
-// Accepts the mock authorization code and returns a mock access token
-// embedding the same scopes from the code.
+// Authenticates the client per RFC 6749 §2.3.1, then exchanges the mock
+// authorization code for a mock access token embedding the granted scopes.
 func (h *Handler) Token(w http.ResponseWriter, r *http.Request) error {
 	grantType := r.FormValue("grant_type")
 	if grantType != "" && grantType != "authorization_code" {
 		return writeError(w, http.StatusBadRequest, "unsupported_grant_type", errInvalidGrantType.Error())
+	}
+
+	clientID, clientSecret, err := extractClientCredentials(r)
+	if err != nil {
+		// Auth failures (missing creds) get 401 invalid_client; malformed
+		// requests (Basic + form-body conflict) get 400 invalid_request. We
+		// don't distinguish "Basic was attempted" per RFC 6749 §5.2 because
+		// we don't send WWW-Authenticate, so the spec's retry mechanism
+		// doesn't apply here.
+		switch {
+		case errors.Is(err, errMissingClientID), errors.Is(err, errMissingClientSecret):
+			return writeError(w, http.StatusUnauthorized, "invalid_client", err.Error())
+		default:
+			return writeError(w, http.StatusBadRequest, "invalid_request", err.Error())
+		}
+	}
+	if !ValidateClient(clientID, clientSecret) {
+		return writeError(w, http.StatusUnauthorized, "invalid_client", errInvalidClientCredentials.Error())
 	}
 
 	code := r.FormValue("code")
@@ -259,9 +302,15 @@ func (h *Handler) Token(w http.ResponseWriter, r *http.Request) error {
 		return writeError(w, http.StatusBadRequest, "invalid_request", errMissingCode.Error())
 	}
 
-	clientID, scope, behavior, err := ParseCode(code)
+	codeClientID, scope, behavior, err := ParseCode(code)
 	if err != nil {
 		return writeError(w, http.StatusBadRequest, "invalid_grant", errInvalidCode.Error())
+	}
+
+	// Per RFC 6749 §4.1.3: ensure the authorization code was issued to
+	// the authenticated client.
+	if codeClientID != clientID {
+		return writeError(w, http.StatusBadRequest, "invalid_grant", errClientIDMismatch.Error())
 	}
 
 	switch behavior {
@@ -280,6 +329,37 @@ func (h *Handler) Token(w http.ResponseWriter, r *http.Request) error {
 		ExpiresIn:   3600,
 		Scope:       scope,
 	})
+}
+
+// extractClientCredentials reads OAuth 2.0 client credentials per RFC 6749
+// §2.3.1. Prefers HTTP Basic Auth; falls back to form-body parameters.
+// If both are present, they MUST match — otherwise this returns an error.
+// Returns errMissingClientID when no credentials are supplied.
+func extractClientCredentials(r *http.Request) (clientID, clientSecret string, err error) {
+	basicID, basicSecret, hasBasic := r.BasicAuth()
+	formID := r.PostFormValue("client_id")
+	formSecret := r.PostFormValue("client_secret")
+
+	switch {
+	case hasBasic && (formID != "" || formSecret != ""):
+		// Per RFC 6749 §2.3.1 clients SHOULD NOT use multiple methods. We
+		// allow it only when the values match, to ease testing.
+		if formID != "" && formID != basicID {
+			return "", "", errCredentialsConflict
+		}
+		if formSecret != "" && formSecret != basicSecret {
+			return "", "", errCredentialsConflict
+		}
+		return basicID, basicSecret, nil
+	case hasBasic:
+		return basicID, basicSecret, nil
+	case formID != "" && formSecret != "":
+		return formID, formSecret, nil
+	case formID != "":
+		return "", "", errMissingClientSecret
+	default:
+		return "", "", errMissingClientID
+	}
 }
 
 type tokenResponse struct {
