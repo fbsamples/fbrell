@@ -287,6 +287,8 @@ func TestAuthorizeSubmitRedirectURIWithFragment(t *testing.T) {
 	}
 	if resp["error"] != "invalid_request" {
 		t.Fatalf("got error %q, want %q", resp["error"], "invalid_request")
+	}
+}
 
 func TestTokenExchangeValid(t *testing.T) {
 	h := &Handler{}
