@@ -922,7 +922,10 @@ func (i *JsInit) HTML(ctx context.Context) (h.HTML, error) {
 			`var msg='SDK failed to load from '+u+'. ` +
 			`The server returned a non-success response (4xx, 5xx, or network error). ` +
 			`If you set the "server" param, verify the URL serves the SDK with a 200.';` +
-			`if(window.Log){Log.error(msg);}else{console.error(msg);}` +
+			`console.error(msg);` +
+			`if(window.Log&&window.Log.error){Log.error(msg);}else{` +
+			`(window.__rellPendingLogs=window.__rellPendingLogs||[]).push(` +
+			`{level:'error',header:msg,args:[],time:Date.now()});}` +
 			`};</script>`),
 		h.Unsafe(`<script async src="` + template.HTMLEscapeString(sdkURL) +
 			`" onerror="window.__rellSdkLoadError(this.src)"></script>`),

@@ -700,8 +700,18 @@ button.sidebar-toggle {
   border-top: 1px solid var(--border);
 }
 
-.log-entry-body.open {
+.log-entry.open .log-entry-body {
   display: block;
+}
+
+.log-entry.open .log-entry-body:empty {
+  display: none;
+}
+
+.log-entry.open .log-entry-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .log-json {

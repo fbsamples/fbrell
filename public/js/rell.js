@@ -333,10 +333,15 @@ var Rell = {
       runBtn.classList.remove('success', 'error');
     }
 
-    Log.info('Executed example');
+    var code = Rell.getCode();
+    Log.info('Executed example', {
+      example: document.title.split('—')[0].trim() || '(unknown)',
+      lines: code.split('\n').length,
+      characters: code.length
+    });
 
     try {
-      ScriptSoup.set(root, Rell.getCode());
+      ScriptSoup.set(root, code);
       if (typeof FB !== 'undefined' && FB.XFBML) {
         FB.XFBML.parse(root);
       }

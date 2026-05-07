@@ -27,6 +27,7 @@ var Log = (function() {
   var _level = 'debug';   // Minimum level to display
   var _entries = [];       // All log entry data for copy-all
   var _errorCount = 0;     // Running error count
+  var _pending = [];       // Entries logged before init(), flushed on init
 
   // Level priority for filtering
   var _levels = { error: 0, info: 1, debug: 2 };
@@ -129,11 +130,14 @@ var Log = (function() {
    * @param {string} header - Title text for the entry
    * @param {Array} args - Additional data to display in the body
    */
-  function addEntry(level, header, args) {
-    if (!_root) return;
+  function addEntry(level, header, args, now) {
     if (_levels[level] > _levels[_level]) return;
+    now = now || Date.now();
+    if (!_root) {
+      _pending.push([level, header, args, now]);
+      return;
+    }
 
-    var now = Date.now();
     var shouldScroll = isScrolledToBottom();
 
     // Track for copy-all
@@ -282,20 +286,35 @@ var Log = (function() {
 
       if (!_root) return;
 
+      // Flush any entries logged before init() ran (e.g. SDK script onerror
+      // can fire before DOMContentLoaded).
+      // First: external pre-Log-load queue (inline scripts that ran before
+      // log.js itself was parsed).
+      if (window.__rellPendingLogs) {
+        for (var j = 0; j < window.__rellPendingLogs.length; j++) {
+          var ext = window.__rellPendingLogs[j];
+          addEntry(ext.level, ext.header, ext.args || [], ext.time);
+        }
+        window.__rellPendingLogs = [];
+      }
+      // Then: internal _pending (Log was loaded but init hadn't run yet).
+      var pending = _pending;
+      _pending = [];
+      for (var i = 0; i < pending.length; i++) {
+        addEntry.apply(null, pending[i]);
+      }
+
       // Event delegation for toggle and copy on entries
       _root.addEventListener('click', function(e) {
-        // Toggle entry body visibility
+        // Toggle entry expanded state (wraps title; reveals body if non-empty)
         var header = e.target.closest('.log-entry-header');
         if (header) {
           var entryEl = header.closest('.log-entry');
           if (entryEl) {
-            var bodyDiv = entryEl.querySelector('.log-entry-body');
+            var wasOpen = entryEl.classList.contains('open');
+            entryEl.classList.toggle('open');
             var toggleSpan = header.querySelector('.log-toggle');
-            if (bodyDiv) {
-              var isOpen = bodyDiv.classList.contains('open');
-              bodyDiv.classList.toggle('open');
-              if (toggleSpan) toggleSpan.textContent = isOpen ? '\u25B6' : '\u25BC';
-            }
+            if (toggleSpan) toggleSpan.textContent = wasOpen ? '\u25B6' : '\u25BC';
           }
         }
       });
