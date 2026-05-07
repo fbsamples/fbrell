@@ -914,11 +914,18 @@ func (i *JsInit) HTML(ctx context.Context) (h.HTML, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to json.Marshal example: %s", err)
 	}
+	sdkURL := i.Env.SdkURL()
 	return h.Frag{
-		&h.Script{
-			Src:   i.Env.SdkURL(),
-			Async: true,
-		},
+		h.Unsafe(`<script>window.__rellSdkLoadError=function(u){` +
+			`var e=document.getElementById('sdk-status');` +
+			`if(e){e.innerHTML='<span class="status-dot status-dot-danger"></span> SDK failed to load';}` +
+			`var msg='SDK failed to load from '+u+'. ` +
+			`The server returned a non-success response (4xx, 5xx, or network error). ` +
+			`If you set the "server" param, verify the URL serves the SDK with a 200.';` +
+			`if(window.Log){Log.error(msg);}else{console.error(msg);}` +
+			`};</script>`),
+		h.Unsafe(`<script async src="` + template.HTMLEscapeString(sdkURL) +
+			`" onerror="window.__rellSdkLoadError(this.src)"></script>`),
 		&h.Script{
 			Inner: h.Frag{
 				h.Unsafe("window.rellConfig="),
