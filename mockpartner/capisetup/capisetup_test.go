@@ -208,3 +208,87 @@ func TestUnknownEndpoint(t *testing.T) {
 		t.Fatalf("got status %d, want %d", w.Code, http.StatusNotFound)
 	}
 }
+
+func TestBusinessContextsWithUserID(t *testing.T) {
+	h := &Handler{}
+	req := httptest.NewRequest("GET", Path+"1234/business_contexts", nil)
+	req.Header.Set("Authorization", validToken)
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, req); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusOK {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusOK)
+	}
+
+	var resp BusinessContextsWithUserIDResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.UserID != "1234" {
+		t.Fatalf("got user_id %q, want %q", resp.UserID, "1234")
+	}
+	if len(resp.Contexts) != 2 {
+		t.Fatalf("got %d contexts, want 2", len(resp.Contexts))
+	}
+	if resp.Contexts[0].ContextID != "123" {
+		t.Fatalf("got context_id %q, want %q", resp.Contexts[0].ContextID, "123")
+	}
+}
+
+func TestConnectAndSharePixelWithUserID(t *testing.T) {
+	h := &Handler{}
+	body := `{"context_id":"123","pixel_id":"12345","business_id":"67890"}`
+	req := httptest.NewRequest("POST", Path+"1234/connect_and_share_pixel", strings.NewReader(body))
+	req.Header.Set("Authorization", validToken)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, req); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusOK {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusOK)
+	}
+
+	var resp ConnectAndSharePixelWithUserIDResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.UserID != "1234" {
+		t.Fatalf("got user_id %q, want %q", resp.UserID, "1234")
+	}
+	if !resp.Success {
+		t.Fatal("expected success=true")
+	}
+}
+
+func TestRejectsThreeSegmentPath(t *testing.T) {
+	h := &Handler{}
+	req := httptest.NewRequest("GET", Path+"1234/extra/business_contexts", nil)
+	req.Header.Set("Authorization", validToken)
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, req); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusNotFound)
+	}
+}
+
+func TestRejectsEmptyUserIDSegment(t *testing.T) {
+	h := &Handler{}
+	// URL: /mock-partner/capi-setup//business_contexts — empty user_id
+	req := httptest.NewRequest("GET", Path+"/business_contexts", nil)
+	req.Header.Set("Authorization", validToken)
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, req); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusNotFound)
+	}
+}
