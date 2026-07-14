@@ -328,6 +328,7 @@ func (h *Handler) Token(w http.ResponseWriter, r *http.Request) error {
 		TokenType:   "bearer",
 		ExpiresIn:   3600,
 		Scope:       scope,
+		UserID:      buildUserID(clientID),
 	})
 }
 
@@ -367,6 +368,7 @@ type tokenResponse struct {
 	TokenType   string `json:"token_type"`
 	ExpiresIn   int    `json:"expires_in"`
 	Scope       string `json:"scope,omitempty"`
+	UserID      string `json:"user_id,omitempty"`
 }
 
 // buildToken creates a deterministic, human-readable access token.
@@ -379,6 +381,12 @@ func buildToken(clientID, scope string) string {
 		parts = append(parts, "noscope")
 	}
 	return strings.Join(parts, "|")
+}
+
+// buildUserID creates a deterministic, human-readable mock user identifier.
+// Format: mock_user_{clientID}
+func buildUserID(clientID string) string {
+	return "mock_user_" + clientID
 }
 
 // BuildCode creates a deterministic, human-readable authorization code.

@@ -350,6 +350,9 @@ func TestTokenExchangeValid(t *testing.T) {
 	if resp.Scope != "read,write" {
 		t.Fatalf("got scope %q, want %q", resp.Scope, "read,write")
 	}
+	if resp.UserID != "mock_user_789" {
+		t.Fatalf("got user_id %q, want %q", resp.UserID, "mock_user_789")
+	}
 }
 
 func TestTokenExchangeNoScope(t *testing.T) {
@@ -375,6 +378,9 @@ func TestTokenExchangeNoScope(t *testing.T) {
 	}
 	if resp.Scope != "" {
 		t.Fatalf("got scope %q, want empty", resp.Scope)
+	}
+	if resp.UserID != "mock_user_100" {
+		t.Fatalf("got user_id %q, want %q", resp.UserID, "mock_user_100")
 	}
 }
 
@@ -585,6 +591,31 @@ func TestTokenExchangeClientIDMismatchWithCode(t *testing.T) {
 	}
 }
 
+func TestTokenResponseIncludesUserID(t *testing.T) {
+	h := &Handler{}
+	code := BuildCode("dogfood", "read", BehaviorValid)
+
+	form := tokenForm("dogfood", map[string]string{"code": code})
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, newTokenRequest(form)); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the JSON tag serialises as "user_id" not "UserID".
+	var raw map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &raw); err != nil {
+		t.Fatal(err)
+	}
+	got, ok := raw["user_id"].(string)
+	if !ok {
+		t.Fatalf("response missing user_id string: %#v", raw)
+	}
+	if got != "mock_user_dogfood" {
+		t.Fatalf("got user_id %q, want %q", got, "mock_user_dogfood")
+	}
+}
+
 func TestTokenExchangeBasicAuth(t *testing.T) {
 	h := &Handler{}
 	code := BuildCode("789", "read,write", BehaviorValid)
@@ -610,6 +641,9 @@ func TestTokenExchangeBasicAuth(t *testing.T) {
 	}
 	if resp.AccessToken != "mock_token|789|read,write" {
 		t.Fatalf("got token %q, want %q", resp.AccessToken, "mock_token|789|read,write")
+	}
+	if resp.UserID != "mock_user_789" {
+		t.Fatalf("got user_id %q, want %q", resp.UserID, "mock_user_789")
 	}
 }
 
@@ -816,6 +850,9 @@ func TestEndToEndConsentToToken(t *testing.T) {
 	}
 	if resp.Scope != "orders,products" {
 		t.Fatalf("got scope %q, want %q", resp.Scope, "orders,products")
+	}
+	if resp.UserID != "mock_user_testapp" {
+		t.Fatalf("got user_id %q, want %q", resp.UserID, "mock_user_testapp")
 	}
 }
 
