@@ -44,6 +44,7 @@ import (
 	"github.com/fbsamples/fbrell/examples/viewexamples"
 	"github.com/fbsamples/fbrell/mockoauth"
 	"github.com/fbsamples/fbrell/mockpartner/capisetup"
+	"github.com/fbsamples/fbrell/mockpartner/jobseasyapply"
 	"github.com/fbsamples/fbrell/oauth"
 	"github.com/fbsamples/fbrell/og"
 	"github.com/fbsamples/fbrell/og/viewog"
@@ -174,10 +175,11 @@ func main() {
 			HttpTransport: httpTransport,
 			Static:        static,
 		},
-		MockOauthHandler: &mockoauth.Handler{},
-		CAPISetupHandler: &capisetup.Handler{},
-		AdminHandler:     adminHandler,
-		SignedRequestMaxAge: signedRequestMaxAge,
+		MockOauthHandler:     &mockoauth.Handler{},
+		CAPISetupHandler:     &capisetup.Handler{},
+		JobsEasyApplyHandler: &jobseasyapply.Handler{},
+		AdminHandler:         adminHandler,
+		SignedRequestMaxAge:  signedRequestMaxAge,
 	}
 	if err := webHandler.Init(); err != nil {
 		logger.Fatal(err)

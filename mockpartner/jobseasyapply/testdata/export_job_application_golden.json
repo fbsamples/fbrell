@@ -1,0 +1,27 @@
+{
+  "type": "EXPORT_JOB_APPLICATION",
+  "appliedAt": 1750000000000,
+  "externalJobId": "",
+  "jobApplicant": "",
+  "jobApplicationId": "",
+  "questionResponses": {
+    "contactInformationQuestionResponses": {
+      "firstNameAnswer": {"value": "Jane"},
+      "lastNameAnswer": {"value": "Doe"},
+      "emailAnswer": {"value": "jane@example.com"},
+      "cellphoneNumberQuestionAnswer": {"countryCode": "", "nationalNumber": "5551234567"}
+    },
+    "resumeQuestionResponses": {
+      "resumeQuestionAnswer": {"mediaUrl": "https://example.com/resume.pdf", "mediaUrn": ""}
+    },
+    "additionalQuestionResponses": {
+      "customQuestionSetResponses": [
+        {
+          "customQuestionResponses": [
+            {"questionIdentifier": "q1", "answer": {"textAnswerValue": {"value": "answer1"}}}
+          ]
+        }
+      ]
+    }
+  }
+}
