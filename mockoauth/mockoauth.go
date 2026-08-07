@@ -22,10 +22,19 @@
 // Meta's 3P partner integration flows. Unlike the oauth package (where FBRell is
 // a client of Facebook's OAuth), here FBRell acts as the partner's OAuth provider.
 //
-// Two endpoints implement the authorization code grant (RFC 6749 §4.1):
+// Two endpoints are served:
 //   - GET/POST /mock-oauth/authorize — renders a consent screen and issues an
-//     authorization code on user approval.
-//   - POST /mock-oauth/token — exchanges an authorization code for an access token.
+//     authorization code on user approval (RFC 6749 §4.1).
+//   - POST /mock-oauth/token[/<use case>] — issues an access token, for either
+//     the authorization code grant (RFC 6749 §4.1.3) or the client credentials
+//     grant (RFC 6749 §4.4.2).
+//
+// The client credentials grant is for API clients that call the mock partner
+// endpoints as themselves, with no end user in the flow. Some such clients
+// cannot send the optional scope parameter, so the token endpoint takes an
+// optional use-case suffix naming the single scope to grant when the request
+// omits one — see useCaseScopes. The bare /mock-oauth/token defaults to no
+// scope.
 //
 // Codes and tokens are non-cryptographic, human-readable strings encoding the
 // client ID, granted scopes, and configurable behavior (valid/expired/invalid).
@@ -39,6 +48,7 @@
 package mockoauth
 
 import (
+	"cmp"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -53,10 +63,31 @@ import (
 const (
 	Path = "/mock-oauth/"
 
+	// tokenPath is the token endpoint. An optional further path segment selects
+	// the use case whose scope is granted by default; see useCaseScopes.
+	tokenPath = Path + "token"
+
 	// secretPrefix is the deterministic prefix used to derive the expected
 	// client_secret for a given client_id. See ValidateClient.
 	secretPrefix = "mock_secret_"
+
+	grantTypeAuthorizationCode = "authorization_code"
+	grantTypeClientCredentials = "client_credentials"
 )
+
+// useCaseScopes maps a token endpoint use-case suffix to the scope granted to a
+// client credentials token when the request omits the scope parameter. RFC 6749
+// §4.4.2 makes scope optional on that grant and lets the authorization server
+// apply a pre-defined default. Point a client that cannot send scope at the
+// endpoint for its use case, so its token stays as narrow as an explicitly
+// scoped one and every partner endpoint outside that use case still refuses it.
+//
+// Each key mirrors a mock partner's path segment, each value that partner's
+// RequiredScope.
+var useCaseScopes = map[string]string{
+	"capi-setup":      "write_capi_setup",
+	"jobs-easy-apply": "write_jobs_easy_apply",
+}
 
 var (
 	errMissingClientID          = errors.New("mock-oauth: missing client_id parameter")
@@ -71,15 +102,16 @@ var (
 	errMissingCode              = errors.New("mock-oauth: missing code parameter")
 	errInvalidCode              = errors.New("mock-oauth: invalid or malformed authorization code")
 	errExpiredCode              = errors.New("mock-oauth: authorization code has expired")
-	errInvalidGrantType         = errors.New("mock-oauth: grant_type must be authorization_code")
+	errInvalidGrantType         = errors.New(
+		"mock-oauth: grant_type must be authorization_code or client_credentials")
 	errInvalidClientIDChar      = errors.New("mock-oauth: client_id must not contain '|'")
 	errInvalidScopeChar         = errors.New("mock-oauth: scope values must not contain '|'")
 )
 
 // ValidateClient reports whether the given client_secret is correct for the
 // given client_id under the mock's deterministic, stateless secret format.
-// Configure your OAuth client (e.g. MC3P Authoring Tool) with the secret
-// `mock_secret_<client_id>` to authenticate against this mock.
+// Configure your OAuth client with the secret `mock_secret_<client_id>` to
+// authenticate against this mock.
 func ValidateClient(clientID, secret string) bool {
 	return secret == secretPrefix+clientID
 }
@@ -98,26 +130,45 @@ type Handler struct{}
 
 // Handle routes requests to the appropriate mock OAuth endpoint.
 func (a *Handler) Handle(w http.ResponseWriter, r *http.Request) error {
-	switch r.URL.Path {
-	case Path + "authorize":
+	if r.URL.Path == Path+"authorize" {
 		if r.Method == http.MethodPost {
 			return a.AuthorizeSubmit(w, r)
 		}
 		return a.AuthorizeForm(w, r)
-	case Path + "token":
+	}
+	if defaultScope, ok := tokenEndpointScope(r.URL.Path); ok {
 		if r.Method != http.MethodPost {
 			return writeError(w, http.StatusMethodNotAllowed, "invalid_request",
 				"mock-oauth: token endpoint requires POST")
 		}
-		return a.Token(w, r)
-	default:
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		return json.NewEncoder(w).Encode(map[string]string{
-			"error":             "unknown_endpoint",
-			"error_description": fmt.Sprintf("No mock-oauth endpoint at %s", r.URL.Path),
-		})
+		return a.Token(w, r, defaultScope)
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+	return json.NewEncoder(w).Encode(map[string]string{
+		"error":             "unknown_endpoint",
+		"error_description": fmt.Sprintf("No mock-oauth endpoint at %s", r.URL.Path),
+	})
+}
+
+// tokenEndpointScope reports the scope the token endpoint at path grants when a
+// client credentials request omits scope, and whether path is a token endpoint
+// at all. An unknown use-case suffix is not one, so a client configured with a
+// stale use case gets 404 rather than a silently unscoped token.
+func tokenEndpointScope(path string) (defaultScope string, ok bool) {
+	suffix, isToken := strings.CutPrefix(path, tokenPath)
+	if !isToken {
+		return "", false
+	}
+	if suffix == "" {
+		return "", true
+	}
+	useCase, hasSeparator := strings.CutPrefix(suffix, "/")
+	if !hasSeparator {
+		return "", false
+	}
+	defaultScope, ok = useCaseScopes[useCase]
+	return defaultScope, ok
 }
 
 // AuthorizeForm handles GET /mock-oauth/authorize.
@@ -270,12 +321,16 @@ func (a *Handler) AuthorizeSubmit(w http.ResponseWriter, r *http.Request) error 
 	return nil
 }
 
-// Token handles POST /mock-oauth/token.
-// Authenticates the client per RFC 6749 §2.3.1, then exchanges the mock
-// authorization code for a mock access token embedding the granted scopes.
-func (h *Handler) Token(w http.ResponseWriter, r *http.Request) error {
-	grantType := r.FormValue("grant_type")
-	if grantType != "" && grantType != "authorization_code" {
+// Token handles POST /mock-oauth/token. Authenticates the client per RFC 6749
+// §2.3.1, then issues an access token via the requested grant. An absent
+// grant_type is treated as authorization_code. defaultScope is granted to a
+// client credentials token whose request omits scope.
+//
+// grant_type is read with FormValue rather than PostFormValue because clients
+// may send it as a query parameter on the POST rather than in the body.
+func (h *Handler) Token(w http.ResponseWriter, r *http.Request, defaultScope string) error {
+	grantType := cmp.Or(r.FormValue("grant_type"), grantTypeAuthorizationCode)
+	if grantType != grantTypeAuthorizationCode && grantType != grantTypeClientCredentials {
 		return writeError(w, http.StatusBadRequest, "unsupported_grant_type", errInvalidGrantType.Error())
 	}
 
@@ -297,6 +352,40 @@ func (h *Handler) Token(w http.ResponseWriter, r *http.Request) error {
 		return writeError(w, http.StatusUnauthorized, "invalid_client", errInvalidClientCredentials.Error())
 	}
 
+	if grantType == grantTypeClientCredentials {
+		return h.clientCredentialsToken(w, r, clientID, defaultScope)
+	}
+	return h.authorizationCodeToken(w, r, clientID)
+}
+
+// clientCredentialsToken issues a token for the client credentials grant
+// (RFC 6749 §4.4). There is no resource owner and no authorization code, so the
+// token is minted directly from the already-authenticated client's identity.
+func (h *Handler) clientCredentialsToken(
+	w http.ResponseWriter,
+	r *http.Request,
+	clientID string,
+	defaultScope string,
+) error {
+	scope := r.FormValue("scope")
+	if strings.Contains(scope, "|") {
+		return writeError(w, http.StatusBadRequest, "invalid_request", errInvalidScopeChar.Error())
+	}
+	scope = cmp.Or(scope, defaultScope)
+
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(tokenResponse{
+		AccessToken: buildToken(clientID, scope),
+		TokenType:   "bearer",
+		ExpiresIn:   3600,
+		Scope:       scope,
+		// UserID is deliberately omitted: this grant has no resource owner.
+	})
+}
+
+// authorizationCodeToken exchanges a mock authorization code for a mock access
+// token embedding the scopes granted at the authorize step (RFC 6749 §4.1.3).
+func (h *Handler) authorizationCodeToken(w http.ResponseWriter, r *http.Request, clientID string) error {
 	code := r.FormValue("code")
 	if code == "" {
 		return writeError(w, http.StatusBadRequest, "invalid_request", errMissingCode.Error())

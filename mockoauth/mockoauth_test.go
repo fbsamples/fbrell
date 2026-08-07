@@ -8,6 +8,9 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/fbsamples/fbrell/mockpartner/capisetup"
+	"github.com/fbsamples/fbrell/mockpartner/jobseasyapply"
 )
 
 // validSecret returns a client_secret that ValidateClient will accept for the
@@ -29,11 +32,23 @@ func tokenForm(clientID string, extra map[string]string) url.Values {
 	return form
 }
 
-// newTokenRequest builds a POST /mock-oauth/token request from a url.Values.
-func newTokenRequest(form url.Values) *http.Request {
-	req := httptest.NewRequest("POST", Path+"token", strings.NewReader(form.Encode()))
+// newTokenRequestTo builds a form-encoded POST to the given token endpoint.
+func newTokenRequestTo(path string, form url.Values) *http.Request {
+	req := httptest.NewRequest("POST", path, strings.NewReader(form.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	return req
+}
+
+// newTokenRequest builds a POST /mock-oauth/token request from a url.Values.
+func newTokenRequest(form url.Values) *http.Request {
+	return newTokenRequestTo(tokenPath, form)
+}
+
+// newTokenQueryRequest builds a POST to the given token endpoint carrying its
+// parameters in the query string with an empty body. API clients doing the
+// client credentials grant commonly send grant_type this way.
+func newTokenQueryRequest(path string, query url.Values) *http.Request {
+	return httptest.NewRequest("POST", path+"?"+query.Encode(), nil)
 }
 
 func TestAuthorizeFormRendersConsentPage(t *testing.T) {
@@ -466,11 +481,11 @@ func TestTokenExchangeInvalidCode(t *testing.T) {
 	}
 }
 
-func TestTokenExchangeWrongGrantType(t *testing.T) {
+func TestTokenExchangeUnsupportedGrantType(t *testing.T) {
 	h := &Handler{}
 
 	form := tokenForm("123", map[string]string{
-		"grant_type": "client_credentials",
+		"grant_type": "refresh_token",
 		"code":       "mock_code|123|read|valid|12345",
 	})
 	w := httptest.NewRecorder()
@@ -488,6 +503,239 @@ func TestTokenExchangeWrongGrantType(t *testing.T) {
 	}
 	if resp["error"] != "unsupported_grant_type" {
 		t.Fatalf("got error %q, want %q", resp["error"], "unsupported_grant_type")
+	}
+}
+
+func TestClientCredentialsGrantWithScope(t *testing.T) {
+	h := &Handler{}
+
+	form := tokenForm("456", map[string]string{
+		"grant_type": "client_credentials",
+		"scope":      "write_jobs_easy_apply",
+	})
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, newTokenRequest(form)); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusOK {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusOK)
+	}
+
+	var resp tokenResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.AccessToken != "mock_token|456|write_jobs_easy_apply" {
+		t.Fatalf("got token %q, want %q", resp.AccessToken, "mock_token|456|write_jobs_easy_apply")
+	}
+	if resp.TokenType != "bearer" {
+		t.Fatalf("got token_type %q, want %q", resp.TokenType, "bearer")
+	}
+	if resp.ExpiresIn != 3600 {
+		t.Fatalf("got expires_in %d, want %d", resp.ExpiresIn, 3600)
+	}
+	if resp.Scope != "write_jobs_easy_apply" {
+		t.Fatalf("got scope %q, want %q", resp.Scope, "write_jobs_easy_apply")
+	}
+	// The client credentials grant has no resource owner, so no user is named.
+	if resp.UserID != "" {
+		t.Fatalf("got user_id %q, want empty", resp.UserID)
+	}
+}
+
+// An omitted scope must still yield a usable token — RFC 6749 §4.4.2 makes the
+// parameter optional and some API clients never send one. Each use-case
+// endpoint must grant its own scope and nothing more.
+func TestClientCredentialsGrantDefaultsScopePerUseCase(t *testing.T) {
+	for useCase, wantScope := range useCaseScopes {
+		t.Run(useCase, func(t *testing.T) {
+			h := &Handler{}
+
+			form := tokenForm("456", map[string]string{"grant_type": "client_credentials"})
+			w := httptest.NewRecorder()
+
+			if err := h.Handle(w, newTokenRequestTo(tokenPath+"/"+useCase, form)); err != nil {
+				t.Fatal(err)
+			}
+			if w.Code != http.StatusOK {
+				t.Fatalf("got status %d, want %d; body %s", w.Code, http.StatusOK, w.Body.String())
+			}
+
+			var resp tokenResponse
+			if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+				t.Fatal(err)
+			}
+			if resp.Scope != wantScope {
+				t.Fatalf("got scope %q, want %q", resp.Scope, wantScope)
+			}
+			want := "mock_token|456|" + wantScope
+			if resp.AccessToken != want {
+				t.Fatalf("got token %q, want %q", resp.AccessToken, want)
+			}
+		})
+	}
+}
+
+// Without a use case there is nothing to infer a default from, so the token
+// carries no scope and every partner endpoint refuses it.
+func TestClientCredentialsGrantWithoutUseCaseGrantsNoScope(t *testing.T) {
+	h := &Handler{}
+
+	form := tokenForm("456", map[string]string{"grant_type": "client_credentials"})
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, newTokenRequest(form)); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusOK {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusOK)
+	}
+
+	var resp tokenResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.Scope != "" {
+		t.Fatalf("got scope %q, want empty", resp.Scope)
+	}
+	if resp.AccessToken != "mock_token|456|noscope" {
+		t.Fatalf("got token %q, want %q", resp.AccessToken, "mock_token|456|noscope")
+	}
+}
+
+// A client pointed at a use case the mock does not serve must fail loudly
+// rather than receive a token that no partner endpoint will accept.
+func TestClientCredentialsGrantUnknownUseCase(t *testing.T) {
+	h := &Handler{}
+
+	form := tokenForm("456", map[string]string{"grant_type": "client_credentials"})
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, newTokenRequestTo(tokenPath+"/not-a-use-case", form)); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusNotFound)
+	}
+
+	var resp map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp["error"] != "unknown_endpoint" {
+		t.Fatalf("got error %q, want %q", resp["error"], "unknown_endpoint")
+	}
+}
+
+// A use case's default is only useful if it matches what that partner enforces.
+func TestUseCaseScopesMatchMockPartners(t *testing.T) {
+	want := map[string]string{
+		"capi-setup":      capisetup.RequiredScope,
+		"jobs-easy-apply": jobseasyapply.RequiredScope,
+	}
+	for useCase, wantScope := range want {
+		if got := useCaseScopes[useCase]; got != wantScope {
+			t.Errorf("useCaseScopes[%q] = %q, want %q", useCase, got, wantScope)
+		}
+	}
+	if len(useCaseScopes) != len(want) {
+		t.Errorf("useCaseScopes has %d entries, want %d", len(useCaseScopes), len(want))
+	}
+}
+
+// Pins the wire shape used by API clients that send grant_type as a query
+// parameter on the POST, authenticate with HTTP Basic, and send no body at all.
+func TestClientCredentialsGrantQueryParamAndBasicAuth(t *testing.T) {
+	h := &Handler{}
+
+	query := url.Values{}
+	query.Set("grant_type", "client_credentials")
+	req := newTokenQueryRequest(tokenPath+"/jobs-easy-apply", query)
+	req.SetBasicAuth("789", validSecret("789"))
+
+	w := httptest.NewRecorder()
+	if err := h.Handle(w, req); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusOK {
+		t.Fatalf("got status %d, want %d; body %s", w.Code, http.StatusOK, w.Body.String())
+	}
+
+	var resp tokenResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	want := "mock_token|789|" + jobseasyapply.RequiredScope
+	if resp.AccessToken != want {
+		t.Fatalf("got token %q, want %q", resp.AccessToken, want)
+	}
+}
+
+func TestClientCredentialsGrantWrongClientSecret(t *testing.T) {
+	h := &Handler{}
+
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+	form.Set("client_id", "456")
+	form.Set("client_secret", "wrong_secret")
+
+	w := httptest.NewRecorder()
+	if err := h.Handle(w, newTokenRequest(form)); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusUnauthorized)
+	}
+
+	var resp map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp["error"] != "invalid_client" {
+		t.Fatalf("got error %q, want %q", resp["error"], "invalid_client")
+	}
+}
+
+func TestClientCredentialsGrantMissingCredentials(t *testing.T) {
+	h := &Handler{}
+
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+
+	w := httptest.NewRecorder()
+	if err := h.Handle(w, newTokenRequest(form)); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusUnauthorized)
+	}
+}
+
+// The pipe is the token's field separator, so it must be rejected here exactly
+// as it is on the authorize path.
+func TestClientCredentialsGrantScopeWithPipe(t *testing.T) {
+	h := &Handler{}
+
+	form := tokenForm("456", map[string]string{
+		"grant_type": "client_credentials",
+		"scope":      "write_jobs_easy_apply|injected",
+	})
+	w := httptest.NewRecorder()
+
+	if err := h.Handle(w, newTokenRequest(form)); err != nil {
+		t.Fatal(err)
+	}
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusBadRequest)
+	}
+
+	var resp map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp["error"] != "invalid_request" {
+		t.Fatalf("got error %q, want %q", resp["error"], "invalid_request")
 	}
 }
 
