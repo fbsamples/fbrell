@@ -12,8 +12,6 @@ github.com/daaku/go.h.js.fb v0.0.0-20160819071028-bcc6589ae73c h1:BrWJtv3OWawb5q
 github.com/daaku/go.h.js.fb v0.0.0-20160819071028-bcc6589ae73c/go.mod h1:OfJZr86pr6KftGF9QpSaBib2Q0SFpnqZec4Op9pMy1c=
 github.com/daaku/go.h.js.ga v0.0.0-20160819071048-736eab92ff5f h1:EQwgSZGPXAoCltHnvzwl0XMIRc+yoAPU7nRzalvYXDY=
 github.com/daaku/go.h.js.ga v0.0.0-20160819071048-736eab92ff5f/go.mod h1:9yS/3twDLPsh7/6tHX87SI/fXnDjIyJeKInS/0afsQY=
-github.com/daaku/go.h.ui v0.0.0-20160819062614-81953c79c3f5 h1:obaIPRrgoWBsBEQlFBdqkin27HE/M5EZiCgUswryxBI=
-github.com/daaku/go.h.ui v0.0.0-20160819062614-81953c79c3f5/go.mod h1:aEAb+vDQRmI4/axqQpF8gHPOh5qyHh7Z2ipKwAOjQBQ=
 github.com/daaku/go.htmlwriter v0.0.0-20150220215715-94418e34369a h1:iELZCJqysNN3w8gfP6M3o7SkjeQwwNtegunqcQPpfP8=
 github.com/daaku/go.htmlwriter v0.0.0-20150220215715-94418e34369a/go.mod h1:YrFqKFngAg7TT1csPIo7mPYhE1owK5ke8mKe52B3ZrU=
 github.com/daaku/go.httpdev v0.0.0-20160819064251-754fc1f95b84 h1:Ce2U/q2uta0HSeoiaaf5Tm/S9DC82q9N/3LuV639DRU=
@@ -66,7 +64,7 @@ github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da h1:oI5xCqsCo564l
 github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
 github.com/julienschmidt/httprouter v1.3.0 h1:U0609e9tgbseu3rBINet9P48AI/D3oJs4dN7jwJOQ1U=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
-golang.org/x/net v0.38.0 h1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=
-golang.org/x/net v0.38.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
-golang.org/x/sys v0.31.0 h1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=
-golang.org/x/sys v0.31.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
+golang.org/x/net v0.55.0 h1:bcvxaJn3e1U6InsFWt1JUq1aSjnRxLzT2rtD2KfkDF8=
+golang.org/x/net v0.55.0/go.mod h1:L5U2KuzuOe1lY7Z+aWVIKK6qEeJXnXV9yzGA+WCHJww=
+golang.org/x/sys v0.45.0 h1:dO4czNzziLiiXplLQgBCEpCvXQ3dnkn0SdaZSYdQ+FY=
+golang.org/x/sys v0.45.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=

@@ -1,6 +1,6 @@
 module github.com/fbsamples/fbrell
 
-go 1.23.0
+go 1.25.0
 
 require (
 	github.com/daaku/ctxerr v0.0.0-20160819070907-509c438ca2ac
@@ -10,7 +10,6 @@ require (
 	github.com/daaku/go.h v0.0.0-20160816070040-732cb10c117f
 	github.com/daaku/go.h.js.fb v0.0.0-20160819071028-bcc6589ae73c
 	github.com/daaku/go.h.js.ga v0.0.0-20160819071048-736eab92ff5f
-	github.com/daaku/go.h.ui v0.0.0-20160819062614-81953c79c3f5
 	github.com/daaku/go.htmlwriter v0.0.0-20150220215715-94418e34369a
 	github.com/daaku/go.httpdev v0.0.0-20160819064251-754fc1f95b84
 	github.com/daaku/go.signedrequest v0.0.0-20150303070345-4727901abbda
@@ -40,6 +39,6 @@ require (
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 )
