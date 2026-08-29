@@ -28,12 +28,16 @@
 // e.g. with curl or from Go tests:
 //
 //   - POST /mock-partner/jobs-easy-apply/submit_application
-//     happy path — returns {"applicationId": "..."} at HTTP 200.
+//     happy path — returns {"applicationId": "..."} at HTTP 200, carrying a
+//     "booking" as well when the application picked an interview time.
 //   - POST /mock-partner/jobs-easy-apply/submit_application/client_error
 //     partner rejects a well-formed request — HTTP 422.
 //   - POST /mock-partner/jobs-easy-apply/submit_application/delivery_error
 //     partner accepts (HTTP 200) but reports a semantic delivery failure in the
 //     body — {"applicationDeliveryError": "..."}.
+//   - POST /mock-partner/jobs-easy-apply/submit_application/booking_error
+//     partner cannot book the interview time the application picked, which
+//     fails the submission as a whole — HTTP 422.
 //   - POST /mock-partner/jobs-easy-apply/submit_application/server_error
 //     partner-side failure — HTTP 500.
 //   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup
@@ -83,6 +87,17 @@ const mockApplicationID = "mock-application-id"
 // scenario (HTTP 200 body, not an HTTP error).
 const mockDeliveryError = "expired_token"
 
+// mockBookingID is the partner-assigned booking id returned for an application
+// that picked an interview time, and mockBookingStatus the state it comes back
+// in.
+const (
+	mockBookingID     = "mock-booking-id"
+	mockBookingStatus = "CONFIRMED"
+)
+
+// mockBookingFailure is the error code returned by the booking_error scenario.
+const mockBookingFailure = "BOOKING_FAILURE_SLOT_ALREADY_BOOKED_BY_USER"
+
 var (
 	errMissingFirstName  = errors.New("jobseasyapply: missing firstNameAnswer.value")
 	errMissingLastName   = errors.New("jobseasyapply: missing lastNameAnswer.value")
@@ -121,6 +136,8 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) error {
 		return h.submit(w, r, http.StatusUnprocessableEntity, scenarioClientError)
 	case Path + "submit_application/delivery_error":
 		return h.submit(w, r, http.StatusOK, scenarioDeliveryError)
+	case Path + "submit_application/booking_error":
+		return h.submit(w, r, http.StatusUnprocessableEntity, scenarioBookingError)
 	case Path + "submit_application/server_error":
 		// A 5xx models a partner-side failure that can occur regardless of the
 		// request body, so it short-circuits before decode/validation.
@@ -147,6 +164,7 @@ const (
 	scenarioSuccess scenario = iota
 	scenarioClientError
 	scenarioDeliveryError
+	scenarioBookingError
 )
 
 // submit handles the POST scenarios that operate on a well-formed application:
@@ -175,10 +193,26 @@ func (h *Handler) submit(w http.ResponseWriter, r *http.Request, status int, s s
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
 		return json.NewEncoder(w).Encode(DeliveryErrorResponse{ApplicationDeliveryError: mockDeliveryError})
-	default: // scenarioSuccess
+	case scenarioBookingError:
+		// An interview time that cannot be booked fails the whole submission, so
+		// no application is recorded either.
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
-		return json.NewEncoder(w).Encode(SubmitApplicationResponse{ApplicationID: mockApplicationID})
+		return json.NewEncoder(w).Encode(SubmitApplicationErrorResponse{
+			Errors: []ApplicationDeliveryError{{ErrorCode: mockBookingFailure}},
+		})
+	default: // scenarioSuccess
+		resp := SubmitApplicationResponse{ApplicationID: mockApplicationID}
+		if req.InterviewSlot != nil {
+			// The mock reserves nothing, so every application that picked an
+			// interview time gets the same booking back — which is also what the
+			// idempotency token asks for, since a redelivered application must
+			// name the booking its first attempt made rather than a second one.
+			resp.Booking = &Booking{BookingID: mockBookingID, Status: mockBookingStatus}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		return json.NewEncoder(w).Encode(resp)
 	}
 }
 
@@ -207,6 +241,14 @@ type SubmitApplicationRequest struct {
 	JobApplicant      string            `json:"jobApplicant"`
 	JobApplicationID  string            `json:"jobApplicationId"`
 	QuestionResponses QuestionResponses `json:"questionResponses"`
+	// InterviewSlot is the interview time the candidate picked while applying,
+	// one of the slots the availability lookup offered. Absent when the
+	// application books no interview.
+	InterviewSlot *SlotTime `json:"interview_slot,omitempty"`
+	// IdempotencyToken identifies the submission across the retries a failed
+	// delivery earns it, so a redelivery books one interview rather than one per
+	// attempt.
+	IdempotencyToken string `json:"idempotency_token,omitempty"`
 }
 
 // QuestionResponses groups the applicant's answers by section.
@@ -271,10 +313,30 @@ type CustomAnswer struct {
 // SubmitApplicationResponse is the happy-path response body.
 type SubmitApplicationResponse struct {
 	ApplicationID string `json:"applicationId"`
+	// Booking is the interview reserved for an application that picked a time,
+	// omitted when it picked none.
+	Booking *Booking `json:"booking,omitempty"`
+}
+
+// Booking is an interview reservation on the partner's side.
+type Booking struct {
+	BookingID string `json:"booking_id"`
+	Status    string `json:"status"`
 }
 
 // DeliveryErrorResponse is the HTTP-200 semantic-failure body returned by the
 // delivery_error scenario.
 type DeliveryErrorResponse struct {
 	ApplicationDeliveryError string `json:"applicationDeliveryError"`
+}
+
+// SubmitApplicationErrorResponse is the body of a submission the partner
+// refused, returned at a non-200 status.
+type SubmitApplicationErrorResponse struct {
+	Errors []ApplicationDeliveryError `json:"errors"`
+}
+
+// ApplicationDeliveryError is one reason a submission was refused.
+type ApplicationDeliveryError struct {
+	ErrorCode string `json:"errorCode"`
 }

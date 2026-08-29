@@ -29,6 +29,26 @@ const validBody = `{
   }
 }`
 
+// bodyWithSlot is a well-formed application that also picked an interview time.
+const bodyWithSlot = `{
+  "type": "EXPORT_JOB_APPLICATION",
+  "appliedAt": 1750000000000,
+  "externalJobId": "job-1234",
+  "jobApplicant": "",
+  "jobApplicationId": "",
+  "questionResponses": {
+    "contactInformationQuestionResponses": {
+      "firstNameAnswer": {"value": "Jane"},
+      "lastNameAnswer": {"value": "Doe"},
+      "emailAnswer": {"value": "jane@example.com"}
+    }
+  },
+  "interview_slot": {"merchant_id": "job-1234", "start_sec": 1750000000, "duration_sec": 1800},
+  "idempotency_token": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}`
+
+// post sends a request through a clock-pinned handler and returns the recorded
+// response.
 func post(t *testing.T, path, body, auth string) *httptest.ResponseRecorder {
 	t.Helper()
 	req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
@@ -54,6 +74,46 @@ func TestSubmitApplicationSuccess(t *testing.T) {
 	}
 	if resp.ApplicationID == "" {
 		t.Fatal("expected a non-empty applicationId")
+	}
+	if resp.Booking != nil {
+		t.Fatal("expected no booking for an application that picked no interview time")
+	}
+}
+
+func TestSubmitApplicationWithInterviewSlot(t *testing.T) {
+	w := post(t, Path+"submit_application", bodyWithSlot, validToken)
+	if w.Code != http.StatusOK {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusOK)
+	}
+	var resp SubmitApplicationResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if resp.Booking == nil {
+		t.Fatal("expected a booking")
+	}
+	if resp.Booking.BookingID == "" {
+		t.Error("expected a non-empty booking_id")
+	}
+	if resp.Booking.Status != mockBookingStatus {
+		t.Errorf("got status %q, want %q", resp.Booking.Status, mockBookingStatus)
+	}
+}
+
+func TestSubmitApplicationBookingError(t *testing.T) {
+	w := post(t, Path+"submit_application/booking_error", bodyWithSlot, validToken)
+	if w.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("got status %d, want %d", w.Code, http.StatusUnprocessableEntity)
+	}
+	var resp SubmitApplicationErrorResponse
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatal(err)
+	}
+	if len(resp.Errors) != 1 {
+		t.Fatalf("got %d errors, want 1", len(resp.Errors))
+	}
+	if resp.Errors[0].ErrorCode != mockBookingFailure {
+		t.Errorf("got error code %q, want %q", resp.Errors[0].ErrorCode, mockBookingFailure)
 	}
 }
 
