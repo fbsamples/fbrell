@@ -20,9 +20,10 @@
 
 // Package jobseasyapply implements mock partner API endpoints for a Jobs Easy
 // Apply submit-to-partner flow. It provides a partner-shaped HTTP target that
-// accepts a job-application submission and returns partner-style responses.
+// accepts a job-application submission and returns partner-style responses, and
+// booking endpoints for scheduling the interview that can follow it.
 //
-// One logical endpoint exposes scenario-selectable behavior chosen by sub-path
+// Each logical endpoint exposes scenario-selectable behavior chosen by sub-path
 // (rather than a query parameter), so each outcome is reachable over plain HTTP,
 // e.g. with curl or from Go tests:
 //
@@ -34,6 +35,15 @@
 //     partner accepts (HTTP 200) but reports a semantic delivery failure in the
 //     body — {"applicationDeliveryError": "..."}.
 //   - POST /mock-partner/jobs-easy-apply/submit_application/server_error
+//     partner-side failure — HTTP 500.
+//   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup
+//     happy path — returns the job posting's interview slots and their
+//     availability. The wire calls a job posting a merchant.
+//   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup/all_unavailable
+//     every slot the posting offers is taken.
+//   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup/empty
+//     the posting offers no slots at all.
+//   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup/server_error
 //     partner-side failure — HTTP 500.
 //
 // Each scenario returns a plain partner body at the appropriate HTTP status,
@@ -49,6 +59,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"time"
 
 	"github.com/fbsamples/fbrell/mockpartner"
 )
@@ -80,7 +91,18 @@ var (
 )
 
 // Handler serves mock Jobs Easy Apply partner API endpoints.
-type Handler struct{}
+type Handler struct {
+	// Now lets tests pin the generated interview inventory to a fixed clock.
+	// When nil, time.Now is used.
+	Now func() time.Time
+}
+
+func (h *Handler) now() time.Time {
+	if h.Now != nil {
+		return h.Now()
+	}
+	return time.Now()
+}
 
 // Handle routes requests to the appropriate Jobs Easy Apply scenario endpoint.
 func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) error {
@@ -102,6 +124,15 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) error {
 	case Path + "submit_application/server_error":
 		// A 5xx models a partner-side failure that can occur regardless of the
 		// request body, so it short-circuits before decode/validation.
+		return mockpartner.WriteError(w, http.StatusInternalServerError, "internal_error",
+			"jobseasyapply: simulated partner server error")
+	case Path + "interview/availability-lookup":
+		return h.availabilityLookup(w, r, inventoryNormal)
+	case Path + "interview/availability-lookup/all_unavailable":
+		return h.availabilityLookup(w, r, inventoryAllUnavailable)
+	case Path + "interview/availability-lookup/empty":
+		return h.availabilityLookup(w, r, inventoryEmpty)
+	case Path + "interview/availability-lookup/server_error":
 		return mockpartner.WriteError(w, http.StatusInternalServerError, "internal_error",
 			"jobseasyapply: simulated partner server error")
 	default:

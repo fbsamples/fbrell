@@ -37,7 +37,7 @@ func post(t *testing.T, path, body, auth string) *httptest.ResponseRecorder {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
-	if err := (&Handler{}).Handle(w, req); err != nil {
+	if err := testHandler().Handle(w, req); err != nil {
 		t.Fatal(err)
 	}
 	return w
@@ -90,7 +90,7 @@ func TestSubmitApplicationRejectsGet(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, Path+"submit_application", nil)
 	req.Header.Set("Authorization", validToken)
 	w := httptest.NewRecorder()
-	if err := (&Handler{}).Handle(w, req); err != nil {
+	if err := testHandler().Handle(w, req); err != nil {
 		t.Fatal(err)
 	}
 	if w.Code != http.StatusMethodNotAllowed {
