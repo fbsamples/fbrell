@@ -29,15 +29,15 @@ import (
 	"github.com/fbsamples/fbrell/mockpartner"
 )
 
-// The interview endpoints speak the Booking Server wire vocabulary, which is
-// generic across verticals: a "merchant" here is the job posting that owns the
-// interview slots. Nothing tells two slots at the same start time apart, so a
-// posting cannot offer overlapping slots and merchant plus start time keys one.
+// The interview endpoints speak the Booking Server wire vocabulary, where a
+// slot belongs to the job posting it books an interview for. Nothing tells two
+// slots at the same start time apart, so a posting cannot offer overlapping
+// slots and external_job_id plus start_timestamp keys one.
 
 type SlotTime struct {
-	MerchantID  string `json:"merchant_id"`
-	StartSec    int64  `json:"start_sec"`
-	DurationSec int64  `json:"duration_sec,omitempty"`
+	ExternalJobID  string `json:"external_job_id"`
+	StartTimestamp int64  `json:"start_timestamp"`
+	DurationSec    int64  `json:"duration_sec,omitempty"`
 }
 
 // Mock inventory shape. Generated slots are deterministic for a given clock.
@@ -69,7 +69,7 @@ type slot struct {
 // buildInventory generates a job posting's slots in ascending start order,
 // filling each business day of the inventoryDays window that opens the day
 // after the handler's clock.
-func (h *Handler) buildInventory(merchantID string, mode inventoryMode) []slot {
+func (h *Handler) buildInventory(externalJobID string, mode inventoryMode) []slot {
 	if mode == inventoryEmpty {
 		return nil
 	}
@@ -86,9 +86,9 @@ func (h *Handler) buildInventory(merchantID string, mode inventoryMode) []slot {
 				n := len(slots)
 				slots = append(slots, slot{
 					slotTime: SlotTime{
-						MerchantID:  merchantID,
-						StartSec:    day.Add(time.Duration(i) * slotStrideSec * time.Second).Unix(),
-						DurationSec: durationSecFor(n),
+						ExternalJobID:  externalJobID,
+						StartTimestamp: day.Add(time.Duration(i) * slotStrideSec * time.Second).Unix(),
+						DurationSec:    durationSecFor(n),
 					},
 					available: mode == inventoryNormal && n%unavailableEvery != unavailableEvery-1,
 				})
@@ -113,13 +113,13 @@ func isWeekend(t time.Time) bool {
 	return d == time.Saturday || d == time.Sunday
 }
 
-var errMissingMerchantID = errors.New("jobseasyapply: merchant_id is required")
+var errMissingExternalJobID = errors.New("jobseasyapply: external_job_id is required")
 
 type AvailabilityLookupRequest struct {
-	MerchantID    string     `json:"merchant_id"`
-	SlotTime      []SlotTime `json:"slot_time,omitzero"`
-	StartSecFrom  int64      `json:"start_sec_from,omitempty"`
-	StartSecUntil int64      `json:"start_sec_until,omitempty"`
+	ExternalJobID       string     `json:"external_job_id"`
+	SlotTime            []SlotTime `json:"slot_time,omitzero"`
+	StartTimestampFrom  int64      `json:"start_timestamp_from,omitempty"`
+	StartTimestampUntil int64      `json:"start_timestamp_until,omitempty"`
 }
 
 type AvailabilityLookupResponse struct {
@@ -143,13 +143,13 @@ func (h *Handler) availabilityLookup(w http.ResponseWriter, r *http.Request, mod
 		return mockpartner.WriteError(w, http.StatusBadRequest, "invalid_request",
 			"jobseasyapply: invalid JSON body")
 	}
-	if req.MerchantID == "" {
+	if req.ExternalJobID == "" {
 		return mockpartner.WriteError(w, http.StatusBadRequest, "invalid_request",
-			errMissingMerchantID.Error())
+			errMissingExternalJobID.Error())
 	}
 
 	available := make([]SlotTimeAvailability, 0)
-	for _, s := range h.buildInventory(req.MerchantID, mode) {
+	for _, s := range h.buildInventory(req.ExternalJobID, mode) {
 		if !matchesFilters(s.slotTime, &req) {
 			continue
 		}
@@ -166,10 +166,10 @@ func (h *Handler) availabilityLookup(w http.ResponseWriter, r *http.Request, mod
 
 // matchesFilters reports whether a slot satisfies every filter set on the request.
 func matchesFilters(s SlotTime, req *AvailabilityLookupRequest) bool {
-	if req.StartSecFrom != 0 && s.StartSec < req.StartSecFrom {
+	if req.StartTimestampFrom != 0 && s.StartTimestamp < req.StartTimestampFrom {
 		return false
 	}
-	if req.StartSecUntil != 0 && s.StartSec > req.StartSecUntil {
+	if req.StartTimestampUntil != 0 && s.StartTimestamp > req.StartTimestampUntil {
 		return false
 	}
 	if len(req.SlotTime) == 0 {
@@ -186,7 +186,7 @@ func matchesFilters(s SlotTime, req *AvailabilityLookupRequest) bool {
 // requestedSlotMatches reports whether an inventory slot is the one a caller
 // named in slot_time.
 func requestedSlotMatches(want, have SlotTime) bool {
-	if want.MerchantID != have.MerchantID || want.StartSec != have.StartSec {
+	if want.ExternalJobID != have.ExternalJobID || want.StartTimestamp != have.StartTimestamp {
 		return false
 	}
 	return want.DurationSec == 0 || want.DurationSec == have.DurationSec

@@ -42,7 +42,7 @@
 //     partner-side failure — HTTP 500.
 //   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup
 //     happy path — returns the job posting's interview slots and their
-//     availability. The wire calls a job posting a merchant.
+//     availability.
 //   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup/all_unavailable
 //     every slot the posting offers is taken.
 //   - POST /mock-partner/jobs-easy-apply/interview/availability-lookup/empty

@@ -1,12 +1,12 @@
 {
-  "merchant_id": "job-1234",
+  "external_job_id": "job-1234",
   "slot_time": [
     {
-      "merchant_id": "job-1234",
-      "start_sec": 1750000000,
+      "external_job_id": "job-1234",
+      "start_timestamp": 1750000000,
       "duration_sec": 1800
     }
   ],
-  "start_sec_from": 1749999000,
-  "start_sec_until": 1750100000
+  "start_timestamp_from": 1749999000,
+  "start_timestamp_until": 1750100000
 }
