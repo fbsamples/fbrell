@@ -17,7 +17,7 @@ const validToken = "Bearer mock_token|test_app|write_jobs_easy_apply"
 const validBody = `{
   "type": "EXPORT_JOB_APPLICATION",
   "appliedAt": 1750000000000,
-  "externalJobId": "",
+  "externalJobId": "1983664855648430",
   "jobApplicant": "",
   "jobApplicationId": "",
   "questionResponses": {
