@@ -123,7 +123,7 @@ type AvailabilityLookupRequest struct {
 }
 
 type AvailabilityLookupResponse struct {
-	AvailableSlotTime []SlotTimeAvailability `json:"available_slot_time"`
+	SlotTimeAvailability []SlotTimeAvailability `json:"slot_time_availability"`
 }
 
 type SlotTimeAvailability struct {
@@ -161,7 +161,7 @@ func (h *Handler) availabilityLookup(w http.ResponseWriter, r *http.Request, mod
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	return json.NewEncoder(w).Encode(AvailabilityLookupResponse{AvailableSlotTime: available})
+	return json.NewEncoder(w).Encode(AvailabilityLookupResponse{SlotTimeAvailability: available})
 }
 
 // matchesFilters reports whether a slot satisfies every filter set on the request.

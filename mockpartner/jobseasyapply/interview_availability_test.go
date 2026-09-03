@@ -46,10 +46,10 @@ func TestInterviewAvailabilityLookupSuccess(t *testing.T) {
 	}
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != wantSlotCount {
-		t.Fatalf("got %d slots, want %d", len(resp.AvailableSlotTime), wantSlotCount)
+	if len(resp.SlotTimeAvailability) != wantSlotCount {
+		t.Fatalf("got %d slots, want %d", len(resp.SlotTimeAvailability), wantSlotCount)
 	}
-	first := resp.AvailableSlotTime[0]
+	first := resp.SlotTimeAvailability[0]
 	if first.SlotTime.StartTimestamp != firstSlotStart {
 		t.Fatalf("got first start_timestamp %d, want %d", first.SlotTime.StartTimestamp, firstSlotStart)
 	}
@@ -59,7 +59,7 @@ func TestInterviewAvailabilityLookupSuccess(t *testing.T) {
 	if first.SlotTime.DurationSec != slotDurationSec {
 		t.Fatalf("got duration_sec %d, want %d", first.SlotTime.DurationSec, slotDurationSec)
 	}
-	last := resp.AvailableSlotTime[len(resp.AvailableSlotTime)-1]
+	last := resp.SlotTimeAvailability[len(resp.SlotTimeAvailability)-1]
 	if last.SlotTime.StartTimestamp != lastSlotStart {
 		t.Fatalf("got last start_timestamp %d, want %d", last.SlotTime.StartTimestamp, lastSlotStart)
 	}
@@ -71,7 +71,7 @@ func TestInterviewAvailabilityLookupSpansBusinessDays(t *testing.T) {
 
 	perDay := make(map[string]int)
 	var prev int64
-	for _, s := range resp.AvailableSlotTime {
+	for _, s := range resp.SlotTimeAvailability {
 		start := time.Unix(s.SlotTime.StartTimestamp, 0).UTC()
 		if isWeekend(start) {
 			t.Fatalf("slot at %s falls on a %s, want business days only", start, start.Weekday())
@@ -113,10 +113,10 @@ func TestInterviewAvailabilityLookupBusinessDayHours(t *testing.T) {
 	}
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != len(want) {
-		t.Fatalf("got %d slots on the first day, want %d", len(resp.AvailableSlotTime), len(want))
+	if len(resp.SlotTimeAvailability) != len(want) {
+		t.Fatalf("got %d slots on the first day, want %d", len(resp.SlotTimeAvailability), len(want))
 	}
-	for i, s := range resp.AvailableSlotTime {
+	for i, s := range resp.SlotTimeAvailability {
 		if s.SlotTime.StartTimestamp != want[i] {
 			t.Errorf("slot %d starts at %s, want %s", i,
 				time.Unix(s.SlotTime.StartTimestamp, 0).UTC(), time.Unix(want[i], 0).UTC())
@@ -130,17 +130,17 @@ func TestInterviewAvailabilityLookupOmitsSomeDurations(t *testing.T) {
 	w := post(t, Path+"interview/availability-lookup", `{"external_job_id":"job-1234"}`, validToken)
 
 	var body struct {
-		AvailableSlotTime []struct {
+		SlotTimeAvailability []struct {
 			SlotTime map[string]json.RawMessage `json:"slot_time"`
-		} `json:"available_slot_time"`
+		} `json:"slot_time_availability"`
 	}
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
 		t.Fatal(err)
 	}
-	if len(body.AvailableSlotTime) != wantSlotCount {
-		t.Fatalf("got %d slots, want %d", len(body.AvailableSlotTime), wantSlotCount)
+	if len(body.SlotTimeAvailability) != wantSlotCount {
+		t.Fatalf("got %d slots, want %d", len(body.SlotTimeAvailability), wantSlotCount)
 	}
-	for i, s := range body.AvailableSlotTime {
+	for i, s := range body.SlotTimeAvailability {
 		_, got := s.SlotTime["duration_sec"]
 		want := i%omitDurationEvery != omitDurationEvery-1
 		if got != want {
@@ -159,12 +159,12 @@ func TestInterviewAvailabilityLookupResponseShape(t *testing.T) {
 		t.Fatal(err)
 	}
 	for field := range body {
-		if field != "available_slot_time" {
-			t.Errorf("unexpected response field %q; the spec defines only available_slot_time", field)
+		if field != "slot_time_availability" {
+			t.Errorf("unexpected response field %q; the spec defines only slot_time_availability", field)
 		}
 	}
-	if _, ok := body["available_slot_time"]; !ok {
-		t.Error("response is missing available_slot_time")
+	if _, ok := body["slot_time_availability"]; !ok {
+		t.Error("response is missing slot_time_availability")
 	}
 }
 
@@ -173,7 +173,7 @@ func TestInterviewAvailabilityLookupReportsUnavailableSlots(t *testing.T) {
 	resp := decodeLookup(t, w.Body.Bytes())
 
 	var available, unavailable int
-	for _, s := range resp.AvailableSlotTime {
+	for _, s := range resp.SlotTimeAvailability {
 		if s.Available {
 			available++
 		} else {
@@ -193,10 +193,10 @@ func TestInterviewAvailabilityLookupAllUnavailable(t *testing.T) {
 	}
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != wantSlotCount {
-		t.Fatalf("got %d slots, want %d", len(resp.AvailableSlotTime), wantSlotCount)
+	if len(resp.SlotTimeAvailability) != wantSlotCount {
+		t.Fatalf("got %d slots, want %d", len(resp.SlotTimeAvailability), wantSlotCount)
 	}
-	for _, s := range resp.AvailableSlotTime {
+	for _, s := range resp.SlotTimeAvailability {
 		if s.Available {
 			t.Fatalf("slot at %d is available, want every slot taken", s.SlotTime.StartTimestamp)
 		}
@@ -210,12 +210,12 @@ func TestInterviewAvailabilityLookupEmpty(t *testing.T) {
 	}
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != 0 {
-		t.Fatalf("got %d slots, want none", len(resp.AvailableSlotTime))
+	if len(resp.SlotTimeAvailability) != 0 {
+		t.Fatalf("got %d slots, want none", len(resp.SlotTimeAvailability))
 	}
 	// An empty list must serialize as [] rather than null so clients can iterate
 	// it without a nil check.
-	if !bytes.Contains(w.Body.Bytes(), []byte(`"available_slot_time":[]`)) {
+	if !bytes.Contains(w.Body.Bytes(), []byte(`"slot_time_availability":[]`)) {
 		t.Fatalf("expected an empty JSON array, got %s", w.Body.String())
 	}
 }
@@ -227,10 +227,10 @@ func TestInterviewAvailabilityLookupFiltersByStartTimestampFrom(t *testing.T) {
 	w := post(t, Path+"interview/availability-lookup", body, validToken)
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != wantSlotCount-2 {
-		t.Fatalf("got %d slots, want %d", len(resp.AvailableSlotTime), wantSlotCount-2)
+	if len(resp.SlotTimeAvailability) != wantSlotCount-2 {
+		t.Fatalf("got %d slots, want %d", len(resp.SlotTimeAvailability), wantSlotCount-2)
 	}
-	for _, s := range resp.AvailableSlotTime {
+	for _, s := range resp.SlotTimeAvailability {
 		if s.SlotTime.StartTimestamp < from {
 			t.Fatalf("slot at %d starts before the requested lower bound %d", s.SlotTime.StartTimestamp, from)
 		}
@@ -247,10 +247,10 @@ func TestInterviewAvailabilityLookupFiltersToAWindow(t *testing.T) {
 	w := post(t, Path+"interview/availability-lookup", body, validToken)
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != 2*slotsPerDay {
-		t.Fatalf("got %d slots, want %d", len(resp.AvailableSlotTime), 2*slotsPerDay)
+	if len(resp.SlotTimeAvailability) != 2*slotsPerDay {
+		t.Fatalf("got %d slots, want %d", len(resp.SlotTimeAvailability), 2*slotsPerDay)
 	}
-	for _, s := range resp.AvailableSlotTime {
+	for _, s := range resp.SlotTimeAvailability {
 		start := time.Unix(s.SlotTime.StartTimestamp, 0).UTC()
 		if start.Before(from) || start.After(until) {
 			t.Errorf("slot at %s falls outside the requested window", start)
@@ -265,10 +265,10 @@ func TestInterviewAvailabilityLookupFiltersByStartTimestampUntil(t *testing.T) {
 	w := post(t, Path+"interview/availability-lookup", body, validToken)
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != 3 {
-		t.Fatalf("got %d slots, want 3", len(resp.AvailableSlotTime))
+	if len(resp.SlotTimeAvailability) != 3 {
+		t.Fatalf("got %d slots, want 3", len(resp.SlotTimeAvailability))
 	}
-	for _, s := range resp.AvailableSlotTime {
+	for _, s := range resp.SlotTimeAvailability {
 		if s.SlotTime.StartTimestamp > until {
 			t.Fatalf("slot at %d starts after the requested upper bound %d", s.SlotTime.StartTimestamp, until)
 		}
@@ -283,11 +283,11 @@ func TestInterviewAvailabilityLookupFiltersBySlotTime(t *testing.T) {
 	w := post(t, Path+"interview/availability-lookup", body, validToken)
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != 1 {
-		t.Fatalf("got %d slots, want 1", len(resp.AvailableSlotTime))
+	if len(resp.SlotTimeAvailability) != 1 {
+		t.Fatalf("got %d slots, want 1", len(resp.SlotTimeAvailability))
 	}
-	if resp.AvailableSlotTime[0].SlotTime.StartTimestamp != firstSlotStart {
-		t.Fatalf("got start_timestamp %d, want %d", resp.AvailableSlotTime[0].SlotTime.StartTimestamp, firstSlotStart)
+	if resp.SlotTimeAvailability[0].SlotTime.StartTimestamp != firstSlotStart {
+		t.Fatalf("got start_timestamp %d, want %d", resp.SlotTimeAvailability[0].SlotTime.StartTimestamp, firstSlotStart)
 	}
 }
 
@@ -301,8 +301,8 @@ func TestInterviewAvailabilityLookupOmitsUnknownSlotTime(t *testing.T) {
 	}
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != 0 {
-		t.Fatalf("got %d slots, want none", len(resp.AvailableSlotTime))
+	if len(resp.SlotTimeAvailability) != 0 {
+		t.Fatalf("got %d slots, want none", len(resp.SlotTimeAvailability))
 	}
 }
 
@@ -315,8 +315,8 @@ func TestInterviewAvailabilityLookupFiltersByDuration(t *testing.T) {
 	w := post(t, Path+"interview/availability-lookup", body, validToken)
 
 	resp := decodeLookup(t, w.Body.Bytes())
-	if len(resp.AvailableSlotTime) != 0 {
-		t.Fatalf("got %d slots, want none", len(resp.AvailableSlotTime))
+	if len(resp.SlotTimeAvailability) != 0 {
+		t.Fatalf("got %d slots, want none", len(resp.SlotTimeAvailability))
 	}
 }
 
