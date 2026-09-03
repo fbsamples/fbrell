@@ -32,10 +32,9 @@ import (
 // The interview endpoints speak the Booking Server wire vocabulary, where a
 // slot belongs to the job posting it books an interview for. Nothing tells two
 // slots at the same start time apart, so a posting cannot offer overlapping
-// slots and external_job_id plus start_timestamp keys one.
+// slots and start_timestamp keys one within a posting.
 
 type SlotTime struct {
-	ExternalJobID  string `json:"external_job_id"`
 	StartTimestamp int64  `json:"start_timestamp"`
 	DurationSec    int64  `json:"duration_sec,omitempty"`
 }
@@ -69,7 +68,7 @@ type slot struct {
 // buildInventory generates a job posting's slots in ascending start order,
 // filling each business day of the inventoryDays window that opens the day
 // after the handler's clock.
-func (h *Handler) buildInventory(externalJobID string, mode inventoryMode) []slot {
+func (h *Handler) buildInventory(mode inventoryMode) []slot {
 	if mode == inventoryEmpty {
 		return nil
 	}
@@ -86,7 +85,6 @@ func (h *Handler) buildInventory(externalJobID string, mode inventoryMode) []slo
 				n := len(slots)
 				slots = append(slots, slot{
 					slotTime: SlotTime{
-						ExternalJobID:  externalJobID,
 						StartTimestamp: day.Add(time.Duration(i) * slotStrideSec * time.Second).Unix(),
 						DurationSec:    durationSecFor(n),
 					},
@@ -149,7 +147,7 @@ func (h *Handler) availabilityLookup(w http.ResponseWriter, r *http.Request, mod
 	}
 
 	available := make([]SlotTimeAvailability, 0)
-	for _, s := range h.buildInventory(req.ExternalJobID, mode) {
+	for _, s := range h.buildInventory(mode) {
 		if !matchesFilters(s.slotTime, &req) {
 			continue
 		}
@@ -186,8 +184,6 @@ func matchesFilters(s SlotTime, req *AvailabilityLookupRequest) bool {
 // requestedSlotMatches reports whether an inventory slot is the one a caller
 // named in slot_time.
 func requestedSlotMatches(want, have SlotTime) bool {
-	if want.ExternalJobID != have.ExternalJobID || want.StartTimestamp != have.StartTimestamp {
-		return false
-	}
-	return want.DurationSec == 0 || want.DurationSec == have.DurationSec
+	return want.StartTimestamp == have.StartTimestamp &&
+		(want.DurationSec == 0 || want.DurationSec == have.DurationSec)
 }

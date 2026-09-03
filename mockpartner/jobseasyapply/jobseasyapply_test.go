@@ -43,7 +43,7 @@ const bodyWithSlot = `{
       "emailAnswer": {"value": "jane@example.com"}
     }
   },
-  "interview_slot": {"external_job_id": "job-1234", "start_timestamp": 1750000000, "duration_sec": 1800},
+  "interview_slot": {"start_timestamp": 1750000000, "duration_sec": 1800},
   "idempotency_token": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 }`
 

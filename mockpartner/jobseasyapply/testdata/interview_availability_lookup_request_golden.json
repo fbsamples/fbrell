@@ -2,7 +2,6 @@
   "external_job_id": "job-1234",
   "slot_time": [
     {
-      "external_job_id": "job-1234",
       "start_timestamp": 1750000000,
       "duration_sec": 1800
     }

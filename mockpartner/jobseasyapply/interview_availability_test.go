@@ -53,9 +53,6 @@ func TestInterviewAvailabilityLookupSuccess(t *testing.T) {
 	if first.SlotTime.StartTimestamp != firstSlotStart {
 		t.Fatalf("got first start_timestamp %d, want %d", first.SlotTime.StartTimestamp, firstSlotStart)
 	}
-	if first.SlotTime.ExternalJobID != "job-1234" {
-		t.Fatalf("got external_job_id %q, want %q", first.SlotTime.ExternalJobID, "job-1234")
-	}
 	if first.SlotTime.DurationSec != slotDurationSec {
 		t.Fatalf("got duration_sec %d, want %d", first.SlotTime.DurationSec, slotDurationSec)
 	}
@@ -277,7 +274,7 @@ func TestInterviewAvailabilityLookupFiltersByStartTimestampUntil(t *testing.T) {
 
 func TestInterviewAvailabilityLookupFiltersBySlotTime(t *testing.T) {
 	body := fmt.Sprintf(
-		`{"external_job_id":"job-1234","slot_time":[{"external_job_id":"job-1234","start_timestamp":%d}]}`,
+		`{"external_job_id":"job-1234","slot_time":[{"start_timestamp":%d}]}`,
 		firstSlotStart,
 	)
 	w := post(t, Path+"interview/availability-lookup", body, validToken)
@@ -294,7 +291,7 @@ func TestInterviewAvailabilityLookupFiltersBySlotTime(t *testing.T) {
 // TestInterviewAvailabilityLookupOmitsUnknownSlotTime pins the spec's rule that
 // an unrecognized requested slot is dropped rather than rejected.
 func TestInterviewAvailabilityLookupOmitsUnknownSlotTime(t *testing.T) {
-	body := `{"external_job_id":"job-1234","slot_time":[{"external_job_id":"job-1234","start_timestamp":1}]}`
+	body := `{"external_job_id":"job-1234","slot_time":[{"start_timestamp":1}]}`
 	w := post(t, Path+"interview/availability-lookup", body, validToken)
 	if w.Code != http.StatusOK {
 		t.Fatalf("got status %d, want %d", w.Code, http.StatusOK)
@@ -308,7 +305,7 @@ func TestInterviewAvailabilityLookupOmitsUnknownSlotTime(t *testing.T) {
 
 func TestInterviewAvailabilityLookupFiltersByDuration(t *testing.T) {
 	body := fmt.Sprintf(
-		`{"external_job_id":"job-1234","slot_time":[{"external_job_id":"job-1234","start_timestamp":%d,`+
+		`{"external_job_id":"job-1234","slot_time":[{"start_timestamp":%d,`+
 			`"duration_sec":%d}]}`,
 		firstSlotStart, slotDurationSec*2,
 	)
@@ -372,7 +369,7 @@ func TestInterviewAvailabilityLookupRejectsMissingScope(t *testing.T) {
 func TestHandlerDefaultsToTimeNow(t *testing.T) {
 	// A zero-value Handler is what main wires up, so it must generate inventory
 	// without a clock injected.
-	slots := (&Handler{}).buildInventory("job-1234", inventoryNormal)
+	slots := (&Handler{}).buildInventory(inventoryNormal)
 	if len(slots) == 0 {
 		t.Fatal("expected a zero-value Handler to generate inventory")
 	}
