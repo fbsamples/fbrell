@@ -1,24 +1,22 @@
 {
-  "type": "EXPORT_JOB_APPLICATION",
-  "appliedAt": 1750000000000,
-  "externalJobId": "1983664855648430",
-  "jobApplicant": "",
-  "jobApplicationId": "",
-  "questionResponses": {
-    "contactInformationQuestionResponses": {
-      "firstNameAnswer": {"value": "Jane"},
-      "lastNameAnswer": {"value": "Doe"},
-      "emailAnswer": {"value": "jane@example.com"},
-      "cellphoneNumberQuestionAnswer": {"countryCode": "", "nationalNumber": "5551234567"}
+  "applied_at": 1750000000000,
+  "external_job_id": "1983664855648430",
+  "job_application_id": "1290452048837161",
+  "question_responses": {
+    "contact_information_question_responses": {
+      "first_name_answer": {"value": "Jane"},
+      "last_name_answer": {"value": "Doe"},
+      "email_answer": {"value": "jane@example.com"},
+      "cellphone_number_question_answer": {"country_code": "", "national_number": "5551234567"}
     },
-    "resumeQuestionResponses": {
-      "resumeQuestionAnswer": {"mediaUrl": "https://example.com/resume.pdf", "mediaUrn": ""}
+    "resume_question_responses": {
+      "resume_question_answer": {"media_url": "https://example.com/resume.pdf", "media_urn": ""}
     },
-    "additionalQuestionResponses": {
-      "customQuestionSetResponses": [
+    "additional_question_responses": {
+      "custom_question_set_responses": [
         {
-          "customQuestionResponses": [
-            {"questionIdentifier": "q1", "answer": {"textAnswerValue": {"value": "answer1"}}}
+          "custom_question_responses": [
+            {"question_identifier": "q1", "answer": {"text_answer_value": {"value": "answer1"}}}
           ]
         }
       ]

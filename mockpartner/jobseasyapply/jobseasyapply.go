@@ -76,10 +76,6 @@ const Path = "/mock-partner/jobs-easy-apply/"
 // scope=write_jobs_easy_apply.
 const RequiredScope = "write_jobs_easy_apply"
 
-// expectedType is the expected value of the wire payload's "type" field for a
-// job-application export.
-const expectedType = "EXPORT_JOB_APPLICATION"
-
 // mockApplicationID is the partner-assigned application id returned on success.
 const mockApplicationID = "mock-application-id"
 
@@ -99,9 +95,9 @@ const (
 const mockBookingFailure = "BOOKING_FAILURE_SLOT_ALREADY_BOOKED_BY_USER"
 
 var (
-	errMissingFirstName  = errors.New("jobseasyapply: missing firstNameAnswer.value")
-	errMissingLastName   = errors.New("jobseasyapply: missing lastNameAnswer.value")
-	errMissingEmail      = errors.New("jobseasyapply: missing emailAnswer.value")
+	errMissingFirstName  = errors.New("jobseasyapply: missing first_name_answer.value")
+	errMissingLastName   = errors.New("jobseasyapply: missing last_name_answer.value")
+	errMissingEmail      = errors.New("jobseasyapply: missing email_answer.value")
 	errInsufficientScope = errors.New("jobseasyapply: token missing required scope " + RequiredScope)
 )
 
@@ -168,8 +164,8 @@ const (
 )
 
 // submit handles the POST scenarios that operate on a well-formed application:
-// it enforces POST, decodes + validates the EXPORT_JOB_APPLICATION payload, then
-// emits the scenario-appropriate response.
+// it enforces POST, decodes + validates the job-application payload, then emits
+// the scenario-appropriate response.
 func (h *Handler) submit(w http.ResponseWriter, r *http.Request, status int, s scenario) error {
 	if r.Method != http.MethodPost {
 		return mockpartner.WriteError(w, http.StatusMethodNotAllowed, "invalid_request",
@@ -231,20 +227,23 @@ func validate(req *SubmitApplicationRequest) error {
 	return nil
 }
 
-// SubmitApplicationRequest is the expected EXPORT_JOB_APPLICATION wire payload
-// for a job-application submission. The strict-decode test against
+// SubmitApplicationRequest is the expected wire payload for a job-application
+// submission. Every field name is snake_case, matching the rest of the mock
+// partner API and the client that calls it. The strict-decode test against
 // testdata/export_job_application_golden.json asserts this shape.
 type SubmitApplicationRequest struct {
-	Type              string            `json:"type"`
-	AppliedAt         int64             `json:"appliedAt"`
-	ExternalJobID     string            `json:"externalJobId"`
-	JobApplicant      string            `json:"jobApplicant"`
-	JobApplicationID  string            `json:"jobApplicationId"`
-	QuestionResponses QuestionResponses `json:"questionResponses"`
+	// AppliedAt is the submission time in epoch milliseconds — unlike every
+	// other timestamp on these endpoints, which are epoch seconds.
+	AppliedAt int64 `json:"applied_at"`
+	// ExternalJobID is the partner-side id of the job listing applied to, and
+	// JobApplicationID the client-side id of the same listing.
+	ExternalJobID     string            `json:"external_job_id"`
+	JobApplicationID  string            `json:"job_application_id"`
+	QuestionResponses QuestionResponses `json:"question_responses"`
 	// InterviewSlot is the interview time the candidate picked while applying,
 	// one of the slots the availability lookup offered. Absent when the
 	// application books no interview.
-	InterviewSlot *SlotTime `json:"interview_slot,omitempty"`
+	InterviewSlot *SlotTime `json:"interview_slot,omitzero"`
 	// IdempotencyToken identifies the submission across the retries a failed
 	// delivery earns it, so a redelivery books one interview rather than one per
 	// attempt.
@@ -253,9 +252,9 @@ type SubmitApplicationRequest struct {
 
 // QuestionResponses groups the applicant's answers by section.
 type QuestionResponses struct {
-	ContactInformationQuestionResponses ContactInformationQuestionResponses `json:"contactInformationQuestionResponses"`
-	ResumeQuestionResponses             *ResumeQuestionResponses            `json:"resumeQuestionResponses,omitempty"`
-	AdditionalQuestionResponses         *AdditionalQuestionResponses        `json:"additionalQuestionResponses,omitempty"`
+	ContactInformationQuestionResponses ContactInformationQuestionResponses `json:"contact_information_question_responses"`
+	ResumeQuestionResponses             *ResumeQuestionResponses            `json:"resume_question_responses,omitzero"`
+	AdditionalQuestionResponses         *AdditionalQuestionResponses        `json:"additional_question_responses,omitzero"`
 }
 
 // AnswerValue is the canonical {"value": "..."} wrapper used for scalar answers.
@@ -266,48 +265,50 @@ type AnswerValue struct {
 // ContactInformationQuestionResponses holds the required contact answers plus an
 // optional phone number.
 type ContactInformationQuestionResponses struct {
-	FirstNameAnswer               AnswerValue      `json:"firstNameAnswer"`
-	LastNameAnswer                AnswerValue      `json:"lastNameAnswer"`
-	EmailAnswer                   AnswerValue      `json:"emailAnswer"`
-	CellphoneNumberQuestionAnswer *CellphoneAnswer `json:"cellphoneNumberQuestionAnswer,omitempty"`
+	FirstNameAnswer               AnswerValue      `json:"first_name_answer"`
+	LastNameAnswer                AnswerValue      `json:"last_name_answer"`
+	EmailAnswer                   AnswerValue      `json:"email_answer"`
+	CellphoneNumberQuestionAnswer *CellphoneAnswer `json:"cellphone_number_question_answer,omitzero"`
 }
 
-// CellphoneAnswer is the optional phone-number answer.
+// CellphoneAnswer is the optional phone-number answer. Both halves are
+// optional, so a caller that knows only the subscriber number sends an empty
+// country code rather than omitting the answer.
 type CellphoneAnswer struct {
-	CountryCode    string `json:"countryCode"`
-	NationalNumber string `json:"nationalNumber"`
+	CountryCode    string `json:"country_code,omitempty"`
+	NationalNumber string `json:"national_number,omitempty"`
 }
 
 // ResumeQuestionResponses wraps the optional resume answer.
 type ResumeQuestionResponses struct {
-	ResumeQuestionAnswer ResumeAnswer `json:"resumeQuestionAnswer"`
+	ResumeQuestionAnswer *ResumeAnswer `json:"resume_question_answer,omitzero"`
 }
 
 // ResumeAnswer is the optional resume media reference.
 type ResumeAnswer struct {
-	MediaURL string `json:"mediaUrl"`
-	MediaURN string `json:"mediaUrn"`
+	MediaURL string `json:"media_url,omitempty"`
+	MediaURN string `json:"media_urn,omitempty"`
 }
 
 // AdditionalQuestionResponses carries partner-defined custom question answers.
 type AdditionalQuestionResponses struct {
-	CustomQuestionSetResponses []CustomQuestionSetResponse `json:"customQuestionSetResponses"`
+	CustomQuestionSetResponses []CustomQuestionSetResponse `json:"custom_question_set_responses"`
 }
 
 // CustomQuestionSetResponse groups one set of custom question responses.
 type CustomQuestionSetResponse struct {
-	CustomQuestionResponses []CustomQuestionResponse `json:"customQuestionResponses"`
+	CustomQuestionResponses []CustomQuestionResponse `json:"custom_question_responses"`
 }
 
 // CustomQuestionResponse is a single custom question answer.
 type CustomQuestionResponse struct {
-	QuestionIdentifier string       `json:"questionIdentifier"`
+	QuestionIdentifier string       `json:"question_identifier"`
 	Answer             CustomAnswer `json:"answer"`
 }
 
 // CustomAnswer wraps the typed value of a custom answer.
 type CustomAnswer struct {
-	TextAnswerValue AnswerValue `json:"textAnswerValue"`
+	TextAnswerValue AnswerValue `json:"text_answer_value"`
 }
 
 // SubmitApplicationResponse is the happy-path response body.
