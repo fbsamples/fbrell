@@ -1,37 +1,41 @@
+<script>
+window.loginButtonCallback = Log.info.bind('onlogin callback');
+</script>
+
 <h1>Defaults</h1>
-<fb:login-button onlogin="Log.info.bind('onlogin callback')">
+<fb:login-button onlogin="loginButtonCallback">
 </fb:login-button>
 
 <h1>autologoutlink</h1>
 <fb:login-button autologoutlink="true"
-                 onlogin="Log.info.bind('onlogin callback')">
+                 onlogin="loginButtonCallback">
 </fb:login-button>
 
 <h1>Small with Custom Text</h1>
 <fb:login-button size="small"
-                 onlogin="Log.info.bind('onlogin callback')">
+                 onlogin="loginButtonCallback">
   Connect
 </fb:login-button>
 
 <h1>Medium with Custom Text</h1>
 <fb:login-button size="medium"
-                 onlogin="Log.info.bind('onlogin callback')">
+                 onlogin="loginButtonCallback">
   Connect with Facebook
 </fb:login-button>
 
 <h1>Large with Custom Text</h1>
 <fb:login-button size="large"
-                 onlogin="Log.info.bind('onlogin callback')">
+                 onlogin="loginButtonCallback">
   Login with Facebook
 </fb:login-button>
 
 <h1>Extra Large with Custom Text</h1>
 <fb:login-button size="xlarge"
-                 onlogin="Log.info.bind('onlogin callback')">
+                 onlogin="loginButtonCallback">
   Find Friends
 </fb:login-button>
 
 <h1>Favicon Only</h1>
 <fb:login-button size="icon"
-                 onlogin="Log.info.bind('onlogin callback')">
+                 onlogin="loginButtonCallback">
 </fb:login-button>
