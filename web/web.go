@@ -86,6 +86,7 @@ func (a *Handler) Init() error {
 	mux.GET("/f8.jpg", ctxmux.HTTPHandler(fileserver))
 	mux.GET("/robots.txt", ctxmux.HTTPHandler(fileserver))
 	mux.GET("/.well-known/apple-app-site-association", ctxmux.HTTPHandler(fileserver))
+	mux.GET("/.well-known/assetlinks.json", ctxmux.HTTPHandler(fileserver))
 	mux.GET(public+"*rest", ctxmux.HTTPHandler(http.StripPrefix(public, fileserver)))
 	mux.GET("/info/*rest", a.ContextHandler.Info)
 	mux.POST("/info/*rest", a.ContextHandler.Info)
@@ -116,6 +117,10 @@ func (a *Handler) Init() error {
 
 // Serve HTTP requests for the main port.
 func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == oauthCallbackPath {
+		serveOAuthCallback(w, r)
+		return
+	}
 	a.mux.ServeHTTP(w, r)
 }
 
