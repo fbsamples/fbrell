@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.facebook.hackbook.internal.current",
+      "sha256_cert_fingerprints": [
+        "4E:68:C8:78:14:8A:1F:4D:AB:CC:25:BE:77:9D:9F:2B:83:55:27:B8:5A:34:96:19:68:9B:9B:43:4A:8B:DB:6C"
+      ]
+    }
+  }
+]
