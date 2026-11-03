@@ -68,7 +68,7 @@ After deployment, confirm an unauthenticated GET of the association URL returns
 HTTP 200, `Content-Type: application/json`, the completed statement, and no
 redirect. Then verify domain association and link delivery on the device;
 a successful HTTP request does not itself prove Android verification. The
-existing Apple association file is independent and should remain unchanged.
+Apple association file is independent of Android's association statement.
 
 ### HTTPS callback fallback
 
@@ -84,6 +84,48 @@ are not sent to the server. Upstream router/proxy request logging is separate
 and may still include query parameters; review that before sending live
 authorization traffic. The callback handler only avoids the application's
 credential-bearing error-log path.
+
+## iOS Universal Links
+
+The iOS callback is `https://www.fbrell.com/universal-links/callback`, with no
+trailing slash. It returns a fixed iOS-specific fallback notice, using the same
+credential-independent GET/HEAD behavior and response protections as the
+Android callback. Seeing this notice is not proof of app delivery or login
+completion. It does not provide a mock authorization flow or a token exchange.
+
+The Apple association is served publicly at
+`https://www.fbrell.com/.well-known/apple-app-site-association` with
+`Content-Type: application/json` and no redirect. Its exact callback component
+is `/universal-links/callback`; the older `/oauth/response/*` component is
+preserved. Android's callback and `assetlinks.json` remain independent.
+
+### App configuration checklist
+
+1. In the developer dashboard for **iOS Hackbook**, Facebook app ID
+   `421415891237674`, add the exact callback above to **Valid OAuth Redirect
+   URIs** in Facebook Login settings. Preserve existing entries. Android
+   Hackbook's app ID `479829488705076` is a different Facebook application;
+   its redirect registration does not register the iOS callback.
+2. In the test app, add `applinks:www.fbrell.com` to Associated Domains and
+   use this exact HTTPS URI in the experimental authorization request and
+   callback receiver. Keep the normal custom-scheme login as a separate control.
+3. Verify the signed test app's `application-identifier` matches the AASA
+   value `T84QZS65DQ.com.facebook.internal.sdk.samples.Hackbook.localDevelopment`.
+   This is an Apple app-ID prefix plus bundle ID, not the Facebook app ID or
+   necessarily the development team ID. Verify the provisioning profile permits
+   Associated Domains; change the association if the installed signer changes.
+4. After deployment, verify the public AASA and callback responses, then verify
+   actual OS association and delivery. A registered redirect and an HTTP 200
+   alone do not prove universal-link behavior in an authentication session.
+
+The host must remain `www.fbrell.com`; do not substitute `fbrell.com`, a wildcard,
+query string, or a trailing-slash variant. Developer-dashboard settings and
+Apple associated-domain entitlements are separate configuration layers. Native
+protocol or first-party redirect checks may need independent server-side work;
+adding the URI does not demonstrate that those checks accept the experiment.
+
+The same upstream query-logging caveat described for Android applies to iOS.
+Do not send live authorization traffic through unreviewed logging infrastructure.
 
 ## Heroku
 

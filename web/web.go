@@ -85,7 +85,6 @@ func (a *Handler) Init() error {
 	mux.GET("/favicon.ico", ctxmux.HTTPHandler(fileserver))
 	mux.GET("/f8.jpg", ctxmux.HTTPHandler(fileserver))
 	mux.GET("/robots.txt", ctxmux.HTTPHandler(fileserver))
-	mux.GET("/.well-known/apple-app-site-association", ctxmux.HTTPHandler(fileserver))
 	mux.GET("/.well-known/assetlinks.json", ctxmux.HTTPHandler(fileserver))
 	mux.GET(public+"*rest", ctxmux.HTTPHandler(http.StripPrefix(public, fileserver)))
 	mux.GET("/info/*rest", a.ContextHandler.Info)
@@ -117,8 +116,22 @@ func (a *Handler) Init() error {
 
 // Serve HTTP requests for the main port.
 func (a *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == oauthCallbackPath {
-		serveOAuthCallback(w, r)
+	switch r.URL.Path {
+	case oauthCallbackPath:
+		serveOAuthCallback(w, r, oauthCallbackNotice)
+		return
+	case universalLinkCallbackPath:
+		serveOAuthCallback(w, r, universalLinkCallbackNotice)
+		return
+	case appleAssociationPath:
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		http.FileServer(a.PublicFS).ServeHTTP(w, r)
 		return
 	}
 	a.mux.ServeHTTP(w, r)

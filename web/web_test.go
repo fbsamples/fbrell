@@ -131,7 +131,7 @@ func TestMissingAssetLinksReturnsNotFound(t *testing.T) {
 	}
 }
 
-func TestAppleAssociationEndpointUnchanged(t *testing.T) {
+func TestAppleAssociationEndpointServesConfiguredFile(t *testing.T) {
 	h := staticFileHandler(t, http.Dir("../public"))
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, httptest.NewRequest(http.MethodGet,

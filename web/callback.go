@@ -5,12 +5,19 @@ import (
 	"net/http"
 )
 
-const oauthCallbackPath = "/app-links/callback"
+const (
+	oauthCallbackPath         = "/app-links/callback"
+	universalLinkCallbackPath = "/universal-links/callback"
+	appleAssociationPath      = "/.well-known/apple-app-site-association"
+)
 
 const oauthCallbackNotice = "This HTTPS callback reached the web server instead of the Android app.\n" +
 	"No authorization data is displayed or processed here.\n"
 
-func serveOAuthCallback(w http.ResponseWriter, r *http.Request) {
+const universalLinkCallbackNotice = "This HTTPS callback reached the web server instead of the iOS app.\n" +
+	"No authorization data is displayed or processed here.\n"
+
+func serveOAuthCallback(w http.ResponseWriter, r *http.Request, notice string) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Referrer-Policy", "no-referrer")
@@ -26,5 +33,5 @@ func serveOAuthCallback(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	_, _ = io.WriteString(w, oauthCallbackNotice)
+	_, _ = io.WriteString(w, notice)
 }
