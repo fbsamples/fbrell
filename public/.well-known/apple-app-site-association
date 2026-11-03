@@ -1,9 +1,16 @@
 {
+  "webcredentials": {
+    "apps": ["T84QZS65DQ.com.facebook.internal.sdk.samples.Hackbook.localDevelopment"]
+  },
   "applinks": {
     "details": [
       {
         "appIDs": ["T84QZS65DQ.com.facebook.internal.sdk.samples.Hackbook.localDevelopment"],
         "components": [
+          {
+            "/": "/universal-links/callback",
+            "comment": "Exact HTTPS callback for iOS Hackbook login testing"
+          },
           {
             "/": "/oauth/response/*",
             "comment": "Matches any URL with a path that starts with /oauth/response/"
