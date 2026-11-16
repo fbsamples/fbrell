@@ -95,10 +95,11 @@ const (
 const mockBookingFailure = "BOOKING_FAILURE_SLOT_ALREADY_BOOKED_BY_USER"
 
 var (
-	errMissingFirstName  = errors.New("jobseasyapply: missing first_name_answer.value")
-	errMissingLastName   = errors.New("jobseasyapply: missing last_name_answer.value")
-	errMissingEmail      = errors.New("jobseasyapply: missing email_answer.value")
-	errInsufficientScope = errors.New("jobseasyapply: token missing required scope " + RequiredScope)
+	errMissingFirstName   = errors.New("jobseasyapply: missing first_name_answer.value")
+	errMissingLastName    = errors.New("jobseasyapply: missing last_name_answer.value")
+	errMissingEmail       = errors.New("jobseasyapply: missing email_answer.value")
+	errMissingApplicantID = errors.New("jobseasyapply: missing applicant_id")
+	errInsufficientScope  = errors.New("jobseasyapply: token missing required scope " + RequiredScope)
 )
 
 // Handler serves mock Jobs Easy Apply partner API endpoints.
@@ -212,7 +213,7 @@ func (h *Handler) submit(w http.ResponseWriter, r *http.Request, status int, s s
 	}
 }
 
-// validate enforces the required contact fields of the wire payload.
+// validate enforces the required fields of the wire payload.
 func validate(req *SubmitApplicationRequest) error {
 	contact := req.QuestionResponses.ContactInformationQuestionResponses
 	if contact.FirstNameAnswer.Value == "" {
@@ -223,6 +224,9 @@ func validate(req *SubmitApplicationRequest) error {
 	}
 	if contact.EmailAnswer.Value == "" {
 		return errMissingEmail
+	}
+	if req.ApplicantID == "" {
+		return errMissingApplicantID
 	}
 	return nil
 }
@@ -248,6 +252,9 @@ type SubmitApplicationRequest struct {
 	// delivery earns it, so a redelivery books one interview rather than one per
 	// attempt.
 	IdempotencyToken string `json:"idempotency_token,omitempty"`
+	// ApplicantID is the client-issued id for the applicant, scoped to this
+	// partner, that the partner reports application events with.
+	ApplicantID string `json:"applicant_id"`
 }
 
 // QuestionResponses groups the applicant's answers by section.

@@ -20,6 +20,7 @@ const validBody = `{
   "applied_at": 1750000000000,
   "external_job_id": "1983664855648430",
   "job_application_id": "1290452048837161",
+  "applicant_id": "9b2f6c1e-4a7d-4e3b-8f21-6d0c5a9e7b42",
   "question_responses": {
     "contact_information_question_responses": {
       "first_name_answer": {"value": "Jane"},
@@ -34,6 +35,7 @@ const bodyWithSlot = `{
   "applied_at": 1750000000000,
   "external_job_id": "job-1234",
   "job_application_id": "1290452048837161",
+  "applicant_id": "9b2f6c1e-4a7d-4e3b-8f21-6d0c5a9e7b42",
   "question_responses": {
     "contact_information_question_responses": {
       "first_name_answer": {"value": "Jane"},
@@ -170,9 +172,64 @@ func TestSubmitApplicationRejectsMissingScope(t *testing.T) {
 	}
 }
 
+func TestSubmitApplicationRequiresApplicantID(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		value json.RawMessage
+	}{
+		{name: "missing"},
+		{name: "empty", value: json.RawMessage(`""`)},
+		{name: "null", value: json.RawMessage(`null`)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var payload map[string]json.RawMessage
+			if err := json.Unmarshal([]byte(validBody), &payload); err != nil {
+				t.Fatal(err)
+			}
+			if tc.value == nil {
+				delete(payload, "applicant_id")
+			} else {
+				payload["applicant_id"] = tc.value
+			}
+			body, err := json.Marshal(payload)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, endpoint := range []string{
+				"submit_application",
+				"submit_application/client_error",
+				"submit_application/delivery_error",
+				"submit_application/booking_error",
+			} {
+				t.Run(endpoint, func(t *testing.T) {
+					w := post(t, Path+endpoint, string(body), validToken)
+					if w.Code != http.StatusBadRequest {
+						t.Fatalf("got status %d, want %d", w.Code, http.StatusBadRequest)
+					}
+					if got := w.Header().Get("Content-Type"); got != "application/json" {
+						t.Fatalf("got Content-Type %q, want application/json", got)
+					}
+					var resp map[string]string
+					if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+						t.Fatal(err)
+					}
+					want := map[string]string{
+						"error":             "invalid_request",
+						"error_description": "jobseasyapply: missing applicant_id",
+					}
+					if !reflect.DeepEqual(resp, want) {
+						t.Fatalf("got response %v, want %v", resp, want)
+					}
+				})
+			}
+		})
+	}
+}
+
 func TestSubmitApplicationMissingRequiredField(t *testing.T) {
 	// Omit the email answer.
 	body := `{
+      "applicant_id": "9b2f6c1e-4a7d-4e3b-8f21-6d0c5a9e7b42",
       "question_responses": {
         "contact_information_question_responses": {
           "first_name_answer": {"value": "Jane"},
@@ -254,6 +311,7 @@ var wantGolden = SubmitApplicationRequest{
 	},
 	InterviewSlot:    &SlotTime{StartTimestamp: 1750000000, DurationSec: 1800},
 	IdempotencyToken: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+	ApplicantID:      "9b2f6c1e-4a7d-4e3b-8f21-6d0c5a9e7b42",
 }
 
 // toJSON renders a payload for a failure message, where %+v would print
